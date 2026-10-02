@@ -230,6 +230,8 @@ function renderStats(d) {
     ["控制台端口", d.port || "—"],
     ["运行时长", (d.uptime || 0) + " 秒"],
     ["文档 / 切片 / 父块", (db.docs || 0) + " / " + (db.chunks || 0) + " / " + (db.parents || 0)],
+    // 库规模档位：让用户有个参照系，而不是只看到一个孤零零的切片数
+    ["库规模", (d.capacity && d.capacity.message) || "—"],
     ["向量召回", db.vec_ready && !emb.signature_mismatch ? "已启用" : "未启用"],
     ["嵌入源 / 维度", (emb.source || "—") + " / " + (emb.dim || "—")],
     ["嵌入签名", emb.signature ? (emb.signature.model + "@" + emb.signature.dim) : "—"],
@@ -552,8 +554,16 @@ function bufToBase64(buf) {
 async function importFiles(files) {
   const zone = $("#dropZone"), out = $("#dzResult");
   if (!zone || !out) return;
-  const payload = [];
-  const skipped = [];
+  // 防重入：导入期间用户完全可以再拖一批/再选一次。没有这道闸，两个循环会并发跑，
+  // 进度文本互相覆盖，同一个文件还可能被入库两次（拖拽 + 选择器同时触发）。
+  if (zone.classList.contains("busy")) {
+    toast("上一批还在导入，请等它完成", 3000);
+    return;
+  }
+  const mainLabel = zone.querySelector(".dz-main");
+
+  // ---- 1) 先只按元信息过滤，**不读内容** ----
+  const accepted = [], skipped = [];
   for (const f of files) {
     if (f.size > 20 * 1024 * 1024) { skipped.push(`${f.name}（超过 20MB）`); continue; }
     const ext = ("." + (f.name.split(".").pop() || "")).toLowerCase();
@@ -561,41 +571,86 @@ async function importFiles(files) {
       skipped.push(`${f.name}（不支持 ${ext}）`);
       continue;
     }
-    if (isBinaryExt(f.name)) {
-      payload.push({ filename: f.name, content_base64: bufToBase64(await f.arrayBuffer()) });
-    } else {
-      payload.push({ filename: f.name, content: await readTextSmart(f) });
-    }
+    accepted.push(f);
   }
-  if (!payload.length) {
-    out.innerHTML = '<span class="bad">没有可导入的文件</span>' +
-      (skipped.length ? "<br>已跳过：" + esc(skipped.join("、")) : "");
+  const skipHtml = skipped.length
+    ? '<span class="bad">已跳过：' + esc(skipped.join("、")) + "</span><br>" : "";
+  if (!accepted.length) {
+    out.innerHTML = '<span class="bad">没有可导入的文件</span><br>' + skipHtml;
     return;
   }
 
   zone.classList.add("busy");
-  const mainLabel = zone.querySelector(".dz-main");
-  mainLabel.textContent = `正在转换并索引 ${payload.length} 个文件…`;
+  const rows = [];
+  let okN = 0, failN = 0;
+
+  const render = (headline) => {
+    out.innerHTML = (headline ? "<b>" + esc(headline) + "</b><br>" : "")
+      + skipHtml + rows.join("<br>");
+  };
+
+  /* ---- 2) 逐个提交：每完成一个就刷新一次进度 ----
+   *
+   * 为什么不用「一次性 POST 全部」：
+   *   · **没有进度**：几十个文件要几十秒到几分钟，界面只显示一句「正在转换并索引…」，
+   *     用户会以为卡死而刷新页面 —— 刷新会中断剩余文件（已完成的会保住）；
+   *   · **内存峰值高**：原实现先把每个文件都读成 base64 再攒成一个大 payload，
+   *     50 个几 MB 的文件能吃掉上百 MB 内存（浏览器标签页会明显变卡）。
+   *     逐文件提交后，任一时刻内存里只有一个文件；
+   *   · **单点失败会连坐**：整批一个请求，任一文件抛错都会让整批的结果变得可疑。
+   *     现在每个文件独立成败，最后一个失败不影响其余的落库。
+   * 本地回环请求开销可忽略（每次几毫秒）。
+   */
   try {
-    const r = await api("/api/notes/import", {
-      method: "POST", body: JSON.stringify({ files: payload }),
-    });
-    const d = r.data || {};
-    const rows = (d.results || []).map(x =>
-      (x.ok ? '<span class="ok">✅ ' + esc(x.filename) + "</span>"
-            : '<span class="bad">❌ ' + esc(x.filename) + "</span>") +
-      " —— " + esc(x.message) + (x.ok ? "（" + (x.char_count || 0) + " 字）" : ""));
-    out.innerHTML = rows.join("<br>") +
-      (skipped.length ? '<br><span class="bad">已跳过：' + esc(skipped.join("、")) + "</span>" : "");
-    if (d.ok) toast(`✅ 成功导入 ${d.ok} 个文件，已转成 Markdown 并建索引`);
-    else if (d.total) toast("⚠ 全部导入失败，请看下方原因", 4000);
-    await loadNotes();
-  } catch (e) {
-    out.innerHTML = '<span class="bad">导入失败：' + esc(e.message) + "</span>";
+    for (let i = 0; i < accepted.length; i++) {
+      const f = accepted[i];
+      const short = f.name.length > 30 ? f.name.slice(0, 28) + "…" : f.name;
+      mainLabel.textContent = `正在导入 ${i + 1}/${accepted.length}：${short}`;
+      render(`正在导入 ${i + 1}/${accepted.length}（成功 ${okN}）：`);
+
+      let item;
+      try {
+        item = isBinaryExt(f.name)
+          ? { filename: f.name, content_base64: bufToBase64(await f.arrayBuffer()) }
+          : { filename: f.name, content: await readTextSmart(f) };
+      } catch (e) {
+        failN++;
+        rows.push('<span class="bad">❌ ' + esc(f.name) + "</span> —— 读取失败："
+          + esc(e.message || e));
+        continue;
+      }
+
+      try {
+        const r = await api("/api/notes/import", {
+          method: "POST", body: JSON.stringify({ files: [item] }),
+        });
+        const x = (((r.data || {}).results) || [])[0] || {};
+        if (x.ok) {
+          okN++;
+          rows.push('<span class="ok">✅ ' + esc(f.name) + "</span> —— "
+            + esc(x.message || "已入库") + "（" + (x.char_count || 0) + " 字）");
+        } else {
+          failN++;
+          rows.push('<span class="bad">❌ ' + esc(f.name) + "</span> —— "
+            + esc(x.message || "导入失败"));
+        }
+      } catch (e) {
+        failN++;
+        rows.push('<span class="bad">❌ ' + esc(f.name) + "</span> —— " + esc(e.message));
+      }
+    }
   } finally {
+    // ⚠ 必须放 finally：中途任何异常都不能让拖拽区卡在 busy 状态（那样用户再也拖不进文件）
     zone.classList.remove("busy");
     mainLabel.textContent = "把文件拖到这里";
   }
+
+  const summary = `导入完成：成功 ${okN} / ${accepted.length}`
+    + (failN ? `，失败 ${failN}` : "");
+  render(summary);
+  if (okN) toast("✅ " + summary);
+  else toast("⚠ 全部导入失败，请看下方原因", 4000);
+  await loadNotes();
 }
 
 function initDropZone() {
@@ -1361,7 +1416,20 @@ function fmtSize(n) {
   n = Number(n) || 0;
   if (n < 1024) return n + " B";
   if (n < 1048576) return (n / 1024).toFixed(1) + " KB";
-  return (n / 1048576).toFixed(1) + " MB";
+  if (n < 1073741824) return (n / 1048576).toFixed(1) + " MB";
+  return (n / 1073741824).toFixed(2) + " GB";
+}
+
+/* 把秒数说成人话。用于导出/迁移的耗时预告 —— 不预告的话，用户在大库上会
+   以为程序卡死，进而强杀进程（那反而会留下半截文件）。估算刻意保守。 */
+function fmtDuration(sec) {
+  sec = Math.max(0, Math.round(Number(sec) || 0));
+  if (!sec) return "很快";
+  if (sec < 45) return "不到 1 分钟";
+  const min = Math.round(sec / 60);
+  if (min < 60) return "约 " + min + " 分钟";
+  const hr = min / 60;
+  return "约 " + (hr < 10 ? hr.toFixed(1) : Math.round(hr)) + " 小时";
 }
 
 function setNoteView(view) {
@@ -2087,7 +2155,7 @@ function switchTab(name) {
   $$(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
   $$(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + name));
   if (name === "notes") loadNotes();
-  if (name === "settings") { loadConfig(); loadLicense(); pollStatus(false); }
+  if (name === "settings") { loadConfig(); loadLicense(); loadDataDir(); pollStatus(false); }
 }
 
 /* 问答引用跳转（A/B）：
@@ -2118,6 +2186,162 @@ document.addEventListener("click", async function (ev) {
   await openNoteByPath(path, jump, nav, terms);
 });
 
+/* --------------------- 资料目录（Library）迁移 --------------------- */
+/* 后端做法：整棵 data/ **复制**到新位置 → 逐文件校验 → 切换指向 → 重开上下文，
+   旧位置始终保留完整副本。因为 context 会关掉再打开，期间 /api/status 会短暂
+   说「未就绪」—— 所以这里用**独立的进度轮询**，不跟 pollStatus 抢，避免把
+   「正在迁移」误显示成「服务断了」。 */
+let DD_BUSY = false, DD_TIMER = null, DD_TARGET = "";
+
+function ddSourceText(s) {
+  const map = { env: "启动参数指定", marker: "本机配置指定", default: "程序目录下的 data" };
+  return map[s] || s || "—";
+}
+
+async function loadDataDir() {
+  const kv = $("#datadirKV");
+  if (!kv) return null;
+  try {
+    const r = await api("/api/datadir");
+    const d = r.data || {};
+    kv.innerHTML = [
+      ["当前位置", d.path || "—"],
+      ["怎么定的", ddSourceText(d.source)],
+      ["已存文档", (d.notes || 0) + " 篇"],
+      ["占用空间", fmtSize(d.bytes || 0) + "（" + (d.files || 0) + " 个文件）"],
+      ["该盘剩余", d.free_bytes > 0 ? fmtSize(d.free_bytes) : "—"],
+      // 预告导出规模与耗时：备份只打包用户资料，比"占用空间"小（不含索引/备份/日志）
+      ["备份包约", fmtSize(d.export_bytes || 0)
+        + "，导出约需 " + fmtDuration(d.est_export_seconds)],
+    ].map(x => "<b>" + esc(x[0]) + "</b><span>" + esc(x[1]) + "</span>").join("");
+    // 剪藏页那句提示原本写死「文档\USB-WIKI-Data\notes」——自定义/U盘安装时是错的，
+    // 这里按本次读到的真实资料目录回填。
+    const nh = $("#ddNotesHint");
+    if (nh && d.path) nh.innerHTML = "（当前在 " + esc(d.path + "/notes") + "）";
+    return d;
+  } catch (e) {
+    kv.innerHTML = '<span class="hint">读取失败：' + esc(e.message) + "</span>";
+    return null;
+  }
+}
+
+async function ddCheck() {
+  const target = ($("#ddTarget").value || "").trim();
+  const box = $("#ddResult"), btn = $("#btnDdMigrate");
+  if (!target) { box.innerHTML = '<span style="color:var(--warn)">请先填写目标目录</span>'; btn.disabled = true; return; }
+  box.innerHTML = '<span class="hint">正在检查…</span>';
+  btn.disabled = true;
+  try {
+    const r = await api("/api/datadir/precheck", { method: "POST", body: JSON.stringify({ target }) });
+    const d = r.data || {};
+    // ⚠ 后端统一用 code 字段表示成败（不是 ok）——判断错会让「预检通过」永远显示成失败。
+    if (r.code === 200) {
+      DD_TARGET = d.path || target;
+      let html = '<span style="color:var(--ok)">✓ 可以迁到这里</span>　需要约 ' + fmtSize(d.bytes || 0) +
+        "，目标可用 " + fmtSize(d.free_bytes > 0 ? d.free_bytes : 0) + "。" +
+        "<br>迁移预计需要 " + fmtDuration(d.est_migrate_seconds) +
+        "（视磁盘速度而定）—— 期间请勿关闭程序或拔出磁盘。";
+      (d.warnings || []).forEach(w => { html += "<br>· " + esc(w); });
+      box.innerHTML = html;
+      btn.disabled = false;
+    } else {
+      DD_TARGET = "";
+      box.innerHTML = '<span style="color:var(--danger)">' + esc(r.message || "预检未通过") + "</span>";
+    }
+  } catch (e) {
+    DD_TARGET = "";
+    box.innerHTML = '<span style="color:var(--danger)">检查失败：' + esc(e.message) + "</span>";
+  }
+}
+
+async function ddMigrate() {
+  if (!DD_TARGET) return;
+  if (!confirm(
+    "将把现有资料" + "" + "完整复制到：\n\n　" + DD_TARGET + "\n\n" +
+    "· 复制期间请勿关闭电脑或拔出磁盘\n" +
+    "· 完成后会重新打开资料库，页面会短暂无响应\n" +
+    "· 旧目录会原样保留，等你确认没问题后自己删除\n\n" +
+    "确定开始迁移吗？")) return;
+  const btn = $("#btnDdMigrate"), chk = $("#btnDdCheck"), inp = $("#ddTarget");
+  DD_BUSY = true;
+  btn.disabled = true; chk.disabled = true; inp.disabled = true;
+  $("#ddProgress").hidden = false;
+  $("#ddBar").style.width = "0%";
+  $("#ddStage").textContent = "正在启动迁移任务…";
+  try {
+    const r = await api("/api/datadir/migrate", { method: "POST", body: JSON.stringify({ target: DD_TARGET }) });
+    if (r.code !== 202) {       // 409 已在迁移 / 400 目标不合规 —— 都别开始轮询
+      $("#ddStage").innerHTML = '<span style="color:var(--danger)">' +
+        esc(r.message || "无法开始迁移") + "</span>";
+      ddFinish();
+      return;
+    }
+    DD_TIMER = setInterval(ddPoll, 800);
+  } catch (e) {
+    $("#ddStage").innerHTML = '<span style="color:var(--danger)">无法开始：' + esc(e.message) + "</span>";
+    ddFinish();
+  }
+}
+
+function ddPoll() {
+  api("/api/datadir/progress").then(r => {
+    const p = r.data || {};
+    $("#ddBar").style.width = (p.percent || 0) + "%";
+    $("#ddStage").textContent = (p.message || "") +
+      (p.percent ? "　" + p.percent + "%" : "");
+    if (p.busy) return;                      // 还在跑 → 继续轮询
+    clearInterval(DD_TIMER); DD_TIMER = null;
+    const res = p.result || {};
+    if (res.ok) {
+      $("#ddStage").innerHTML =
+        '<span style="color:var(--ok)">✓ 迁移完成：共 ' + (res.files || 0) + " 个文件 / " +
+        fmtSize(res.bytes || 0) + "，用时 " + (res.seconds || 0) + " 秒</span><br>" +
+        "资料现在保存在：" + esc(res.to || "") + "<br>" +
+        '<span class="hint">旧位置（' + esc(res.from || "") +
+        "）仍保留着一份完整副本，确认无误后可自行删除。</span>";
+      DD_TARGET = ""; $("#ddTarget").value = "";
+      loadDataDir(); pollStatus(false); loadNotes();
+      toast("资料已迁移到新目录");
+    } else {
+      $("#ddStage").innerHTML =
+        '<span style="color:var(--danger)">' + esc(res.message || p.message || "迁移失败") +
+        "</span>";
+      loadDataDir();
+    }
+    ddFinish();
+  }).catch(() => { /* 迁移中服务会短暂重启，单次失败不必惊慌 */ });
+}
+
+/* 导出：把资料打包成 zip 交给浏览器下载。
+   走 location.href 而不是 fetch+blob —— 备份包可能有几百 MB，
+   blob 方案会把整个包读进内存再落地；让浏览器自己流式落盘既省内存又能续传。
+
+   ⚠ 打包在**服务端**完成之后浏览器才开始下载，所以「点完按钮」到「下载出现」
+   之间有一段静默期（大库上是分钟到小时级）。这里必须如实预告，
+   而不是像早先那样 12 秒就报「已下载」—— 那会让人以为没反应、去点第二次甚至强杀进程。 */
+function ddExport() {
+  const btn = $("#btnDdExport"), hint = $("#ddExportHint");
+  if (btn.disabled) return;
+  btn.disabled = true;
+  hint.innerHTML = "正在打包…此项在服务端完成，<b>打包结束后浏览器会自动开始下载</b>。" +
+    "资料较多时请耐心等待，期间可以继续使用其它功能。";
+  toast("正在打包备份，完成后浏览器会自动下载");
+  window.location.href = "/api/datadir/export";
+  // 只是把按钮解禁（不宣称完成）：下载是否真的出现由用户自己看浏览器。
+  setTimeout(() => {
+    btn.disabled = false;
+    hint.innerHTML = '<span class="hint">若迟迟没有开始下载，可以再点一次；' +
+      "打包失败的临时文件会在下次导出前自动清理。</span>";
+  }, 60000);
+}
+
+function ddFinish() {
+  DD_BUSY = false;
+  if (DD_TIMER) { clearInterval(DD_TIMER); DD_TIMER = null; }
+  $("#btnDdCheck").disabled = false;
+  $("#ddTarget").disabled = false;
+}
+
 /* ---------------------------- 绑定 ---------------------------- */
 $$(".tab").forEach(t => t.onclick = () => switchTab(t.dataset.tab));
 $("#btnSend").onclick = send;
@@ -2138,6 +2362,9 @@ $("#btnRefresh").onclick = async () => { await pollStatus(false, true); await lo
 if ($("#btnLicCopy")) $("#btnLicCopy").onclick = copyDeviceCode;
 if ($("#btnLicActivate")) $("#btnLicActivate").onclick = doActivate;
 if ($("#btnLicClear")) $("#btnLicClear").onclick = doClearLicense;
+if ($("#btnDdCheck")) $("#btnDdCheck").onclick = ddCheck;
+if ($("#btnDdMigrate")) $("#btnDdMigrate").onclick = ddMigrate;
+if ($("#btnDdExport")) $("#btnDdExport").onclick = ddExport;
 
 $("#btnShutdown").onclick = async () => {
   if (!confirm("将执行 WAL 检查点并释放数据库锁，确保 U 盘可直接拔出。\n\n确定要安全退出吗？")) return;
@@ -2157,6 +2384,7 @@ loadImportFormats();
 loadConfig();
 loadNotes();
 loadLicense();
+loadDataDir();
 pollStatus(true);
 
 $$("#noteSeg button").forEach(b => {

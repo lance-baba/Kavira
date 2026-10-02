@@ -96,28 +96,64 @@ def _normalize(data: object) -> dict:
     return store
 
 
+#: 内存缓存 —— store 是「每次操作都整份读写」的单文件 JSON，**必须缓存**。
+#:
+#: 为什么：membership 是 doc_id↔类目的多对多，10 万文档时这个 JSON 会有几十 MB。
+#: 改造前每改一次分类都要「读几十 MB + 解析 + 改 + 写几十 MB」，
+#: 前端每刷新一次笔记列表还会再全量读一遍。资料越多越卡，且**完全随规模劣化**。
+#:
+#: 失效判据用 ``(st_mtime_ns, st_size)``：任何外部改动（用户手改文件、另一进程写入）
+#: 都会改变这两个值，因此不会读到过期内容。
+_CACHE: dict = {"data": None, "mtime_ns": -1, "size": -1}
+
+
+def _cache_valid(p: Path, st) -> bool:
+    if _CACHE["data"] is None:
+        return False
+    return (st.st_mtime_ns == _CACHE["mtime_ns"]
+            and st.st_size == _CACHE["size"]
+            and p.is_file())
+
+
 def load_store() -> dict:
-    """读取 store。
+    """读取 store（命中内存缓存时不碰磁盘）。
 
     * 文件不存在 → 返回空结构（正常：新库还没建过类目）。
     * 文件存在但**无法解析** → 抛 :class:`StoreCorruptedError`
       （**不静默当空库**，否则会掩盖「用户类目丢了」这一事实）。
+
+    ⚠ **返回的是共享对象**：改完它必须调用 :func:`save_store` 落盘，否则改动只存在于
+    内存里、下次读盘就消失。所有写路径都是 ``data = load_store() … save_store(data)``
+    这一对，调用方**不得**长期持有或跨请求缓存本函数的结果。
     """
     p = store_path()
     if not p.is_file():
+        _CACHE.update(data=None, mtime_ns=-1, size=-1)
         return _empty_store()
     try:
+        st = p.stat()
+        if _cache_valid(p, st):
+            return _CACHE["data"]
         raw = p.read_text(encoding="utf-8")
-        data = json.loads(raw)
+        data = _normalize(json.loads(raw))
     except (OSError, ValueError) as exc:  # noqa: BLE001
         raise StoreCorruptedError(str(exc)) from exc
-    return _normalize(data)
+    _CACHE.update(data=data, mtime_ns=st.st_mtime_ns, size=st.st_size)
+    return data
 
 
 def save_store(data: dict) -> None:
-    """原子写回 store（同目录临时文件 → fsync → os.replace）。"""
+    """原子写回 store（同目录临时文件 → fsync → os.replace），并刷新内存缓存。"""
     text = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-    atomic_write_text(store_path(), text, newline="")
+    p = store_path()
+    atomic_write_text(p, text, newline="")
+    # 写完立刻把缓存指到这份新数据：data 就是 load_store() 给的那个对象，
+    # 下一次 load 命中缓存时看到的就是刚落盘的版本。
+    try:
+        st = p.stat()
+        _CACHE.update(data=data, mtime_ns=st.st_mtime_ns, size=st.st_size)
+    except OSError:
+        _CACHE.update(data=None, mtime_ns=-1, size=-1)
 
 
 # --------------------------------------------------------------------------- #

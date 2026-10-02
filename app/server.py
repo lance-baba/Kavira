@@ -21,7 +21,7 @@ from .core import (archiver, paths,
                    redact as redact_mod,
                    security as security_mod)
 from .api import (ask as api_ask, capture as api_capture, config as api_config,
-                  collections as api_collections,
+                  collections as api_collections, datadir as api_datadir,
                   diagnostics as api_diagnostics, library as api_library,
                   license as api_license,
                   search as api_search, system as api_system)
@@ -107,6 +107,36 @@ class Handler(BaseHTTPRequestHandler):
             ascii_ext = ""
         quoted = urllib.parse.quote(filename, safe="")
         return f'{disp}; filename="{ascii_stem}{ascii_ext}"; filename*=UTF-8\'\'{quoted}'
+
+    def _send_file_stream(self, file, ctype: str, download_name: str,
+                          chunk: int = 256 * 1024) -> None:
+        """**分块流式**发送文件（导出下载专用）。
+
+        为什么不用 ``_send_file_range``：它一次性把 ``[start, end]`` 整段读进内存
+        （那是给 PDF 预览做的，文件上限可控）。导出的备份包可能有几百 MB，
+        整读既占内存又容易在中途失败 —— 这里按 256KB 边读边写。
+        """
+        file = Path(file)
+        try:
+            total = file.stat().st_size
+        except OSError as exc:
+            return self._send_json({"code": 500, "message": f"读取失败：{exc}"}, 500)
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(total))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Disposition",
+                         self._content_disposition("attachment", download_name))
+        self.end_headers()
+        try:
+            with open(file, "rb") as fh:
+                while True:
+                    buf = fh.read(chunk)
+                    if not buf:
+                        break
+                    self.wfile.write(buf)
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            pass
 
     def _send_file_range(self, file, ctype: str, inline: bool) -> None:
         """支持 HTTP Range 的文件服务。
@@ -382,6 +412,8 @@ class Handler(BaseHTTPRequestHandler):
             return
         if api_capture.handle_get(self, path):
             return
+        if api_datadir.handle_get(self, path):
+            return
 
         return self._send_json({"code": 404, "message": "接口不存在"}, 404)
 
@@ -403,6 +435,8 @@ class Handler(BaseHTTPRequestHandler):
         if api_collections.handle_post(self, path):
             return
         if api_capture.handle_post(self, path):
+            return
+        if api_datadir.handle_post(self, path):
             return
 
         return self._send_json({"code": 404, "message": "接口不存在"}, 404)

@@ -17,6 +17,33 @@ from .log_util import get_logger
 
 log = get_logger()
 
+# --- 库规模档位（2026-10-02 实测标定）----------------------------------------
+# 「为什么最近变慢了」是用户迟早会问的问题。只摆一个切片数没有参照系，
+# 用户无法判断是自己用得太狠、还是该换机器。这里的边界来自实测：
+#     7 万切片 ~90ms   /   136 万切片 ~1.7s   /   500 万切片 ~6s
+# （线性增长：vec0 走的是暴力扫描，见 CHANGELOG 的实测表）
+CAPACITY_AMPLE_CHUNKS = 200_000        # 约 0.25s 以内
+CAPACITY_LARGE_CHUNKS = 1_000_000      # 约 1.3s 左右
+
+
+def describe_capacity(chunks: int) -> dict:
+    """把「库有多大」翻译成档位 + 可行动的建议。"""
+    try:
+        n = int(chunks or 0)
+    except (TypeError, ValueError):
+        n = 0
+    if n <= 0:
+        return {"level": "empty", "message": "暂无索引内容"}
+    if n <= CAPACITY_AMPLE_CHUNKS:
+        return {"level": "ample",
+                "message": f"余量充足（{n:,} 切片，检索通常快于 0.3 秒）"}
+    if n <= CAPACITY_LARGE_CHUNKS:
+        return {"level": "large",
+                "message": f"规模较大（{n:,} 切片，问答检索约 0.3~1.5 秒）"}
+    return {"level": "near_limit",
+            "message": f"接近上限（{n:,} 切片，检索可能要数秒）。"
+                       f"建议按主题拆分多个资料库，或优先使用关键词搜索"}
+
 
 @dataclass
 class AppContext:
@@ -406,6 +433,8 @@ class AppContext:
             "port": self.port,
             "uptime": round(time.time() - (self.started_at or time.time()), 1),
             "db": stats,
+            # 库规模档位（含实测延迟参照），供设置页回答「为什么变慢了」
+            "capacity": describe_capacity(stats.get("chunks", 0)),
             "embedding": {
                 "source": self.embedder_source,
                 "dim": getattr(self.embedder, "dim", None),

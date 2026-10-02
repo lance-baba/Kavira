@@ -149,6 +149,10 @@ def is_public_ip(ip) -> bool:
 # 内部路由标记，真实连接由代理（TUN 网卡 / 系统代理）还原。
 FAKEIP_NETWORK = ipaddress.ip_network("198.18.0.0/15")
 
+#: 已经提示过的 Fake-IP 域名 —— 防止同一个环境每抓一页就刷一条 INFO。
+#: 无上限是安全的：域名数量受用户实际访问过的站点约束，几十到几百个量级。
+_FAKEIP_SEEN: set[str] = set()
+
 
 def is_fake_ip(ip) -> bool:
     """是否落入 Fake-IP 段（``198.18.0.0/15``）。
@@ -329,8 +333,16 @@ def resolve_and_validate(
     if fakes and not others:
         v.ips = fakes
         v.fake_ip = True
-        log.info("疑似 Fake-IP 环境：%s → %s，按代理兼容路径放行",
-                 v.hostname, ", ".join(str(i) for i in fakes[:2]))
+        # ⚠ 级别必须是 debug，且**每个域名只记一次**（2026-10-02 修）。
+        # 原因：这是「环境适配」的常态行为，不是异常也不是用户要处理的事。
+        # 此前挂在 INFO 且每请求一条 —— 在 Clash/Mihomo 这类 Fake-IP 代理环境下
+        # （国内用户极常见），剪藏几个网页就能把 512KB 日志刷满并触发轮转，
+        # **真正有用的错误信息会被无声地轮转掉**，日志从此失去排查价值。
+        if v.hostname not in _FAKEIP_SEEN:
+            _FAKEIP_SEEN.add(v.hostname)
+            log.info("检测到代理 Fake-IP 环境（%s 等 %d 个域名），已按兼容路径放行；"
+                    "如遇抓取异常可在此排查", v.hostname, len(_FAKEIP_SEEN))
+        log.debug("Fake-IP 解析: %s → %s", v.hostname, ", ".join(str(i) for i in fakes[:2]))
         return v
 
     # 其余（纯私网 / 公网+私网混合 / Fake-IP+私网混合）→ 一律拒绝。

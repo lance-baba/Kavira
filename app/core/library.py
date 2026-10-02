@@ -253,15 +253,21 @@ class Library:
 
 
 def detect_library_root(base_dir: Path) -> Path:
-    """资料库根的解析顺序：
+    """资料库根的解析顺序（**统一委托给 ``paths``，此处不再自己实现**）：
 
     1. 环境变量 ``WIKIUSB_LIBRARY`` —— 便携/多资料库/测试隔离用
-    2. 默认 ``<程序目录>/data``（保持向后兼容，不强行搬目录）
+    2. **App 内 ``library_path.txt`` 标记** —— 安装器 / 设置页迁移写入
+    3. 默认 ``<程序目录>/data``（保持向后兼容，不强行搬目录）
 
     ⚠ 刻意**不默认放到用户主目录**：本产品是「随身」形态，资料跟着程序走是合理的；
     但通过环境变量可以把它指到任意位置（含另一块盘），这就是 App 与 Library 的边界。
+
+    ⚠ **为什么必须委托（2026-10-02 修）**：这里原先是第二份独立实现，只认环境变量、
+    **不认 marker**。把程序装到 U 盘后 marker 才是唯一落盘的记录，于是本函数会算出
+    ``<U盘>/App/data``、而 ``paths.DATA_DIR`` 算出 marker 指向的目录 ——
+    两份真相指向不同位置，谁先被调用谁就把数据写到错的地方。
+    便携形态下「同一件事只能有一个答案」，真相源必须是 ``paths``。
     """
-    env = (os.environ.get(_ENV_ROOT) or "").strip()
-    if env:
-        return Path(env).expanduser().resolve()
-    return (base_dir / "data").resolve()
+    from .paths import _detect_data_dir  # noqa: PLC0415 - 延迟导入避免循环依赖
+
+    return _detect_data_dir(Path(base_dir))

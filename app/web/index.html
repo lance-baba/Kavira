@@ -67,8 +67,8 @@
           <span class="dz-main">把文件拖到这里</span>
           <span class="dz-sub">
             Word / PPT / Excel / PDF / EPUB / HTML / 邮件 / CSV / 代码 / 字幕 / 纯文本 等 —— 自动转成 Markdown 入库<br>
-            或 <label class="link">点击选择文件<input type="file" id="fileInput" multiple hidden></label>
-            　·　也可以把 .md / .txt 文件直接放进资料库的 <code>notes</code> 文件夹（安装版默认在 文档\USB-WIKI-Data\notes），15 秒内自动入库
+或 <label class="link">点击选择文件<input type="file" id="fileInput" multiple hidden></label>
+　·　也可以把 .md / .txt 文件直接放进资料库的 <code>notes</code> 文件夹<span id="ddNotesHint">（位置见「设置 → 资料目录」）</span>，15 秒内自动入库
           </span>
           <div class="dz-result" id="dzResult"></div>
         </div>
@@ -157,7 +157,44 @@
           </div>
         </div>
         <div class="card scroll">
-          <h3>产品授权</h3>
+          <h3>资料目录</h3>
+          <div class="kv" id="datadirKV"><span class="hint">正在读取…</span></div>
+          <div class="hint" style="margin:9px 0 0;line-height:1.6">
+            你的资料现在保存在上面这个位置。想换到一个更大 / 更快的盘，或搬到 U 盘随身携带，
+            都可以在这里完成。
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>换到新目录</label>
+            <div class="row">
+              <input type="text" id="ddTarget" class="grow" placeholder="例如：E:\USB-WIKI-Data">
+              <button type="button" class="btn" id="btnDdCheck">检查一下</button>
+            </div>
+            <span class="tip">填一个<b>空文件夹</b>的完整路径。已有资料的目录会被拒绝 —— 不会为了腾地方删里面的东西。</span>
+          </div>
+          <div id="ddResult" class="hint" style="margin-top:-2px;line-height:1.6"></div>
+          <div class="row" style="margin-top:8px">
+            <button type="button" class="btn primary" id="btnDdMigrate" disabled>开始迁移</button>
+          </div>
+          <div id="ddProgress" hidden style="margin-top:10px">
+            <div style="height:6px;background:var(--line);border-radius:99px;overflow:hidden">
+              <div id="ddBar" style="height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .35s"></div>
+            </div>
+            <div class="hint" id="ddStage" style="margin-top:6px"></div>
+          </div>
+
+          <h3 style="margin-top:18px">数据管理</h3>
+          <div class="row" style="flex-wrap:wrap">
+            <button type="button" class="btn primary" id="btnDdExport">导出知识库备份</button>
+            <span class="hint">打包成 zip 下载保存</span>
+          </div>
+          <div class="hint" style="margin-top:8px;line-height:1.6">
+            备份包含<b>笔记正文、导入的原件、图片素材、分类</b>，以及一份恢复说明；
+            <b>不含</b>检索索引与日志（它们随时能自动重建，带上只会让备份大好几倍）。
+            打包时配置里的云端密钥会被清空，不会跟着备份到处跑。
+          </div>
+          <div id="ddExportHint" class="hint" style="margin-top:6px"></div>
+
+          <h3 style="margin-top:18px">产品授权</h3>
           <div id="licState" class="hint">正在读取…</div>
           <div class="field" style="margin-top:10px">
             <label>本机设备码（发给授权方）</label>

@@ -22,21 +22,58 @@ def _detect_base_dir() -> Path:
 
 BASE_DIR: Path = _detect_base_dir()
 
+#: Library 位置标记文件名 —— 与 ``scripts/install_windows.py`` 的 ``LIBRARY_MARKER``
+#: **同名同位置同一约定**（都落在 BASE_DIR 下），安装器写、Core 读、设置页改写。
+#: 此前 Core **只认环境变量**，导致「应用自己在设置页改资料目录」无处落盘 ——
+#: 入口批处理不在（直接跑 launcher / 托盘拉起）时，Library 就悄悄退回 App 内的 data/。
+LIBRARY_MARKER_NAME = "library_path.txt"
+
 APP_DIR: Path = BASE_DIR / "app"
 CORE_DIR: Path = APP_DIR / "core"
 WEB_DIR: Path = APP_DIR / "web"
 VENDOR_DIR: Path = WEB_DIR / "vendor"
 
+def read_library_marker(base: Path | None = None) -> Path | None:
+    """读取 BASE_DIR 下的 Library 位置标记。文件名/位置与安装器一致。
+
+    安装态由安装器写入、设置页「更换资料目录」改写；解析不到（文件缺失 / 内容为空 /
+    不是绝对路径）一律返回 None 由调用方回退，绝不让一个坏 marker 顶掉默认行为。
+    """
+    marker = (base or BASE_DIR) / LIBRARY_MARKER_NAME
+    if not marker.is_file():
+        return None
+    try:
+        text = marker.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    if not text:
+        return None
+    try:
+        p = Path(text)
+    except (ValueError, TypeError):
+        return None
+    return p if p.is_absolute() else None
+
+
 def _detect_data_dir(base: Path) -> Path:
-    """资料库根的解析：环境变量优先，默认跟着程序目录。
+    """资料库根的解析：环境变量 → **App 内 marker** → 程序目录下 data/。
 
     ⚠ 这是 **App 与 Library 的边界**：环境变量 ``WIKIUSB_LIBRARY`` 可把资料库
     指到任意位置（另一块盘 / 另一台电脑），程序目录即使整个删除，
     资料库仍可被新程序接管。默认值保持向后兼容（不强行搬目录）。
+
+    为什么要在环境变量之后补一层 marker（2026-10-02）：
+      入口批处理会把自己注入的环境变量传给子进程，所以「从 .bat 启动」一路没问题；
+      但直接跑 ``launcher.py`` / 被其它进程拉起时环境变量不在，Library 会**静默退回
+      App 内的 data/** —— 用户在设置页指定的目录形同失效（表现为资料「消失」）。
+      marker 是**落盘的**真实约定，能让任何入口都找到同一个 Library。
     """
     env = (os.environ.get("WIKIUSB_LIBRARY") or "").strip()
     if env:
         return Path(env).expanduser().resolve()
+    marked = read_library_marker(base)
+    if marked is not None:
+        return marked.resolve()
     return (base / "data").resolve()
 
 
@@ -124,6 +161,62 @@ def rel_to_data(p: Path) -> str:
     except ValueError:
         pass
     return "notes/" + p.name
+
+
+def write_library_marker(target: Path, base: Path | None = None) -> Path:
+    """把 Library 新位置写进 BASE_DIR 的 marker（原子写，供下次任意入口读取）。
+
+    返回 marker 路径。失败不吞 —— 迁移流程里「marker 没写成」必须让上层知道，
+    否则会出现「数据搬走了、下次启动还读旧目录」的错位。
+    """
+    marker = (base or BASE_DIR) / LIBRARY_MARKER_NAME
+    text = str(Path(target).resolve())
+    try:
+        from .atomic_io import atomic_write_text  # noqa: PLC0415 - 避免循环导入
+
+        atomic_write_text(marker, text + "\n")
+    except Exception:  # noqa: BLE001 - atomic_io 不可用时退回普通写
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text(text + "\n", encoding="utf-8")
+    os.environ["WIKIUSB_LIBRARY"] = text   # 同进程内的重启动作也要读到新位置
+    return marker
+
+
+def library_source() -> str:
+    """当前 Library 位置由哪种方式决定（诊断 / 设置页展示用，不带盘符信息）。"""
+    if (os.environ.get("WIKIUSB_LIBRARY") or "").strip():
+        return "env"
+    if read_library_marker() is not None:
+        return "marker"
+    return "default"
+
+
+def rebind(new_library: Path) -> Path:
+    """把 Library 根整组重绑到 *new_library* —— **迁移切换后免重启**的关键。
+
+    为什么可以这样做（前提已核实）：全仓除 ``diagnostics.py`` 一处**函数内**
+    ``from .paths import DATA_DIR``（每次调用都重新取值）外，其余一律以
+    ``paths.X`` 属性方式访问，因此改模块属性即可全局生效；
+    若将来有人图省事写成**模块级** ``from .paths import DATA_DIR``，
+    那份快照会停止跟随 —— 新增导入时请沿用 ``from ..core import paths`` 写法。
+
+    ⚠ 只负责路径常量，**不做任何 IO、不建目录、不动数据库**；
+      调用顺序必须是：搬数据 → 写 marker → rebind → ensure_dirs → 重开上下文。
+    """
+    global DATA_DIR, NOTES_DIR, SNAPSHOT_DIR, ORIGINALS_DIR, ASSETS_DIR
+    global METADATA_DIR, CACHE_DB, WAL_FILE, SHM_FILE, CHROME_PROFILE_DIR, LOG_FILE
+    DATA_DIR = Path(new_library).resolve()
+    NOTES_DIR = DATA_DIR / "notes"
+    SNAPSHOT_DIR = DATA_DIR / "snapshots"
+    ORIGINALS_DIR = DATA_DIR / "originals"
+    ASSETS_DIR = DATA_DIR / "assets"
+    METADATA_DIR = DATA_DIR / "metadata"
+    CACHE_DB = DATA_DIR / "cache.db"
+    WAL_FILE = DATA_DIR / "cache.db-wal"
+    SHM_FILE = DATA_DIR / "cache.db-shm"
+    CHROME_PROFILE_DIR = DATA_DIR / "temp_chrome_profile"
+    LOG_FILE = DATA_DIR / "wiki-usb.log"
+    return DATA_DIR
 
 
 def abs_from_data(rel: str) -> Path:

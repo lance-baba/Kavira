@@ -34,6 +34,7 @@ DB=1.5 / APP=1.3 时**不允许**自动重建、覆盖或降级 —— 用户可
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -57,7 +58,6 @@ UNKNOWN = "unknown"        # 有库但读不出/读不懂版本 → 保守按重
 
 class SchemaTooNewError(RuntimeError):
     """索引由更新版本的 USB-WIKI 创建，拒绝以旧程序打开。
-
     这是**保护性失败**：宁可让用户升级程序，也不能让旧程序按旧结构去写
     新结构的数据（可能丢字段、破坏派生状态、甚至损坏 Markdown 之外的资产）。
     """
@@ -69,6 +69,14 @@ class SchemaTooNewError(RuntimeError):
             f"该知识库索引由更新版本的 USB-WIKI 创建（索引结构 {db_version}，"
             f"当前程序仅支持 {app_version}）。请升级 USB-WIKI 后再打开。"
         )
+
+
+class BackupAborted(RuntimeError):
+    """备份在**动手之前**就被否决（空间不足 / 读不到源库）。
+
+    与「拷贝中途失败」区分开，是为了给用户一句能照着做的提示
+    （"清理空间后重试"），而不是干巴巴一句"备份失败"。
+    """
 
 
 @dataclass
@@ -146,11 +154,33 @@ def needs_migration(db_path: str | Path) -> str:
     return DOWNGRADE
 
 
+#: **自动备份的保留上限**（2026-10-02 引入，便携形态的空间护栏）
+#:
+#: 每次索引结构升级都会留一份**完整的** cache.db 快照（连 -wal/-shm 一起），
+#: 而旧实现**只增不减**。实测本仓库 dev 库堆积了 4 份 bak 合计 13.7MB，
+#: 已经是 cache.db 本体（4.9MB）的近 3 倍。
+#:
+#: ⚠ **份数必须再叠一个字节预算**（2026-10-02 补）：本产品面向的是"资料长到
+#: 几十上百 GB"的场景，那时的索引本身就会到 GB 级 —— 届时"保留 3 份"
+#: 等于吃掉 20~30GB，U 盘直接爆掉。**备份是为了省下重建向量的几小时，
+#: 而不是为了让用户丢资料**（索引随时能从 Markdown 重建），
+#: 因此一旦超预算必须牺牲备份数量，**绝不能让备份把用户的盘吃满**。
+MAX_AUTO_BACKUPS = 2
+MAX_AUTO_BACKUP_BYTES = 3 * 1024 ** 3     # 自动备份总预算 3 GB
+
+#: 只匹配本模块**自动生成**的备份名后缀，即 ``.v<版本数字>r<YYYYMMDD-HHMMSS>.bak``。
+#: 手工留下的备份（如 ``cache.db.pre-docx-fix.bak``）不匹配 → **永不清理**，避免误删退路。
+_AUTO_BK_RE = re.compile(r"^\.v\d+r\d{8}-\d{6}\.bak$")
+
+
 def backup_cache(db_path: str | Path, when: str | None = None) -> Path | None:
     """给旧 ``cache.db`` 打时间戳备份，连同 ``-wal`` / ``-shm`` 边车一起。
 
     返回备份路径；库不存在时返回 ``None``。备份失败**必须中止升级**——
     宁可下次再升，也不能在没有退路的情况下删用户数据。
+
+    备份成功后会顺带清理超额的旧自动备份（见 :func:`prune_cache_backups`）——
+    顺序刻意是**先建新的、再删旧的**，绝不会出现「旧的已删、新的还没成」的空窗。
     """
     import shutil
     from datetime import datetime as _dt
@@ -158,6 +188,20 @@ def backup_cache(db_path: str | Path, when: str | None = None) -> Path | None:
     path = Path(db_path)
     if not path.exists():
         return None
+
+    # ---- 动手之前先算空间：GB 级索引拷到一半失败会留下一个半截的大文件 ----
+    try:
+        need = path.stat().st_size
+        free = shutil.disk_usage(str(path.parent)).free
+    except OSError as exc:
+        raise BackupAborted(f"无法读取索引所在磁盘的空间信息：{exc}") from exc
+    if need > 0 and free >= 0 and free < need * 1.15:
+        raise BackupAborted(
+            f"索引备份需要约 {_gb(need)} 的可用空间（另留 15% 余量），"
+            f"但索引所在磁盘只剩 {_gb(free)}。请先清理空间再启动程序 —— "
+            f"未清理前不会升级，也不会删除任何数据。"
+        )
+
     stamp = when or _dt.now().strftime("%Y%m%d-%H%M%S")
     target = path.with_name(f"{path.name}.v{_safe_ver()}r{stamp}.bak")
     shutil.copy2(path, target)
@@ -168,7 +212,97 @@ def backup_cache(db_path: str | Path, when: str | None = None) -> Path | None:
                 shutil.copy2(side, Path(str(target) + suffix))
             except OSError:
                 pass
+    # 新的退路已经落盘，这时清理旧的才是安全的。
+    removed = prune_cache_backups(path)
+    if removed:
+        log.info("已清理 %d 个超额的索引自动备份（份数上限 %d / 总量上限 %s）",
+                 len(removed), MAX_AUTO_BACKUPS, _gb(MAX_AUTO_BACKUP_BYTES))
     return target
+
+
+def _gb(n) -> str:
+    try:
+        return f"{float(n) / 1024 ** 3:.1f} GB"
+    except (TypeError, ValueError):
+        return "-"
+
+
+def prune_cache_backups(db_path: str | Path,
+                        keep: int = MAX_AUTO_BACKUPS,
+                        max_bytes: int = MAX_AUTO_BACKUP_BYTES) -> list[str]:
+    """清理超额的**自动生成**索引备份，返回被清理的文件名列表。
+
+    **双约束**（缺一不可）：
+
+    1. **份数** ≤ ``keep``；
+    2. **总量** ≤ ``max_bytes`` —— 这条才是应对大资料库的那道闸：索引到了 GB 级，
+       光按份数裁剪会留下几十 GB 备份，把用户的 U 盘吃满。两条都超了就从**最老的**开始删。
+
+    另外三重的安全约束：
+
+    4. **只认自动化命名**：严格按 ``_AUTO_BK_RE`` 匹配，手建/改名的备份一概不动；
+    5. **只动索引备份**：绝不触碰 ``notes/``、``originals/``、``assets/`` —— 那是真相源；
+    6. **按 mtime 判先后**，统计失败即跳过该文件（保守优先）。
+
+    ⚠ 至少保留 1 份最新的（``keep <= 0`` 归一为 1）：完全没有退路比多占空间更危险。
+    """
+    path = Path(db_path)
+    if keep <= 0:
+        keep = 1
+    if max_bytes <= 0:
+        max_bytes = MAX_AUTO_BACKUP_BYTES
+
+    stem = path.name
+    cands: list[tuple[float, int, Path]] = []
+    try:
+        entries = list(path.parent.iterdir())
+    except OSError:
+        return []
+    for p in entries:
+        if not p.is_file() or not p.name.startswith(stem + "."):
+            continue
+        if not _AUTO_BK_RE.match(p.name[len(stem):]):
+            continue
+        try:
+            st = p.stat()
+            cands.append((st.st_mtime, st.st_size, p))
+        except OSError:
+            continue
+
+    if not cands:
+        return []
+    cands.sort(key=lambda x: x[0])            # 老的在前
+
+    # 先按份数裁剪。
+    # ⚠ 必须 **复制一份**：下面要往 survivors 里 pop，而 cands 与它若是同一对象，
+    #   pop 会连带把 cands 改掉，后面的 doomed 就再也算不出「谁该删」——
+    #   结果是字节预算完全失效（静默地）。
+    survivors = list(cands[-keep:]) if len(cands) > keep else list(cands)
+    # 再按总量裁剪（从最老的开始删，直到落回预算内）
+    total = sum(sz for _mt, sz, _p in survivors)
+    while len(survivors) > 1 and total > max_bytes:
+        _mt, sz, oldest = survivors.pop(0)
+        total -= sz
+
+    keep_set = {q for _m, _s, q in survivors}
+    doomed = {p for _mt, _sz, p in cands if p not in keep_set}
+    removed: list[str] = []
+    for p in sorted(doomed, key=lambda x: x.name):
+        try:
+            p.unlink()
+            removed.append(p.name)
+        except OSError:
+            continue
+        # 备份当时连带的 -wal/-shm 边车，也一并收走
+        for suffix in ("-wal", "-shm"):
+            side = Path(str(p) + suffix)
+            if side.exists():
+                try:
+                    side.unlink()
+                    removed.append(side.name)
+                except OSError:
+                    pass
+    return removed
 
 
 def _safe_ver() -> str:
@@ -226,7 +360,12 @@ def migrate(db_path: str | Path) -> dict:
         return info
 
     # UPGRADE / UNKNOWN → 备份 + 清缓存，随后由调用方全量重建
-    backup = backup_cache(db_path)
+    try:
+        backup = backup_cache(db_path)
+    except BackupAborted as exc:
+        # 空间不足等「动手前就被否决」的情形：把可照做的提示原样带给用户，
+        # 并且**绝不继续升级**（宁死不做，绝不留下没有退路的半截状态）。
+        raise RuntimeError(f"旧索引备份未执行，已中止结构升级（未删除任何数据）：{exc}") from exc
     info["backup"] = str(backup) if backup else None
     if backup is None and Path(db_path).exists():
         # 有库却备份失败：中止升级，绝不冒删数据的风险

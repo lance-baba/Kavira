@@ -522,7 +522,11 @@ def _default_library_root() -> Path:
         from .paths import DATA_DIR  # noqa: PLC0415
         return Path(DATA_DIR)
     except Exception:  # noqa: BLE001 - paths 失败也要能诊断
-        return Path(os.environ.get("WIKIUSB_LIBRARY") or Path.cwd()) / "data"
+        # ⚠ 兜底必须用 ``__file__`` 推导，**不能用 Path.cwd()**：
+        # 便携形态下 cwd 取决于「怎么启动」（从资源管理器双击、从 .bat、从别的脚本 import），
+        # 并不是安装根目录 —— 用 cwd 会算出一个根本不存在的 data 目录，
+        # 而诊断页恰恰是「出问题时唯一还活着的工具」，算错等于误导排查方向。
+        return Path(__file__).resolve().parents[2] / "data"
 
 
 def _cfg_get(section: str, key: str, default: str = "") -> str:

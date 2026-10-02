@@ -43,7 +43,10 @@ APP_DIRNAME = "App"
 STAGING_SUFFIX = ".staging"
 BACKUP_SUFFIX = ".backup"
 LAUNCHER_NAME = "启动-Windows.bat"
+#: 资料目录标记（App 内）—— 与 ``app/core/paths.py`` 的 ``LIBRARY_MARKER_NAME`` 同一约定
 LIBRARY_MARKER = "library_path.txt"
+#: 资料目录名：装本机默认位置时落在 Documents 下，装自定义位置时落在 App 的兄弟目录
+LIBRARY_DIRNAME = "USB-WIKI-Data"
 
 #: 用户级安装记录（跨会话定位真实安装位置，独立于 App 目录，卸载 App 后仍存在）
 STATE_DIRNAME = "USB-WIKI"
@@ -147,9 +150,29 @@ def _desktop_dir() -> Path:
         return Path.home() / "Desktop"
 
 
-def _default_library_target() -> Path:
-    # 冻结决策 #2：Library 默认落 Documents\USB-WIKI-Data（经 WIKIUSB_LIBRARY 重定向）
-    return _documents_dir() / "USB-WIKI-Data"
+def _default_library_target(app_target: Path | None = None) -> Path:
+    """资料目录（Library）的默认值 —— **跟随 App 安装位置**（2026-10-02 决策）。
+
+    为什么要改：此前无论程序装到哪（包括装进 U 盘），资料一律落
+    ``Documents\\USB-WIKI-Data``。于是「把 USB-WIKI 装到 U 盘随身携带」实际是把
+    资料留在了 C 盘 —— 换台电脑插同一根 U 盘看不到任何东西；而安装过程又从不
+    告诉用户资料在哪，属于**静默失效**。
+
+    现在的判定：
+      · 装到**默认位置**（``%LOCALAPPDATA%\\USB-WIKI\\App``，本机常规安装）
+        → 资料仍落 ``Documents\\USB-WIKI-Data``（**保持不变**，已这样装的用户不该被搬家）
+      · 装到**自定义位置**（另一块盘 / U 盘）→ 资料落到 App 的**兄弟目录**
+        ``<父目录>\\USB-WIKI-Data``，让程序与资料同行、整根 U 盘拔走即用
+    """
+    if app_target is None:
+        return _documents_dir() / LIBRARY_DIRNAME
+    app = Path(app_target).resolve()
+    try:
+        if app == _default_app_target().resolve():
+            return _documents_dir() / LIBRARY_DIRNAME
+    except OSError:          # 盘符不可用等极端情况 —— 退回本机文档库
+        return _documents_dir() / LIBRARY_DIRNAME
+    return app.parent / LIBRARY_DIRNAME
 
 
 def _read_marker_library(app_target: Path) -> Path | None:
@@ -826,7 +849,13 @@ def install(release_root: Path, app_target: Path, library_target: Path,
 
         # 5) 成功：清理 backup
         _rmtree(backup)
-        print(f"[install] App 已安装到：{app_target}")
+        print(f"[install] 程序已安装到：{app_target}")
+        # ⚠ 资料目录**必须显式告知**：此前只打印程序路径，用户以为「装进 U 盘 = 资料
+        # 也在 U 盘」，换台电脑插上才发现资料留在了上一台的 C 盘里。
+        _lib_note = ("（便携：程序与资料同盘，整根 U 盘拔走即可带走）"
+                     if not str(library_target).lower().startswith(
+                         str(_documents_dir()).lower()) else "")
+        print(f"[install] 资料目录：{library_target} {_lib_note}")
         # 5.5) 桌面快捷方式（P0-2）：swap 已成功才调用 → 只指正式 App；
         #      失败仅提示手动启动路径，绝不影响安装结果。
         create_desktop_shortcut(app_target, desktop_dir=desktop_dir)
@@ -971,8 +1000,11 @@ def main(argv: list[str] | None = None) -> int:
         # 启动也按**真实安装位置**：显式 > 安装记录 > 默认（自定义安装后不得找默认目录）
         app_target = _resolve_app_target(getattr(args, "app_target", None),
                                          interactive=False)
+        # marker 是这个 App **自己记下的真实资料位置**，优先于安装记录与默认值。
         library_target = (Path(args.library_target).resolve() if args.library_target
-                          else (_state_library_target() or _default_library_target()))
+                          else (_read_marker_library(app_target)
+                                or _state_library_target()
+                                or _default_library_target(app_target)))
         nb = getattr(args, "no_browser", False)
         return _run(app_target, library_target, args.port, no_browser=nb)
 
@@ -982,7 +1014,7 @@ def main(argv: list[str] | None = None) -> int:
     app_target = _resolve_app_target(getattr(args, "app_target", None),
                                      interactive=True, release_root=release_root)
     library_target = (Path(args.library_target).resolve() if args.library_target
-                      else (_state_library_target() or _default_library_target()))
+                      else (_state_library_target() or _default_library_target(app_target)))
     return install(
         release_root, app_target, library_target,
         launch=getattr(args, "launch", False),

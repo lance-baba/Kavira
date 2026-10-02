@@ -11,6 +11,19 @@ from . import paths
 _LOGGER_NAME = "wikiusb"
 _configured = False
 
+# --- 便携形态的写入预算（2026-10-02 显式化）----------------------------------
+# 产品跑在 U 盘上时，**每一笔日志都是一次真实的闪存写入**，日志不受控就是双重伤害：
+# 既磨损 U 盘，又悄悄吃掉容量。这里把上限封死：
+#
+#     单个日志   ≤ MAX_LOG_BYTES (512KB)
+#     轮转备份   ≤ MAX_LOG_BACKUPS (1 个)
+#     ⇒ 日志总占用恒 ≤ 1MB，**永不增长**，用一年也不会把 U 盘写满。
+#
+# ⚠ 改这两个值之前先想清楚：真正把空间吃掉的是**索引升级备份**（见
+#   migrations.MAX_AUTO_BACKUPS），日志从来不是那个量级的源头。
+MAX_LOG_BYTES = 512 * 1024
+MAX_LOG_BACKUPS = 1
+
 
 class _RedactingFormatter(logging.Formatter):
     """把**每一条日志**都过一遍脱敏。
@@ -104,7 +117,8 @@ def setup(level: str = "INFO") -> logging.Logger:
     try:
         paths.DATA_DIR.mkdir(parents=True, exist_ok=True)
         fh = RotatingFileHandler(
-            paths.LOG_FILE, maxBytes=512 * 1024, backupCount=1, encoding="utf-8"
+            paths.LOG_FILE, maxBytes=MAX_LOG_BYTES,
+            backupCount=MAX_LOG_BACKUPS, encoding="utf-8"
         )
         fh.setFormatter(fmt)
         logger.addHandler(fh)
@@ -115,6 +129,39 @@ def setup(level: str = "INFO") -> logging.Logger:
     logger.propagate = False
     _configured = True
     return logger
+
+
+def retarget_log() -> bool:
+    """资料目录切换后把日志落到**新**位置（`paths.rebind()` 之后调用）。
+
+    为什么必须显式做：``RotatingFileHandler`` 在 ``setup()`` 时就**记住了旧路径的
+    文件句柄**，`paths.LOG_FILE` 改了它不会跟着变 —— 迁移后日志会继续写旧目录，
+    而那个目录随时可能被用户删掉（写失败 → 每条日志都爆 OSError）。
+
+    这里刻意**不动 console handler**（避免重复加一个），也**不复用 setup()**
+    （它被 ``_configured`` 守卫，且会重复挂 console），只替换文件 handler。
+    失败（U 盘只读等）就退回纯控制台，绝不阻断迁移主流程。
+    """
+    logger = logging.getLogger(_LOGGER_NAME)
+    for h in list(logger.handlers):
+        if isinstance(h, RotatingFileHandler):
+            logger.removeHandler(h)
+            try:
+                h.close()
+            except Exception:  # noqa: BLE001 - 关不掉也不该影响后续
+                pass
+    try:
+        paths.DATA_DIR.mkdir(parents=True, exist_ok=True)
+        fh = RotatingFileHandler(
+            paths.LOG_FILE, maxBytes=MAX_LOG_BYTES,
+            backupCount=MAX_LOG_BACKUPS, encoding="utf-8"
+        )
+        fh.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
+        logger.addHandler(fh)
+        _attach_redacting_formatter(logger)   # 新 handler 同样要过脱敏
+        return True
+    except OSError:
+        return False
 
 
 def _attach_redacting_formatter(logger: logging.Logger) -> None:
