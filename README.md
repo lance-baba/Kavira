@@ -1,7 +1,10 @@
-# Kavira · 随身知识库（独立版 v1.2）
+# Wiki-USB · 随身知识库
 
 > 承载于 U 盘 / 移动存储的 **Local-First 便携式个人知识库与混合 RAG 问答引擎**。
 > 数据资产 100% 属于用户：文章与笔记以标准 Markdown 落在本地文件系统，SQLite 只做高性能索引缓存。
+>
+> 当前版本见 `app/version.py`（此处**不写死版本号** —— 它漂移过一次：程序已到 1.3.0 时
+> 这里还写着 v1.2。版本号有单一来源，文档不重复维护）。
 
 [![tests](https://github.com/lance-baba/USB-WIKI/actions/workflows/tests.yml/badge.svg)](https://github.com/lance-baba/USB-WIKI/actions/workflows/tests.yml)
 ![python](https://img.shields.io/badge/python-3.11%20%7C%203.13-blue)

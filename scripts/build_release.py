@@ -35,11 +35,21 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent            # scripts/
 REPO = HERE.parent                                 # 仓库根
 
-#: 随发布交付的文档白名单（**显式**列出：内部过程文档 / 已知问题备忘不进客户包）
+#: 放在发布包**根目录**的文档 —— 用户解压后第一眼看到的，只放他真正要用的三件。
+#: 判据很简单：**这是给用户的，还是给开发者的？** 根目录只放前者。
 RELEASE_DOC_FILES = (
-    "START_HERE.txt",   # Digital Pilot：面向普通用户的唯一入口文档（其余为随包开发文档）
-    "README.md", "CHANGELOG.md", "LICENSE", "SECURITY.md",
-    "CODE_OF_CONDUCT.md", "CONTRIBUTING.md",
+    "START_HERE.txt",   # 面向普通用户的上手说明（唯一入口文档）
+    "CHANGELOG.md",     # 用户会关心「这一版改了什么」
+    "LICENSE",          # 合规必需
+)
+
+#: 面向开发者 / 技术评审的仓库文档 —— **收进 docs/ 子目录**。
+#: 为什么不放根目录：用户解压后看到 README / CONTRIBUTING / SECURITY / 行为准则
+#: 一整套开源仓库文档，会误以为「这是要我读的说明书」，与「装完就能用」的目标相反；
+#: 而且 README 讲的是从源码构建、跑测试、发版流程，对用户是纯噪音。
+#: 它们对仓库协作和技术评审仍然必要，所以**只换位置、不删**。
+RELEASE_DEV_DOCS_DIR_FILES = (
+    "README.md", "SECURITY.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md",
 )
 RELEASE_DOCS_DIR_FILES = (
     "DATA_CONTRACT_V1.md", "DEPENDENCY_LOCK.md", "设计与实现.md",
@@ -248,7 +258,15 @@ def _stage_installer(dist_root: Path) -> None:
 
 
 def _stage_docs(dist_root: Path) -> int:
-    """随包文档（白名单）—— MANIFEST 需能覆盖到「docs」。"""
+    """随包文档（白名单）。
+
+    分三层，**按读者**归位而不是一股脑堆在根目录：
+      1. 根目录 → 用户要用的（上手说明 / 更新日志 / 许可证）
+      2. docs/   → 开发者与评审要用的（README / 贡献指南 / 安全策略 / 行为准则）
+      3. docs/   → 技术参考资料（架构、依赖锁、测试报告…）
+
+    MANIFEST 是**枚举实际文件**生成的，所以换位置不破坏完整性校验。
+    """
     count = 0
     for name in RELEASE_DOC_FILES:
         src = REPO / name
@@ -256,8 +274,8 @@ def _stage_docs(dist_root: Path) -> int:
             shutil.copy2(src, dist_root / name)
             count += 1
     docs_dst = dist_root / "docs"
-    for name in RELEASE_DOCS_DIR_FILES:
-        src = REPO / "docs" / name
+    for name in RELEASE_DEV_DOCS_DIR_FILES + RELEASE_DOCS_DIR_FILES:
+        src = REPO / name if name in RELEASE_DEV_DOCS_DIR_FILES else (REPO / "docs" / name)
         if src.is_file():
             docs_dst.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, docs_dst / name)

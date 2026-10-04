@@ -313,9 +313,13 @@ def t7_export() -> None:
     set_current(src)
 
     # 一份带密钥的假配置（真实 config.ini 明文存 api_key，绝对不能跟着备份到处跑）
+    # ⚠ 假值必须**明显短小**：仓库有凭据扫描门禁，判据是
+    #   `api[_-]?key\s*[:=]\s*["']?[A-Za-z0-9_\-]{20,}` ——
+    #   早先这里写了个 26 位的假串，被门禁判成「硬编码密钥」直接挂掉套件。
+    fake_key = "sk-DUMMY-KEY"
     fake_cfg = TMP_ROOT / "config.ini"
     fake_cfg.write_text(
-        "[AI]\napi_key = sk-LIVE-SECRET-1234567890\napi_chat_model = deepseek-chat\n"
+        "[AI]\napi_key = " + fake_key + "\napi_chat_model = deepseek-chat\n"
         "[SYSTEM]\nport = 28765\n", encoding="utf-8")
     old_cfg = paths.CONFIG_FILE
     paths.CONFIG_FILE = fake_cfg
@@ -348,7 +352,7 @@ def t7_export() -> None:
               dd.EXPORT_MANIFEST_NAME in names, str(names[:10]))
 
         cfg_text = zf.read(dd.EXPORT_CONFIG_NAME).decode("utf-8", "replace")
-        check("**配置里的密钥已被清空**", "sk-LIVE-SECRET" not in cfg_text, cfg_text[:80])
+        check("**配置里的密钥已被清空**", fake_key not in cfg_text, cfg_text[:80])
         check("非密钥配置保留", "deepseek-chat" in cfg_text and "28765" in cfg_text)
 
         readme = zf.read(dd.EXPORT_README_NAME).decode("utf-8", "replace")
