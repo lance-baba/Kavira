@@ -1,4 +1,4 @@
-# USB-WIKI · RAG Eval Lab V1
+# Kavira · RAG Eval Lab V1
 
 可重复运行的检索评测实验室。**只测量，不调参。** 本目录**不进入用户安装包**
 （`scripts/build_release.py` 只 stage `app/` 与 `runtime/`，永远不会复制 `eval/`）。
@@ -105,7 +105,7 @@ python3 eval/run_eval.py compare --candidate reranker
 ```
 
 **安全**：`run_eval.py` 第一步就 `tests/test_env.activate_test_library()`（复用测试
-安全保险丝），在 `%TEMP%\usb-wiki-eval-*` 建独立库后把 fixtures 拷进去索引。
+安全保险丝），在 `%TEMP%\kavira-eval-*` 建独立库后把 fixtures 拷进去索引。
 **绝不触碰真实 Library，也不读真实 API Key**（检索路径完全不碰 AI 配置）。
 
 ## Gold 数据契约
@@ -201,7 +201,7 @@ python3 eval/run_eval.py compare --candidate reranker
 2. **引入真实回退**：`attribution_violation_rate` **0% → 20%**（`wea_at_typhoon_frost`
    被重排成命中陷阱词）；base 的 `table_relation` R@1 66.7% → **50%**。
 3. **代价很大**：磁盘 +288MB/+561MB（当前精简包仅 122MB）、常驻 RAM +0.7~1.3GB，
-   而 USB-WIKI 定位是**便携、不要求独显**。
+   而 Kavira 定位是**便携、不要求独显**。
 
 **它确实修好了什么**（局部有效，aggregate 被抵消）：基线 3 个 RERANK 失败题
 （监测目的 / 观测人员有哪些 / 人员配置）全部被拉回 top-5；`水准仪是什么型号？`

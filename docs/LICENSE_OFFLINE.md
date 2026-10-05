@@ -14,7 +14,7 @@
 | 客户端**只**内置公钥 | `app/core/license_pubkey.py` 仅含公钥常量；私钥只存在于 `tools/license_generator/` |
 | 私钥不进发布包 | 构建只拷 `app/` `runtime/` + 文档白名单，`tools/` 从不随包；测试逐项断言 |
 | 一机一码 | 激活码内写死签发机的 `device_hash`，校验时重算比对 |
-| 激活失败不污染真实目录 | 失败路径**不写盘**；状态目录可被 `WIKIUSB_STATE_DIR` 重定向 |
+| 激活失败不污染真实目录 | 失败路径**不写盘**；状态目录可被 `KAVIRA_STATE_DIR` 重定向 |
 
 ---
 
@@ -40,7 +40,7 @@
 
 ```json
 {
-  "product":     "USB-WIKI",
+  "product":     "Kavira",
   "device_hash": "<64 位十六进制设备指纹>",
   "customer_id": "CUST-0001",
   "features":    ["pro"],
@@ -62,14 +62,14 @@
   **全部零子进程**——刻意避开 `wmic` / `platform.system()`，否则会在 `pythonw` 下闪黑框（本项目刚修完的黑框回归）。
 * Linux/macOS：`/etc/machine-id` 或 `/var/lib/dbus/machine-id`。
 * 规范化后 `SHA-256` → 64 位十六进制；界面上按 8 位分组展示（**绝不显示原始序列号**，满足需求 6）。
-* 测试钩子：`WIKIUSB_DEVICE_SEED` 存在时**整体替换**为 `{"seed": <值>}`，可确定性模拟不同机器。
+* 测试钩子：`KAVIRA_DEVICE_SEED` 存在时**整体替换**为 `{"seed": <值>}`，可确定性模拟不同机器。
 
 ---
 
 ## 5. 状态存储
 
-* 位置：`%LOCALAPPDATA%\USB-WIKI\license.json`（与安装记录 `install_state.json` 同目录）。
-* 覆盖：`WIKIUSB_STATE_DIR`（测试隔离）；未设 `LOCALAPPDATA` 时退回 `~/.usb-wiki/USB-WIKI`。
+* 位置：`%LOCALAPPDATA%\Kavira\license.json`（与安装记录 `install_state.json` 同目录）。
+* 覆盖：`KAVIRA_STATE_DIR`（测试隔离）；未设 `LOCALAPPDATA` 时退回 `~/.kavira/Kavira`。
 * **绝不写程序目录**（需求 9）。原子写（`atomic_io`）。
 * 记录内容：激活码原文 + 解析出的字段快照 + 激活时间 + 公钥指纹。
 

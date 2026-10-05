@@ -1,6 +1,6 @@
 # 依赖锁定（Dependency Release Lock）
 
-> 目标：**同一个 USB-WIKI Release，在未来重新构建时仍能得到同一套 Python 依赖。**
+> 目标：**同一个 Kavira Release，在未来重新构建时仍能得到同一套 Python 依赖。**
 
 ## 两份清单，职责不同
 
@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 ## 约束（实现约定）
 
-- 锁只管 **USB-WIKI Core 的 Python 依赖闭包**；不锁 `Ollama` / `GGUF` / `ONNX` 模型
+- 锁只管 **Kavira Core 的 Python 依赖闭包**；不锁 `Ollama` / `GGUF` / `ONNX` 模型
   （那些属于将来的 Offline Distribution Manifest）。
 - 不锁 `pip` / `setuptools` / `wheel` / `pytest` / `Codex` / `WorkBuddy` / 本机工具。
 - `requirements.txt` 的每个直接依赖都必须在 lock 中 `==` 精确锁定

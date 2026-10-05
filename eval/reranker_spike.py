@@ -1,4 +1,4 @@
-"""USB-WIKI · Reranker Offline A/B Spike V1
+"""Kavira · Reranker Offline A/B Spike V1
 
 **只在 eval/ 内实现；不改任何生产代码**（search.py / chunker.py / llm.py / config / UI / 安装包）。
 
@@ -10,7 +10,7 @@
     runtime/python-3.11-embed/python.exe eval/reranker_spike.py run --pools 10,20,30
     runtime/python-3.11-embed/python.exe eval/reranker_spike.py run --models bge-reranker-base
 
-为什么用 **ONNX int8** 而不是原版 fp32：USB-WIKI 不要求独显，产品要回答的是「纯 CPU 机器是否
+为什么用 **ONNX int8** 而不是原版 fp32：Kavira 不要求独显，产品要回答的是「纯 CPU 机器是否
 负担得起」。int8 导出是**可随包分发**的现实形态（体积也小 4 倍）。报告里会同时列出 fp32 体积
 作参考，且明确标注本次实测的产物 —— 不隐瞒、不用小模型假装大模型。
 """
@@ -490,7 +490,7 @@ def render_md(rep: dict) -> str:
     main = rep["meta"].get("main_pool") or f"N{max(pools)}"
     bl = rep["baseline"][main]
     names = list(rep["models"])
-    L = ["# USB-WIKI · Reranker Offline A/B Spike V1", "",
+    L = ["# Kavira · Reranker Offline A/B Spike V1", "",
          f"- 生成：{rep['meta']['generated_at']}",
          f"- 题量：**{rep['meta']['cases']}**；embedder=`{rep['meta']['embedder']}`",
          f"- 实测产物：**{rep['meta']['artifact']}**",
@@ -554,7 +554,7 @@ def render_md(rep: dict) -> str:
         m = rep["models"][n]
         L.append(f"| {n} | {m['disk_mb']:.0f}MB | +{m['rss_delta_mb']:.0f}MB "
                  f"| +{m['rss_warm_delta_mb']:.0f}MB |")
-    L += ["", "> USB-WIKI 是**便携、不要求独显**的产品：准确率之外，RAM 增量与分发体积是同等"
+    L += ["", "> Kavira 是**便携、不要求独显**的产品：准确率之外，RAM 增量与分发体积是同等"
           "硬约束。把一个 288~561MB 的模型塞进 122MB 的精简包、并常驻数百 MB 内存，"
           "需要单独决策（默认关闭 / 按需加载 / 仅高配启用），本轮不替产品做这个决定。"]
 

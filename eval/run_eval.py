@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""USB-WIKI · RAG Eval Lab V1 —— 可重复运行的检索评测 Harness。
+"""Kavira · RAG Eval Lab V1 —— 可重复运行的检索评测 Harness。
 
 设计红线（与产品约定一致）：
   * **只测不调**：本文件只 *调用* 生产 `search.hybrid_search()`，绝不修改它，
     也绝不修改 chunker / prompt / embedding / top_k 去把分数做漂亮。
   * **绝不碰真实 Library**：启动第一步就 `test_env.activate_test_library()`（复用
-    测试安全保险丝），在 `%TEMP%/usb-wiki-eval-*` 下建独立库；fixtures 拷进去再索引。
+    测试安全保险丝），在 `%TEMP%/kavira-eval-*` 下建独立库；fixtures 拷进去再索引。
   * **不读真实 API Key**：检索路径不触碰 AI 配置；只有可选的 `--llm-smoke` 才会用到
     已配置的本地/云端 provider，且不可用时自动跳过。
   * **不进用户安装包**：发布脚本 `scripts/build_release.py` 只 stage `app/` 与 runtime，
@@ -34,7 +34,7 @@ sys.path.insert(0, str(REPO))
 # ⚠ 必须在任何 `app.core.paths` 导入**之前**激活隔离测试库
 from tests import test_env  # noqa: E402
 
-_LIB = test_env.activate_test_library(prefix="usb-wiki-eval-")
+_LIB = test_env.activate_test_library(prefix="kavira-eval-")
 
 from app.core import db as db_mod, indexer, llm, paths, search as S  # noqa: E402
 from app.core.embedder import HashEmbedder  # noqa: E402
@@ -415,7 +415,7 @@ def render_md(rep: dict) -> str:
     def pct(v):
         return "—" if v is None else f"{v*100:.1f}%"
 
-    L = ["# USB-WIKI · RAG Eval Lab V1 — Baseline Report", ""]
+    L = ["# Kavira · RAG Eval Lab V1 — Baseline Report", ""]
     L += [f"- 生成时间：{rep['meta']['generated_at']}",
           f"- 题量：**{rep['meta']['cases']}**（top_k={rep['meta']['top_k']}，"
           f"embedder={rep['meta']['embedder']}）",
@@ -463,7 +463,7 @@ def print_summary(rep: dict) -> None:
     m = rep["metrics"]
     def pct(v):
         return "  —  " if v is None else f"{v*100:5.1f}%"
-    print("\n=== USB-WIKI RAG Eval Lab V1 · Baseline ===")
+    print("\n=== Kavira RAG Eval Lab V1 · Baseline ===")
     print(f"cases={rep['meta']['cases']}  top_k={rep['meta']['top_k']}  "
           f"embedder={rep['meta']['embedder']}")
     for k in ("recall@1", "recall@3", "recall@5"):
@@ -524,7 +524,7 @@ def main(argv=None) -> int:
                 _DB.checkpoint_and_close()
             except Exception:  # noqa: BLE001
                 pass
-        # log_util 会把 <DATA_DIR>/wiki-usb.log 一直开着（RotatingFileHandler），
+        # log_util 会把 <DATA_DIR>/kavira.log 一直开着（RotatingFileHandler），
         # 句柄不释放 → rmtree 一定失败（实测残留目录里只剩这一个文件）。
         try:
             import logging  # noqa: PLC0415
@@ -539,7 +539,7 @@ def main(argv=None) -> int:
         except Exception:  # noqa: BLE001
             pass
         # Windows 上句柄释放有延迟：删前先显式删 sqlite 文件，再重试几次 rmtree，
-        # 否则 %TEMP% 会被 usb-wiki-eval-* 越堆越多。
+        # 否则 %TEMP% 会被 kavira-eval-* 越堆越多。
         for _ in range(4):
             for suffix in ("", "-wal", "-shm"):
                 try:

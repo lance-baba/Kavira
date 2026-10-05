@@ -1,4 +1,4 @@
-"""USB-WIKI · Eval Lab V1.1 —— Candidate Depth Control
+"""Kavira · Eval Lab V1.1 —— Candidate Depth Control
 
 目的：把上一轮 reranker 报告里的 **Recall@3/5 与 Coverage 提升** 中，
 「仅仅是候选池加深带来的」与「reranker 重排带来的」彻底分开。
@@ -89,7 +89,7 @@ def run_split(split: str) -> dict:
 
 def render_md(d: dict) -> str:
     names = list(d["variants"])
-    L = [f"# USB-WIKI · Candidate Depth Control（split = {d['split']}，{d['cases']} 题）", "",
+    L = [f"# Kavira · Candidate Depth Control（split = {d['split']}，{d['cases']} 题）", "",
          "同一套生产 `hybrid_search()`，**未改任何算法**。A1/A2 只加深候选池并**保持原始排序**，",
          "再截 Top5；rerank 两列来自上一轮 Spike（pool=N20）。", ""]
     L += ["| 指标 | " + " | ".join(names) + " |",

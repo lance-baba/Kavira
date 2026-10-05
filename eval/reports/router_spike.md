@@ -1,4 +1,4 @@
-# USB-WIKI · Attribution Scope Router Spike V1
+# Kavira · Attribution Scope Router Spike V1
 
 - 生成：2026-09-23 07:28:42
 - Router DEV：**72 题**（GUARD 36 / PASS_THROUGH 36，边界负例 50%） 领域 {'工程': 20, '天气': 16, '设备': 21, '制度': 15}

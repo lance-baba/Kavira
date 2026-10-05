@@ -1,4 +1,4 @@
-"""Wiki-USB 轻量 HTTP 服务与路由分发（PRD 3.1 / 5.3）。
+"""Kavira 轻量 HTTP 服务与路由分发（PRD 3.1 / 5.3）。
 
 纯标准库实现（http.server），以便在最小化的嵌入式 Python 运行时中直接跑起来，
 不引入任何 Web 框架依赖。

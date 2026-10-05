@@ -161,11 +161,11 @@ def _library_probe(root: Path, issues: list) -> dict:
         # fingerprint 对无 manifest 的库：用永久资料目录树的轻量指纹
         out["fingerprint"] = _tree_fingerprint(root)
 
-    elif fmt != "usb-wiki-library":
+    elif fmt != "kavira-library":
         out["status"] = ERROR
         out["code"] = INVALID_LIBRARY
         issues.append(_issue(INVALID_LIBRARY, ERROR, False, "library",
-                             "该目录不是 USB-WIKI 资料库，程序不会改动它"))
+                             "该目录不是 Kavira 资料库，程序不会改动它"))
     elif isinstance(dv, int) and dv > 1:
         out["status"] = WARN
         out["code"] = DATA_FORMAT_TOO_NEW
@@ -540,7 +540,7 @@ def _cfg_get(section: str, key: str, default: str = "") -> str:
 if __name__ == "__main__":  # pragma: no cover - CLI 出口：server 起不来也能诊断
     import argparse
 
-    _ap = argparse.ArgumentParser(description="USB-WIKI 只读系统诊断")
+    _ap = argparse.ArgumentParser(description="Kavira 只读系统诊断")
     _ap.add_argument("--json", action="store_true", help="输出完整 JSON")
     _ap.add_argument("--library", default=None, help="资料库根目录（缺省用当前配置）")
     _args = _ap.parse_args()

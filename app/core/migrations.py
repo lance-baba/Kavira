@@ -57,7 +57,7 @@ UNKNOWN = "unknown"        # 有库但读不出/读不懂版本 → 保守按重
 
 
 class SchemaTooNewError(RuntimeError):
-    """索引由更新版本的 USB-WIKI 创建，拒绝以旧程序打开。
+    """索引由更新版本的 Kavira 创建，拒绝以旧程序打开。
     这是**保护性失败**：宁可让用户升级程序，也不能让旧程序按旧结构去写
     新结构的数据（可能丢字段、破坏派生状态、甚至损坏 Markdown 之外的资产）。
     """
@@ -66,8 +66,8 @@ class SchemaTooNewError(RuntimeError):
         self.db_version = db_version
         self.app_version = app_version
         super().__init__(
-            f"该知识库索引由更新版本的 USB-WIKI 创建（索引结构 {db_version}，"
-            f"当前程序仅支持 {app_version}）。请升级 USB-WIKI 后再打开。"
+            f"该知识库索引由更新版本的 Kavira 创建（索引结构 {db_version}，"
+            f"当前程序仅支持 {app_version}）。请升级 Kavira 后再打开。"
         )
 
 

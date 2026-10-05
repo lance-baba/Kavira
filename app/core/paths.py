@@ -1,4 +1,4 @@
-r"""Wiki-USB 路径解析 —— 全部基于安装根目录的相对解析，杜绝绝对盘符绑定。
+r"""Kavira 路径解析 —— 全部基于安装根目录的相对解析，杜绝绝对盘符绑定。
 
 U 盘盘符在不同机器上会变化（E:\ F:\ G:\ ...），因此任何路径都不得落盘为绝对路径。
 所有路径一律由本模块以 ``__file__`` 为锚点动态推导。
@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 def _detect_base_dir() -> Path:
-    """定位 Wiki-USB 安装根目录。
+    """定位 Kavira 安装根目录。
 
     冻结（PyInstaller/Nuitka）场景取可执行文件所在目录；源码场景取 app/core 的上两级。
     """
@@ -58,7 +58,7 @@ def read_library_marker(base: Path | None = None) -> Path | None:
 def _detect_data_dir(base: Path) -> Path:
     """资料库根的解析：环境变量 → **App 内 marker** → 程序目录下 data/。
 
-    ⚠ 这是 **App 与 Library 的边界**：环境变量 ``WIKIUSB_LIBRARY`` 可把资料库
+    ⚠ 这是 **App 与 Library 的边界**：环境变量 ``KAVIRA_LIBRARY`` 可把资料库
     指到任意位置（另一块盘 / 另一台电脑），程序目录即使整个删除，
     资料库仍可被新程序接管。默认值保持向后兼容（不强行搬目录）。
 
@@ -68,7 +68,7 @@ def _detect_data_dir(base: Path) -> Path:
       App 内的 data/** —— 用户在设置页指定的目录形同失效（表现为资料「消失」）。
       marker 是**落盘的**真实约定，能让任何入口都找到同一个 Library。
     """
-    env = (os.environ.get("WIKIUSB_LIBRARY") or "").strip()
+    env = (os.environ.get("KAVIRA_LIBRARY") or "").strip()
     if env:
         return Path(env).expanduser().resolve()
     marked = read_library_marker(base)
@@ -112,11 +112,11 @@ def _detect_embedding_dir(base: Path) -> Path:
     """嵌入资源目录的解析。
 
     默认 ``<App>/resources/embedding``（安装态由安装器铺好）。
-    ``WIKIUSB_EMBEDDING_DIR`` 可覆盖：开发机指向 ``vendor/cache/embedding``，
+    ``KAVIRA_EMBEDDING_DIR`` 可覆盖：开发机指向 ``vendor/cache/embedding``，
     测试指向临时资源目录。**该目录缺失是正常状态**（未随包 / 未取件），
     由 embedder 报告 `local_onnx unavailable` 并按契约降级，不在这里偷偷创建。
     """
-    env = (os.environ.get("WIKIUSB_EMBEDDING_DIR") or "").strip()
+    env = (os.environ.get("KAVIRA_EMBEDDING_DIR") or "").strip()
     if env:
         return Path(env).expanduser().resolve()
     return (base / "resources" / "embedding").resolve()
@@ -126,7 +126,7 @@ EMBEDDING_DIR: Path = _detect_embedding_dir(BASE_DIR)
 EMBEDDING_ARTIFACT_JSON: Path = EMBEDDING_DIR / EMBEDDING_ARTIFACT_NAME
 
 CONFIG_FILE: Path = BASE_DIR / "config.ini"
-LOG_FILE: Path = DATA_DIR / "wiki-usb.log"
+LOG_FILE: Path = DATA_DIR / "kavira.log"
 
 # 相对 data/ 的展示前缀（写入 Markdown frontmatter / API 返回值时统一使用）
 NOTES_REL_PREFIX = "notes"
@@ -146,7 +146,7 @@ def rel_to_data(p: Path) -> str:
     """把绝对路径转换成相对 ``data/`` 的 POSIX 风格路径，用于跨机器持久化。
 
     ⚠ **绝不返回绝对路径** —— 那会让资料库无法整盘搬移（Data Contract 第 6 条）。
-    Library 根被重定向时（如恢复测试 / WIKIUSB_LIBRARY），文件不在 DATA_DIR 下，
+    Library 根被重定向时（如恢复测试 / KAVIRA_LIBRARY），文件不在 DATA_DIR 下，
     此前 ``except ValueError`` 直接返回 ``p.as_posix()``（绝对路径），
     导致 CI 的换目录测试失败。现按优先级退回相对形式：
     data/ 相对 → notes/ 相对 → 仅文件名。
@@ -178,13 +178,13 @@ def write_library_marker(target: Path, base: Path | None = None) -> Path:
     except Exception:  # noqa: BLE001 - atomic_io 不可用时退回普通写
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.write_text(text + "\n", encoding="utf-8")
-    os.environ["WIKIUSB_LIBRARY"] = text   # 同进程内的重启动作也要读到新位置
+    os.environ["KAVIRA_LIBRARY"] = text   # 同进程内的重启动作也要读到新位置
     return marker
 
 
 def library_source() -> str:
     """当前 Library 位置由哪种方式决定（诊断 / 设置页展示用，不带盘符信息）。"""
-    if (os.environ.get("WIKIUSB_LIBRARY") or "").strip():
+    if (os.environ.get("KAVIRA_LIBRARY") or "").strip():
         return "env"
     if read_library_marker() is not None:
         return "marker"
@@ -215,7 +215,7 @@ def rebind(new_library: Path) -> Path:
     WAL_FILE = DATA_DIR / "cache.db-wal"
     SHM_FILE = DATA_DIR / "cache.db-shm"
     CHROME_PROFILE_DIR = DATA_DIR / "temp_chrome_profile"
-    LOG_FILE = DATA_DIR / "wiki-usb.log"
+    LOG_FILE = DATA_DIR / "kavira.log"
     return DATA_DIR
 
 

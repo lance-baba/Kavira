@@ -43,7 +43,7 @@ log = get_logger()
 
 #: 不参与迁移的**可再生 / 临时**数据：日志会随环境重新生成，Chrome profile 是临时目录。
 #: ⚠ 除此之外的东西一律照搬 —— 包括各类 ``.bak``（含父块正文，丢了不可逆）。
-SKIP_NAMES = frozenset({"wiki-usb.log", "temp_chrome_profile"})
+SKIP_NAMES = frozenset({"kavira.log", "temp_chrome_profile"})
 
 #: 迁移校验时对 Markdown 正文的抽样规模：按总文件数的 1/20，夹在 [200, 5000] 之间。
 #: 小库保持原有开销，大库则真正查得动（固定 200 篇在 4 万篇库里等于没查）。
@@ -309,7 +309,7 @@ def precheck(target_raw: str) -> dict:
     probe_root = dst if dst.is_dir() else dst.parent
     if probe_root.is_dir():
         try:
-            probe = probe_root / f".usbwiki-wprobe-{os.getpid()}"
+            probe = probe_root / f".kavira-wprobe-{os.getpid()}"
             probe.write_text("probe", encoding="ascii")
             probe.unlink()
         except OSError:
@@ -362,7 +362,7 @@ EXPORT_CONFIG_NAME = "config.ini"
 EXPORT_README_NAME = "备份说明.txt"
 #: 导出包文件名前缀。既是给用户看的命名，**也是清理残留时的唯一识别依据**
 #: —— 绝不按 ``*.zip`` 这种宽泛条件去删（见 :func:`_sweep_stale_exports`）。
-EXPORT_PREFIX = "USB-WIKI-备份-"
+EXPORT_PREFIX = "Kavira-备份-"
 #: 导出临时包的"过期"判定（秒）。超过这个时长的 zip 一定属于某次没走完的导出。
 STALE_EXPORT_SECONDS = 6 * 3600
 
@@ -516,7 +516,7 @@ def _sweep_stale_exports(out_dir: Path) -> None:
 
 def _readme_text(info: dict) -> str:
     lines = [
-        "Wiki-USB 随身知识库 —— 资料备份",
+        "Kavira 随身知识库 —— 资料备份",
         "=" * 44,
         "",
         f"备份时间：{time.strftime('%Y-%m-%d %H:%M:%S')}",
@@ -540,7 +540,7 @@ def _readme_text(info: dict) -> str:
         "  1) 新建一个空文件夹，作为新的资料目录；",
         "  2) 把包里的 notes / originals / assets / metadata / snapshots 放进去；",
         "  3) library.json 也放回**资料库根目录**（它用于识别格式，放错位置会被当成旧格式）；",
-        "  4) 打开 USB-WIKI → 设置 → 资料目录 → 迁移／指向这个文件夹；",
+        "  4) 打开 Kavira → 设置 → 资料目录 → 迁移／指向这个文件夹；",
         "  5) 首次启动会自动重建索引，稍等片刻即可检索与问答。",
         "",
         "把这些文件放在安全的地方即可 —— 它不依赖本程序才能读懂，",

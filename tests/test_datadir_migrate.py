@@ -27,7 +27,7 @@ sys.path.insert(0, str(ROOT))
 
 import tests.test_env as test_env  # noqa: E402  —— 必须在 import paths 之前激活
 
-test_env.activate_test_library(prefix="usb-wiki-datadir-")
+test_env.activate_test_library(prefix="kavira-datadir-")
 test_env.print_banner()
 
 import app.core.context as ctx_mod  # noqa: E402
@@ -86,8 +86,8 @@ def make_library(name: str, with_content: bool = True) -> Path:
         (p / "metadata" / "collections.json").write_text(
             '{"collections": [], "membership": []}', encoding="utf-8")
         (p / "library.json").write_text(
-            '{"format": "usb-wiki-library", "data_version": 1}', encoding="utf-8")
-        (p / "wiki-usb.log").write_text("旧日志，不该被搬走\n", encoding="utf-8")
+            '{"format": "kavira-library", "data_version": 1}', encoding="utf-8")
+        (p / "kavira.log").write_text("旧日志，不该被搬走\n", encoding="utf-8")
         (p / "temp_chrome_profile").mkdir(exist_ok=True)
         (p / "temp_chrome_profile" / "junk").write_text("临时\n", encoding="utf-8")
     return p
@@ -109,7 +109,7 @@ def snapshot(root: Path) -> dict[str, tuple[int, int]]:
 
 
 def set_current(lib: Path) -> None:
-    os.environ["WIKIUSB_LIBRARY"] = str(lib)
+    os.environ["KAVIRA_LIBRARY"] = str(lib)
     paths.rebind(lib)
 
 
@@ -144,7 +144,7 @@ def t1_precheck() -> None:
     check("拒绝：目标里已经有一份资料库", not r["ok"], str(r["errors"]))
 
     # 不存在的盘符：放过去会让用户看到「预检通过 → 迁移失败」这种自相矛盾
-    r = dd.precheck("K:/definitely-not-a-drive/USB-WIKI-Data")
+    r = dd.precheck("K:/definitely-not-a-drive/Kavira-Data")
     check("拒绝：目标盘符不存在", not r["ok"], str(r["errors"]))
 
     empty_target = TMP_ROOT / "empty-ok"
@@ -164,7 +164,7 @@ def t2_copy_fidelity() -> None:
 
     files, size = dd._copy_tree(src, dst)
     check("副本存在", dst.is_dir())
-    check("跳过日志不入副本", not (dst / "wiki-usb.log").exists())
+    check("跳过日志不入副本", not (dst / "kavira.log").exists())
     check("跳过临时 Chrome profile 不入副本",
           not (dst / "temp_chrome_profile").exists())
     check("保留深层子目录", (dst / "notes" / "sub" / "c.md").is_file())
@@ -287,20 +287,20 @@ def t6_priority() -> None:
     check("环境变量优先时 source=env", paths.library_source() == "env")
 
     marker_target = TMP_ROOT / "marker-lib"
-    os.environ.pop("WIKIUSB_LIBRARY", None)
+    os.environ.pop("KAVIRA_LIBRARY", None)
     paths.write_library_marker(marker_target)
     # write_library_marker 会顺手把值塞回环境变量（供同进程重启后读取），
     # 这里模拟「下次冷启动」的环境，重新推导一次。
-    env_backup = os.environ.pop("WIKIUSB_LIBRARY", None)
+    env_backup = os.environ.pop("KAVIRA_LIBRARY", None)
     check("无环境变量、有 marker → source=marker", paths.library_source() == "marker",
           paths.library_source())
 
-    os.environ.pop("WIKIUSB_LIBRARY", None)
+    os.environ.pop("KAVIRA_LIBRARY", None)
     (paths.BASE_DIR / paths.LIBRARY_MARKER_NAME).unlink(missing_ok=True)
     check("都没有 → source=default", paths.library_source() == "default")
 
     if env_backup:
-        os.environ["WIKIUSB_LIBRARY"] = env_backup
+        os.environ["KAVIRA_LIBRARY"] = env_backup
     paths.rebind(src)
 
 
@@ -309,7 +309,7 @@ def t7_export() -> None:
     src = make_library("exp-src")
     # 塞进"不该进备份"的东西：索引、自动备份、日志
     (src / "cache.db.v17r20260101-010101.bak").write_bytes(b"BAK" * 50)
-    (src / "wiki-usb.log").write_text("日志不该进备份\n", encoding="utf-8")
+    (src / "kavira.log").write_text("日志不该进备份\n", encoding="utf-8")
     set_current(src)
 
     # 一份带密钥的假配置（真实 config.ini 明文存 api_key，绝对不能跟着备份到处跑）

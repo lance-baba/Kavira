@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Wiki-USB 依赖锁生成器（可复现 release dependency lock）。
+"""Kavira 依赖锁生成器（可复现 release dependency lock）。
 
 职责
 ----
 把 ``requirements.txt``（**直接依赖 + 兼容区间**）解析成完整闭包、用 ``==``
-精确锁定，写入 ``requirements-release.lock``。未来重新构建 USB-WIKI 时，只要
+精确锁定，写入 ``requirements-release.lock``。未来重新构建 Kavira 时，只要
 安装这份 lock，就能得到**同一套 Python 依赖**——不依赖某个时间点 PyPI 的
 ``>=`` 解析结果。
 
@@ -49,7 +49,7 @@ LOCK_FILE = BASE / "requirements-release.lock"
 PIP_TOOLS_VERSION = "7.6.1"
 # 国内机器走清华镜像更快；lock 内容（版本号）与镜像无关，不影响可复现性。
 DEFAULT_INDEX = os.environ.get(
-    "WIKIUSB_PIP_INDEX",
+    "KAVIRA_PIP_INDEX",
     "https://pypi.tuna.tsinghua.edu.cn/simple",
 )
 GETPIP_URL = "https://bootstrap.pypa.io/get-pip.py"
@@ -173,7 +173,7 @@ def write_header(dropped: list[str], base: Path) -> None:
                            text=True).stdout.strip()
     header = [
         "# =============================================================================",
-        "#  Wiki-USB Release 依赖锁 —— 完整依赖闭包、== 精确锁定、含 environment marker",
+        "#  Kavira Release 依赖锁 —— 完整依赖闭包、== 精确锁定、含 environment marker",
         "# =============================================================================",
         "#  本文件由 scripts/lock_dependencies.py 生成，不要手工编辑。",
         "#  重新生成：python scripts/lock_dependencies.py",

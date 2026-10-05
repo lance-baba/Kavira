@@ -1,4 +1,4 @@
-"""USB-WIKI · Attribution Guard Spike V1
+"""Kavira · Attribution Guard Spike V1
 
 **只在 eval/ 内实现；不修改任何生产代码**（search.py / llm.py / chunker / prompt / UI）。
 **不加载任何 reranker**（不 import onnxruntime、不碰 eval/models/）。
@@ -238,7 +238,7 @@ def holdout_validation() -> dict:
 # --------------------------------------------------------------------------
 def render_md(rep: dict) -> str:
     a, bl, ca = rep["attribution"], rep["attribution"]["baseline"], rep["attribution"]["candidate"]
-    L = ["# USB-WIKI · Attribution Guard Spike V1", "",
+    L = ["# Kavira · Attribution Guard Spike V1", "",
          f"- 生成：{rep['generated_at']}",
          f"- Attribution DEV Pack：**{a['cases']} 题**（{a['by_category']}）",
          "- 生产代码未改动；**未加载任何 reranker**；guard 为纯确定性逻辑。", "",

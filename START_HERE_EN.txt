@@ -1,7 +1,7 @@
-Wiki-USB Portable Knowledge Base  -  Read Me First
+Kavira Portable Knowledge Base  -  Read Me First
 ================================================================
 
-Thank you for choosing Wiki-USB.
+Thank you for choosing Kavira.
 
 This file gets you started in a few minutes. For the complete guide,
 troubleshooting and every option explained, see "User-Manual.txt"
@@ -31,7 +31,7 @@ Pay attention to the second line. All of your material is stored there.
 
 Open / Close
 ----------------------------------------------------------------
-Double-click "USB-WIKI" on your desktop. Your browser opens the
+Double-click "Kavira" on your desktop. Your browser opens the
 control page automatically.
 
 Closing the page does NOT stop the service, so exit like this:
@@ -44,7 +44,7 @@ If there is no desktop shortcut, use the fallback: open the program
 folder (default location below -- paste it into the File Explorer
 address bar) and double-click "Start-Windows.bat" inside it.
 
-    %LOCALAPPDATA%\USB-WIKI\App
+    %LOCALAPPDATA%\Kavira\App
 
 On portable storage, always exit this way before unplugging the drive.
 
@@ -87,8 +87,8 @@ Where Your Data Lives
 ----------------------------------------------------------------
 The library folder follows wherever you installed the program:
 
-    Installed to the default location  ->  Documents\USB-WIKI-Data
-    Installed to a USB drive / other   ->  USB-WIKI-Data next to it
+    Installed to the default location  ->  Documents\Kavira-Data
+    Installed to a USB drive / other   ->  Kavira-Data next to it
 
 On portable storage the program and your data live on the same drive, so
 unplugging the drive takes everything with you. (The exact path was

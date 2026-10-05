@@ -1,4 +1,4 @@
-"""轻量日志 —— 输出到控制台与 data/wiki-usb.log，全程 UTF-8，容忍控制台编码退化。"""
+"""轻量日志 —— 输出到控制台与 data/kavira.log，全程 UTF-8，容忍控制台编码退化。"""
 from __future__ import annotations
 
 import logging

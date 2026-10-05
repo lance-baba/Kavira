@@ -1,4 +1,4 @@
-"""Wiki-USB v1.2 自动化验收测试。
+"""Kavira v1.2 自动化验收测试。
 
 覆盖：
   基础链路  —— 切片 / FTS5 Trigram / 短词 LIKE 降级 / 向量 KNN / RRF 融合
@@ -34,7 +34,7 @@ from urllib.parse import quote
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # ⚠ 安全保险丝（必须在导入 app.core.paths **之前**）：测试自己创建临时 Library 并写入
-#   WIKIUSB_LIBRARY + WIKIUSB_TEST_MODE=1 + sentinel —— 破坏性测试永远碰不到真实开发库。
+#   KAVIRA_LIBRARY + KAVIRA_TEST_MODE=1 + sentinel —— 破坏性测试永远碰不到真实开发库。
 #   真实事故（2026-09-21）：reset_workspace() 在 repo/data 上跑，删掉了用户笔记与 cache.db。
 from tests import test_env  # noqa: E402
 
@@ -122,7 +122,7 @@ def reset_workspace() -> None:
     """清空**隔离测试 Library** 的 notes / snapshots / cache.db。
 
     ⚠ 破坏性 helper —— 第一行就是硬闸门：库必须满足「TEST_MODE=1 + sentinel +
-    位于 TEMP」，且**不等于** repo/data 或 Documents/USB-WIKI-Data，否则 raise
+    位于 TEMP」，且**不等于** repo/data 或 Documents/Kavira-Data，否则 raise
     REFUSING_DESTRUCTIVE_TEST_ON_NON_TEST_LIBRARY（真实事故后新增，见 tests/test_env.py）。
     """
     test_env.assert_test_library_safe()
@@ -225,7 +225,7 @@ def test_genre_term_not_cited() -> None:
     修复：Tier C 阶段只要还存在更具体的实词，体裁词（含其语料扩展）整体不做召回锚点。
     """
     section("体裁词（新闻/报道…）不得成为独立召回锚点（引用精度回归）")
-    tmp = Path(tempfile.mkdtemp(prefix="usb-wiki-genre-"))
+    tmp = Path(tempfile.mkdtemp(prefix="kavira-genre-"))
     try:
         d = db_mod.Database(tmp / "cache.db")
         d.init_schema()
@@ -636,7 +636,7 @@ def test_ollama_autostart() -> None:
 
 def test_crawler(ctx) -> None:
     section("摄入管道 / 降级判定")
-    offline = os.environ.get("WIKIUSB_SKIP_NET") == "1"
+    offline = os.environ.get("KAVIRA_SKIP_NET") == "1"
 
     # 依赖外网的用例先**登记**好，离线时逐条记为 SKIP。
     # 「跳过」与「不存在」是两回事：直接 return 会让 TOTAL 随环境变化。
@@ -651,7 +651,7 @@ def test_crawler(ctx) -> None:
 
     if offline:
         for _n in NET_CASES:
-            skip(_n, "离线模式（WIKIUSB_SKIP_NET=1）")
+            skip(_n, "离线模式（KAVIRA_SKIP_NET=1）")
     else:
         r1 = crawler.capture_url("https://example.com/", db=ctx.db, embedder=ctx.embedder)
 
@@ -993,7 +993,7 @@ def test_rebuild_clears_dimension_mismatch() -> None:
     import tempfile
     from pathlib import Path as _P
 
-    tmpdir = _P(tempfile.mkdtemp(prefix="usbwiki_sig_"))
+    tmpdir = _P(tempfile.mkdtemp(prefix="kavira_sig_"))
     try:
         d = db_mod.Database(db_path=tmpdir / "cache.db", embedding_dim=768)
         d.init_schema()
@@ -1514,7 +1514,7 @@ def test_diagnostics(ctx) -> None:
     libn = Library(tmp / "toonew")
     libn.ensure(created_by=APP_VERSION)
     libn.manifest_path.write_text(json.dumps(
-        {"format": "usb-wiki-library", "data_version": 99}), encoding="utf-8")
+        {"format": "kavira-library", "data_version": 99}), encoding="utf-8")
     rn = diagnostics.collect(library_root=libn.root)
     check("⑨ Data Format 99 → DATA_FORMAT_TOO_NEW",
           rn["library"]["code"] == "DATA_FORMAT_TOO_NEW", str(rn["library"].get("code")))
@@ -1960,7 +1960,7 @@ def test_library_contract() -> None:
     lib_a = tmp / "LibraryA"
     lib = make_lib(lib_a)
     before_sha = {k: v for k, v in sha_tree(lib_a).items()
-                  if not k.startswith("cache.db") and k != "wiki-usb.log"}
+                  if not k.startswith("cache.db") and k != "kavira.log"}
 
     check("① library.json 生成且含格式/版本", bool(lib.read_manifest().get("format") == LIBRARY_FORMAT
           and lib.read_manifest().get("data_version") == DATA_FORMAT_VERSION),
@@ -2005,7 +2005,7 @@ def test_library_contract() -> None:
 
     # ★ 重建**绝不修改**用户资料（SHA256 前后一致）
     after_sha = {k: v for k, v in sha_tree(lib_a).items()
-                 if not k.startswith("cache.db") and k != "wiki-usb.log"}
+                 if not k.startswith("cache.db") and k != "kavira.log"}
     check("⑧ ★ 重建前后永久资料 SHA256 完全一致（不偷偷改用户资料）",
           after_sha == before_sha,
           str([k for k in set(before_sha) | set(after_sha)
@@ -2049,87 +2049,87 @@ def test_library_contract() -> None:
         Library(lib_foreign).ensure(created_by=APP_VERSION)
     except ValueError as exc:
         got = str(exc)[:30]
-    check("⑪ 非本格式资料库 → 拒绝不擅动", got is not None and "不是 USB-WIKI" in got, str(got))
+    check("⑪ 非本格式资料库 → 拒绝不擅动", got is not None and "不是 Kavira" in got, str(got))
 
     # ---------- ⑫ 环境变量可把 Library 指到任意位置 ----------
-    check("⑫ WIKIUSB_LIBRARY 环境变量可重定向资料库",
+    check("⑫ KAVIRA_LIBRARY 环境变量可重定向资料库",
           lib_mod.detect_library_root(Path("X:/base")) != Path("X:/base") / "data"
           or True, "")
     # 先保存 activate_test_library() 在测试启动时设好的隔离测试 Library —— 后续所有
     # 破坏性测试（reset_workspace / test_rag_regression / ...）的 Safety Fuse 都依赖它。
-    _saved_wikiusb_library = os.environ.get("WIKIUSB_LIBRARY")
+    _saved_wikiusb_library = os.environ.get("KAVIRA_LIBRARY")
     try:
-        os.environ["WIKIUSB_LIBRARY"] = str(tmp / "EnvLib")
+        os.environ["KAVIRA_LIBRARY"] = str(tmp / "EnvLib")
         got = lib_mod.detect_library_root(Path("X:/base"))
         # Windows 上 resolve() 可能返回短路径名形式（RUNNER~1），不能与原始字符串严格相等
-        expected = Path(os.environ["WIKIUSB_LIBRARY"]).resolve()
+        expected = Path(os.environ["KAVIRA_LIBRARY"]).resolve()
         check("   环境变量生效", got == expected, f"{got} vs {expected}")
     finally:
         # ★ 修复：恢复隔离测试 Library，绝不能无条件 pop。
-        #   旧实现 `os.environ.pop("WIKIUSB_LIBRARY", None)` 把启动期设好的隔离库删了 →
+        #   旧实现 `os.environ.pop("KAVIRA_LIBRARY", None)` 把启动期设好的隔离库删了 →
         #   Gate 1 中后续 assert_test_library_safe() 在 GitHub workspace 上被 Fuse 拒绝。
         if _saved_wikiusb_library is None:
-            os.environ.pop("WIKIUSB_LIBRARY", None)
+            os.environ.pop("KAVIRA_LIBRARY", None)
         else:
-            os.environ["WIKIUSB_LIBRARY"] = _saved_wikiusb_library
+            os.environ["KAVIRA_LIBRARY"] = _saved_wikiusb_library
 
     # 环境变量重定向测试结束后，Test Harness 必须仍处于 ACTIVE 状态：
-    #   WIKIUSB_LIBRARY 必须重新指向隔离测试 Library，且 Safety Fuse 不抛异常。
+    #   KAVIRA_LIBRARY 必须重新指向隔离测试 Library，且 Safety Fuse 不抛异常。
     test_env.assert_test_library_safe()
     check("⑫b 环境变量测试结束后恢复隔离 Library（Harness 仍 ACTIVE）",
-          os.environ.get("WIKIUSB_LIBRARY") == _saved_wikiusb_library
-          and os.environ.get("WIKIUSB_TEST_MODE") == "1",
-          f"WIKIUSB_LIBRARY={os.environ.get('WIKIUSB_LIBRARY')} "
+          os.environ.get("KAVIRA_LIBRARY") == _saved_wikiusb_library
+          and os.environ.get("KAVIRA_TEST_MODE") == "1",
+          f"KAVIRA_LIBRARY={os.environ.get('KAVIRA_LIBRARY')} "
           f"saved={_saved_wikiusb_library}")
 
     shutil.rmtree(tmp, ignore_errors=True)
 
 
 def test_env_redirect_restores_isolated_library() -> None:
-    """回归（USB-WIKI Release Gate 1 失败根因，2026-09-23）：
+    """回归（Kavira Release Gate 1 失败根因，2026-09-23）：
 
-    test_library_contract() ⑫ 会临时把 ``WIKIUSB_LIBRARY`` 重定向到一个临时目录，验证
+    test_library_contract() ⑫ 会临时把 ``KAVIRA_LIBRARY`` 重定向到一个临时目录，验证
     「环境变量可重定向资料库」。**测试结束后必须把隔离测试 Library 还回去**——因为
-    ``activate_test_library()`` 在启动时设好的 ``WIKIUSB_LIBRARY`` 是后续所有破坏性测试
+    ``activate_test_library()`` 在启动时设好的 ``KAVIRA_LIBRARY`` 是后续所有破坏性测试
     （``reset_workspace`` / ``test_rag_regression`` / …）的 Safety Fuse 依赖。
 
-    旧实现在 ``finally`` 里无条件 ``os.environ.pop("WIKIUSB_LIBRARY", None)``，把隔离库删了
+    旧实现在 ``finally`` 里无条件 ``os.environ.pop("KAVIRA_LIBRARY", None)``，把隔离库删了
     → 后续 ``assert_test_library_safe()`` 在 GitHub workspace 上被 Fuse 拒绝（Gate 1 失败）。
     """
     section("回归：环境变量重定向测试后恢复隔离 Library")
     # 本测试只做断言 + 一次安全的对照实验，不污染全局 Harness 状态。
 
-    _before = os.environ.get("WIKIUSB_LIBRARY")
-    check("⑬ 前置：WIKIUSB_LIBRARY 指向隔离测试库（Harness ACTIVE）",
+    _before = os.environ.get("KAVIRA_LIBRARY")
+    check("⑬ 前置：KAVIRA_LIBRARY 指向隔离测试库（Harness ACTIVE）",
           _before is not None and test_env.is_test_library(_before),
-          f"WIKIUSB_LIBRARY={_before}")
+          f"KAVIRA_LIBRARY={_before}")
 
     # —— 复现「重定向→恢复」契约（与 test_library_contract ⑫ 现在采用的逻辑一致）——
-    _saved = os.environ.get("WIKIUSB_LIBRARY")
+    _saved = os.environ.get("KAVIRA_LIBRARY")
     import tempfile as _tf
     _probe = Path(_tf.mkdtemp(prefix="wikiusb_redirect_")) / "ProbeLib"
     try:
-        os.environ["WIKIUSB_LIBRARY"] = str(_probe)  # 临时重定向
+        os.environ["KAVIRA_LIBRARY"] = str(_probe)  # 临时重定向
     finally:
         # ★ 正确行为：恢复，而非无条件 pop
         if _saved is None:
-            os.environ.pop("WIKIUSB_LIBRARY", None)
+            os.environ.pop("KAVIRA_LIBRARY", None)
         else:
-            os.environ["WIKIUSB_LIBRARY"] = _saved
+            os.environ["KAVIRA_LIBRARY"] = _saved
 
-    check("⑬a 重定向后恢复：WIKIUSB_LIBRARY 还原为隔离库",
-          os.environ.get("WIKIUSB_LIBRARY") == _before,
-          f"now={os.environ.get('WIKIUSB_LIBRARY')} expected={_before}")
+    check("⑬a 重定向后恢复：KAVIRA_LIBRARY 还原为隔离库",
+          os.environ.get("KAVIRA_LIBRARY") == _before,
+          f"now={os.environ.get('KAVIRA_LIBRARY')} expected={_before}")
     check("⑬b 恢复后 assert_test_library_safe 通过（Harness 仍 ACTIVE）",
           test_env.is_test_library(None),
           "Safety Fuse 在恢复后拒绝")
 
     # —— 对照：旧「无条件 pop」会让 Harness 断；证明本回归能抓住回归方向 ——
-    os.environ.pop("WIKIUSB_LIBRARY", None)
+    os.environ.pop("KAVIRA_LIBRARY", None)
     try:
         _broke = not test_env.is_test_library(None)
     finally:
-        os.environ["WIKIUSB_LIBRARY"] = _before  # 立刻还原，杜绝污染后续用例
+        os.environ["KAVIRA_LIBRARY"] = _before  # 立刻还原，杜绝污染后续用例
     check("⑬c 对照：无条件 pop 确实令 Harness 断（回归测试有意义）",
           _broke, "pop 后 Harness 仍 ACTIVE（与预期相反）")
     # 还原后再确认一遍，保证后续用例不受本测试干扰
@@ -2193,9 +2193,9 @@ def test_single_version_source(ctx) -> None:
         V.APP_VERSION = real_app
 
     # ---------- ③ 派生形式都来自同一常量 ----------
-    check("User-Agent token 派生自版本源", V.USER_AGENT_TOKEN == f"WikiUSB/{V.APP_VERSION}")
+    check("User-Agent token 派生自版本源", V.USER_AGENT_TOKEN == f"Kavira/{V.APP_VERSION}")
     check("Git tag 派生自版本源", V.version_tag() == f"v{V.APP_VERSION}")
-    check("发布包名派生自版本源", V.release_zip_name() == f"USB-WIKI-v{V.APP_VERSION}-win-x64.zip")
+    check("发布包名派生自版本源", V.release_zip_name() == f"Kavira-v{V.APP_VERSION}-win-x64.zip")
     # A3：BUILD_INFO 的唯一生成器在 scripts/release_integrity.py，其 app_version 取自本文件
     from tests import dist_fixture as _fx
     _ri = _fx.release_integrity()
@@ -4055,7 +4055,7 @@ def test_portable_containment() -> None:
     # ---------- ① 源码写路径红线（静态）----------
     # 豁免不是「懒得改」，每一条都有明确正当理由且仅限该文件。
     exempt = {
-        "paths.py": "解析 WIKIUSB_* 环境变量指向的根（含 ~ 展开）",
+        "paths.py": "解析 KAVIRA_* 环境变量指向的根（含 ~ 展开）",
         "library.py": "解析用户自行指定的外部资料库路径",
         "file_guard.py": "safe_join 把含 ~ 的 root 解析成绝对路径",
         "crawler.py": "查找宿主已安装的 Chrome 可执行文件（只读，非落盘）",
@@ -4127,7 +4127,7 @@ def test_portable_containment() -> None:
 
     # ---------- ② 运行时写入落点（动态探针）----------
     # 写一个肉眼可辨的唯一标记，再去宿主侧找它 —— 找得到即说明外泄。
-    token = f"wiki-usb-containment-{_uuid.uuid4().hex}"
+    token = f"kavira-containment-{_uuid.uuid4().hex}"
     from app.core import atomic_io
 
     target = paths.NOTES_DIR / f"{token}.md"
@@ -4262,10 +4262,10 @@ def _isolate_data_dir() -> Path:
     for d in (paths.DATA_DIR, paths.NOTES_DIR, paths.SNAPSHOT_DIR, paths.ORIGINALS_DIR):
         d.mkdir(parents=True, exist_ok=True)
 
-    # 安装记录（install_state.json）默认落 %LOCALAPPDATA%\USB-WIKI —— 属于**用户级**位置。
+    # 安装记录（install_state.json）默认落 %LOCALAPPDATA%\Kavira —— 属于**用户级**位置。
     # 安装类用例（A1/A2/A4.2b）会起子进程跑 install_windows.py，必须让它们写进临时目录，
     # 否则会污染真实 LOCALAPPDATA（A1 契约：零真实 LOCALAPPDATA 写入）。子进程继承本 env。
-    os.environ["WIKIUSB_STATE_DIR"] = str(tmp / "install_state")
+    os.environ["KAVIRA_STATE_DIR"] = str(tmp / "install_state")
 
     # ⚠ 只改 paths.CONFIG_FILE 还不够：config 模块在**导入时**就把 _path 绑定到了
     # 真实路径（`_path: Path = paths.CONFIG_FILE`），之后再改 paths 对它无效。
@@ -4350,7 +4350,7 @@ def main() -> int:
     fast = "--fast" in sys.argv[1:]
 
     print("=" * 74)
-    print("  Wiki-USB v1.2  自动化验收测试")
+    print("  Kavira v1.2  自动化验收测试")
     if fast:
         print("  模式：--fast（跳过 A1/A2/A3/A4.2b 构建与安装段；发布前请跑全量）")
     print("=" * 74)

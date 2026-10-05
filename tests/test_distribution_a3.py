@@ -198,7 +198,7 @@ class _tmp:
 # 默认情况下：
 #   * create_desktop_shortcut 走**真实桌面**（_desktop_dir 无测试钩子）→ 只能靠 install() 的
 #     desktop_dir 参数重定向；
-#   * _state_dir() 优先读 WIKIUSB_STATE_DIR，否则回退 LOCALAPPDATA/USB-WIKI。
+#   * _state_dir() 优先读 KAVIRA_STATE_DIR，否则回退 LOCALAPPDATA/Kavira。
 # 因此统一用 context manager 在 os.environ 注入隔离变量（in-process 实时读取；subprocess 继承），
 # 并对所有成功安装显式传 desktop_dir=<TEMP>/Desktop。进入时保存原值、退出时精确恢复：
 # 原本存在→恢复原值，原本不存在→删除注入值。**从一开始就不写真实位置**（禁止写后再删）。
@@ -214,22 +214,22 @@ class _install_sandbox:
 
     沙箱目录（全部位于 TEMP，绝不触碰真实 Desktop/LOCALAPPDATA/Library/Documents）：
         <root>/localapp            → 冒充 LOCALAPPDATA
-        <root>/localapp/USB-WIKI   → 冒充 WIKIUSB_STATE_DIR（install_state.json 落此）
+        <root>/localapp/Kavira   → 冒充 KAVIRA_STATE_DIR（install_state.json 落此）
         <root>/Desktop             → 冒充桌面（快捷方式落此）
-    注入：LOCALAPPDATA / WIKIUSB_STATE_DIR / PYTHONUTF8=1 / PYTHONIOENCODING=utf-8。
+    注入：LOCALAPPDATA / KAVIRA_STATE_DIR / PYTHONUTF8=1 / PYTHONIOENCODING=utf-8。
     """
 
     def __init__(self) -> None:
         self._root = Path(tempfile.mkdtemp(prefix="wikiusb-a3-sandbox-"))
         self._localapp = self._root / "localapp"
-        self._statedir = self._localapp / "USB-WIKI"
+        self._statedir = self._localapp / "Kavira"
         self._desktop = self._root / "Desktop"
         self._localapp.mkdir(parents=True, exist_ok=True)
         self._statedir.mkdir(parents=True, exist_ok=True)
         self._desktop.mkdir(parents=True, exist_ok=True)
         self._overrides = {
             "LOCALAPPDATA": str(self._localapp),
-            "WIKIUSB_STATE_DIR": str(self._statedir),
+            "KAVIRA_STATE_DIR": str(self._statedir),
             "PYTHONUTF8": "1",
             "PYTHONIOENCODING": "utf-8",
         }
@@ -267,12 +267,12 @@ def _snapshot_real_side_effects() -> dict:
 
     必须在 sandbox 之外（用真实 env）调用——进入沙箱前拍一次，退出沙箱后拍一次。
     * 真实桌面：Path.home()/"Desktop"（_desktop_dir 永远返回真实桌面，不受 env 影响）。
-    * 真实 install_state.json：LOCALAPPDATA/USB-WIKI/install_state.json（_state_dir 回退路径）。
+    * 真实 install_state.json：LOCALAPPDATA/Kavira/install_state.json（_state_dir 回退路径）。
     """
     paths = [
-        Path.home() / "Desktop" / "USB-WIKI.lnk",
-        Path(os.environ.get("LOCALAPPDATA") or (Path.home() / ".usb-wiki"))
-        / "USB-WIKI" / "install_state.json",
+        Path.home() / "Desktop" / "Kavira.lnk",
+        Path(os.environ.get("LOCALAPPDATA") or (Path.home() / ".kavira"))
+        / "Kavira" / "install_state.json",
     ]
     snap: dict[str, tuple[str, object]] = {}
     for p in paths:
@@ -290,7 +290,7 @@ def _install_expect(iw, *args, **kw) -> int:
     """跑 install()，把 SystemExit 转成退出码；无异常返回 0。
 
     自动注入 sandbox 的 desktop_dir（若存在），确保所有成功安装的快捷方式落在 TEMP/Desktop，
-    绝不写真实桌面。install_state.json 的隔离由 _install_sandbox 的 WIKIUSB_STATE_DIR 负责。
+    绝不写真实桌面。install_state.json 的隔离由 _install_sandbox 的 KAVIRA_STATE_DIR 负责。
     """
     if "desktop_dir" not in kw:
         d = _sandbox_desktop_dir()
@@ -808,7 +808,7 @@ def _t_real_strict_build(tmp: Path) -> None:
               any(s.split("（")[0] in stderr for s in stale), stderr[-300:])
         # 交叉校验：门禁在写盘之后判定，产物里的清单必须如实记录同一组差异 ——
         # 用**独立推导**的期望去比对被测模块的输出，避免「自己证明自己」。
-        inv_path = (out / f"USB-WIKI-v{APP_VERSION}-win-x64"
+        inv_path = (out / f"Kavira-v{APP_VERSION}-win-x64"
                     / "LICENSES" / "THIRD_PARTY.json")
         recorded = []
         if inv_path.is_file():
@@ -825,7 +825,7 @@ def _t_real_strict_build(tmp: Path) -> None:
     if proc.returncode != 0:
         return
 
-    root = out / f"USB-WIKI-v{APP_VERSION}-win-x64"
+    root = out / f"Kavira-v{APP_VERSION}-win-x64"
     ri = fx.release_integrity()
     info = json.loads((root / "BUILD_INFO.json").read_text(encoding="utf-8"))
     inv = json.loads((root / "LICENSES" / "THIRD_PARTY.json").read_text(encoding="utf-8"))
@@ -960,9 +960,9 @@ def _fake_build(repo: Path, out: Path, *, strict: bool,
     env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
     env.pop("GITHUB_SHA", None)
     if commit is None:
-        env.pop("WIKIUSB_BUILD_COMMIT", None)
+        env.pop("KAVIRA_BUILD_COMMIT", None)
     else:
-        env["WIKIUSB_BUILD_COMMIT"] = commit
+        env["KAVIRA_BUILD_COMMIT"] = commit
     cmd = [sys.executable, "scripts/build_release.py", "--output", str(out)]
     if strict:
         cmd.append("--strict")
@@ -979,7 +979,7 @@ def _t_fake_repo_strict_build(tmp: Path) -> None:
           (p.stderr or p.stdout)[-300:])
     if p.returncode != 0:
         return
-    root = out / "USB-WIKI-v9.9.9-win-x64"
+    root = out / "Kavira-v9.9.9-win-x64"
     ri = fx.release_integrity()
     info = json.loads((root / "BUILD_INFO.json").read_text(encoding="utf-8"))
     inv = json.loads((root / "LICENSES" / "THIRD_PARTY.json").read_text(encoding="utf-8"))
@@ -1022,7 +1022,7 @@ def _t_fake_repo_strict_build(tmp: Path) -> None:
     check("A3-14m commit 不可追溯 → strict 非零退出", p4.returncode != 0, f"rc={p4.returncode}")
 
     # 负向：产物被破坏后 verify 必红
-    good = out / "USB-WIKI-v9.9.9-win-x64"
+    good = out / "Kavira-v9.9.9-win-x64"
     (good / "installer" / "install.py").write_bytes(b"# tampered\n")
     res = ri.verify_media(good)
     check("A3-14n 构建产物被篡改 → MEDIA_CORRUPTED",
@@ -1031,7 +1031,7 @@ def _t_fake_repo_strict_build(tmp: Path) -> None:
 
 
 def _read_fake_inventory(out: Path) -> dict | None:
-    p = out / "USB-WIKI-v9.9.9-win-x64" / "LICENSES" / "THIRD_PARTY.json"
+    p = out / "Kavira-v9.9.9-win-x64" / "LICENSES" / "THIRD_PARTY.json"
     return json.loads(p.read_text(encoding="utf-8")) if p.is_file() else None
 
 
@@ -1157,7 +1157,7 @@ def _t_vendor_license_gate(tmp: Path) -> None:
           == ["LICENSES/packages/foo-1.0/LICENSE-APACHE",
               "LICENSES/packages/foo-1.0/LICENSE-MIT"],
           str(entry_d.get("license_texts")))
-    root_d = out_d / "USB-WIKI-v9.9.9-win-x64"
+    root_d = out_d / "Kavira-v9.9.9-win-x64"
     check("A3.1-D 随包字节与 vendor 字节完全一致（未被改写）",
           (root_d / "LICENSES" / "packages" / "foo-1.0" / "LICENSE-MIT"
            ).read_bytes() == _VENDOR_FILES["LICENSE-MIT"]
@@ -1250,7 +1250,7 @@ def run_a3_tests() -> None:
     snap_before = _snapshot_real_side_effects()
     with _install_sandbox() as sb:
         print(f"  ℹ 安装沙箱：LOCALAPPDATA→{os.environ['LOCALAPPDATA']} "
-              f"WIKIUSB_STATE_DIR→{os.environ['WIKIUSB_STATE_DIR']} "
+              f"KAVIRA_STATE_DIR→{os.environ['KAVIRA_STATE_DIR']} "
               f"desktop_dir→{sb.desktop_dir}")
         for _label, fn, sub in cases:
             def _run():

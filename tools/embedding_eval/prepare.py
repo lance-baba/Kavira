@@ -20,7 +20,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 EVAL_DIR = REPO / "runtime" / "models" / "_eval"
-UA = {"User-Agent": "usb-wiki-a42a-selection"}
+UA = {"User-Agent": "kavira-a42a-selection"}
 
 # ---------------------------------------------------------------------------
 # 候选表（shortlist：1 个 reference FP32 + 1 个量化 + 1 个第三方 FP32 对照）

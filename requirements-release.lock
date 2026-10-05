@@ -1,5 +1,5 @@
 # =============================================================================
-#  Wiki-USB Release 依赖锁 —— 完整依赖闭包、== 精确锁定、含 environment marker
+#  Kavira Release 依赖锁 —— 完整依赖闭包、== 精确锁定、含 environment marker
 # =============================================================================
 #  本文件由 scripts/lock_dependencies.py 生成，不要手工编辑。
 #  重新生成：python scripts/lock_dependencies.py

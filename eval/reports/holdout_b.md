@@ -1,4 +1,4 @@
-# USB-WIKI · Holdout B —— Release Candidate Gate 1
+# Kavira · Holdout B —— Release Candidate Gate 1
 
 - 生成：2026-09-23 07:50:34　冻结：2026-09-23 07:46:54
 - 规模：**57 题 / 8 篇独立文档**，hard case **32%**

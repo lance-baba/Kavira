@@ -1,4 +1,4 @@
-# USB-WIKI · Reranker Offline A/B Spike V1
+# Kavira · Reranker Offline A/B Spike V1
 
 - 生成：2026-09-22 21:21:55
 - 题量：**72**；embedder=`local_hash(512)`
@@ -59,7 +59,7 @@
 | bge-reranker-base | 288MB | +532MB | +713MB |
 | bge-reranker-v2-m3 | 561MB | +867MB | +1270MB |
 
-> USB-WIKI 是**便携、不要求独显**的产品：准确率之外，RAM 增量与分发体积是同等硬约束。把一个 288~561MB 的模型塞进 122MB 的精简包、并常驻数百 MB 内存，需要单独决策（默认关闭 / 按需加载 / 仅高配启用），本轮不替产品做这个决定。
+> Kavira 是**便携、不要求独显**的产品：准确率之外，RAM 增量与分发体积是同等硬约束。把一个 288~561MB 的模型塞进 122MB 的精简包、并常驻数百 MB 内存，需要单独决策（默认关闭 / 按需加载 / 仅高配启用），本轮不替产品做这个决定。
 
 ## Candidate pool 深度
 

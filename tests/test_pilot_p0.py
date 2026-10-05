@@ -107,7 +107,7 @@ def run() -> dict:
         rc1 = installer.install(release, app, lib, desktop_dir=desk)
         check("T1 首次安装 rc=0", rc1 == 0, f"rc={rc1}")
 
-        lnk = desk / "USB-WIKI.lnk"
+        lnk = desk / "Kavira.lnk"
         if ps_ok:
             check("T1 快捷方式已生成", lnk.is_file(), str(lnk))
             info = read_lnk(lnk)
@@ -125,7 +125,7 @@ def run() -> dict:
         rc2 = installer.install(release, app, lib, desktop_dir=desk)
         check("T2 重装 rc=0", rc2 == 0, f"rc={rc2}")
         if ps_ok:
-            lnks = list(desk.glob("USB-WIKI*.lnk"))
+            lnks = list(desk.glob("Kavira*.lnk"))
             check("T2 不产生 (1)(2) 副本", len(lnks) == 1,
                   "found: " + ", ".join(p.name for p in lnks))
             if lnks:
@@ -173,7 +173,7 @@ def run() -> dict:
         check("T5 无绝对隐私声明（中英，不上传/永不联网类）", not bad, "; ".join(bad))
         st = (REPO / "START_HERE.txt").read_text(encoding="utf-8")
         check("T5 START_HERE 含云端 AI 准确表述", "主动配置云端 AI" in st)
-        check("T5 START_HERE 桌面为主路径", "双击桌面的「USB-WIKI」" in st
+        check("T5 START_HERE 桌面为主路径", "双击桌面的「Kavira」" in st
               and "备用方法" in st)
         check("T5 START_HERE 含抓网页联网说明", "抓取网页时需要联网读取该网页" in st)
 

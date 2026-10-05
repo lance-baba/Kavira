@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Release Builder —— 把源码仓库组装成发布产物 dist/USB-WIKI-vX.Y.Z-win-x64/。
+"""Release Builder —— 把源码仓库组装成发布产物 dist/Kavira-vX.Y.Z-win-x64/。
 
 产物是**构建产物**，不进 Git（dist/ 已在 .gitignore）。
 
 布局：
-    dist/USB-WIKI-v1.3.0-win-x64/
+    dist/Kavira-v1.3.0-win-x64/
     ├─ installer/
     │  ├─ install.py            (SSD 安装骨架，拷贝自 scripts/install_windows.py)
     │  ├─ install.bat           (Windows：用自带嵌入式 Python 跑 install.py)
@@ -96,12 +96,12 @@ def _stage_payload(dist_root: Path) -> bool:
     _copytree_prune(REPO / "app", payload / "app")
 
     # 应用图标（客户版观感）：payload 根供安装器用；dist 根供「解压后文件夹」显示
-    ico_src = REPO / "resources" / "usb-wiki.ico"
+    ico_src = REPO / "resources" / "kavira.ico"
     if ico_src.is_file():
-        shutil.copy2(ico_src, payload / "USB-WIKI.ico")
-        shutil.copy2(ico_src, dist_root / "USB-WIKI.ico")
+        shutil.copy2(ico_src, payload / "Kavira.ico")
+        shutil.copy2(ico_src, dist_root / "Kavira.ico")
         (dist_root / "desktop.ini").write_text(
-            "[.ShellClassInfo]\r\nIconResource=USB-WIKI.ico,0\r\n",
+            "[.ShellClassInfo]\r\nIconResource=Kavira.ico,0\r\n",
             encoding="utf-8")
 
     rt_src = REPO / "runtime" / "python-3.11-embed"
@@ -323,7 +323,7 @@ def build(platform: str, output: Path, strict: bool = False) -> Path:
     _ensure_repo_on_path()
     from app.version import APP_VERSION            # 唯一版本源  # noqa: PLC0415
 
-    name = f"USB-WIKI-v{APP_VERSION}-{platform}"
+    name = f"Kavira-v{APP_VERSION}-{platform}"
     dist_root = output / name
     if dist_root.exists():
         shutil.rmtree(dist_root)
@@ -515,7 +515,7 @@ def _strict_gate(dist_root: Path, rt_ok: bool, info: dict, licenses: dict,
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="USB-WIKI Release Builder")
+    ap = argparse.ArgumentParser(description="Kavira Release Builder")
     ap.add_argument("--platform", default="win-x64")
     ap.add_argument("--output", default=str(REPO / "dist"), help="dist 根目录")
     ap.add_argument("--strict", action="store_true",

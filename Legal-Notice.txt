@@ -1,4 +1,4 @@
-Wiki-USB Portable Knowledge Base  -  Legal Notice and Terms of Use
+Kavira Portable Knowledge Base  -  Legal Notice and Terms of Use
 ====================================================================
 Applies to version: 1.3.0
 Last updated: 2026-10-05
@@ -9,7 +9,7 @@ and the responsibilities that remain yours. Please read it first.
 
 1. About This Software
 --------------------------------------------------------------------
-Wiki-USB (the "Software") is a personal knowledge base tool that runs on
+Kavira (the "Software") is a personal knowledge base tool that runs on
 your own computer or portable storage. The program itself is released
 under the MIT License, which permits free use, copying, modification and
 redistribution.

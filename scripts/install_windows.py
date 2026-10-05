@@ -7,8 +7,8 @@
        payload 校验 → 复制到 staging → 验证 staging → 旧 App 备份
        → staging 交换为正式 App → 安装后 smoke（可选 --verify）→ 清理 backup
   3. 任意阶段失败 → 回滚到旧 App；首装失败则清理半成品，绝不留下可误启动的 App
-  4. Library 为不可触碰边界：安装/更新/回滚全程不碰 USB-WIKI-Data
-  5. 仅给启动进程设置进程级 WIKIUSB_LIBRARY（不写系统全局环境变量）
+  4. Library 为不可触碰边界：安装/更新/回滚全程不碰 Kavira-Data
+  5. 仅给启动进程设置进程级 KAVIRA_LIBRARY（不写系统全局环境变量）
   6. 用户双击入口 启动-Windows.bat 不含 --no-browser（自动开浏览器）；
      --no-browser 仅用于测试/CI/调试
   7. 卸载安全收口（2026-09-19）：默认只删 App + 桌面快捷方式、**保留 Library**；
@@ -46,10 +46,10 @@ LAUNCHER_NAME = "启动-Windows.bat"
 #: 资料目录标记（App 内）—— 与 ``app/core/paths.py`` 的 ``LIBRARY_MARKER_NAME`` 同一约定
 LIBRARY_MARKER = "library_path.txt"
 #: 资料目录名：装本机默认位置时落在 Documents 下，装自定义位置时落在 App 的兄弟目录
-LIBRARY_DIRNAME = "USB-WIKI-Data"
+LIBRARY_DIRNAME = "Kavira-Data"
 
 #: 用户级安装记录（跨会话定位真实安装位置，独立于 App 目录，卸载 App 后仍存在）
-STATE_DIRNAME = "USB-WIKI"
+STATE_DIRNAME = "Kavira"
 STATE_FILENAME = "install_state.json"
 
 #: 稳定错误码：介质损坏（缺文件 / size 不符 / hash 不符 / manifest 损坏）
@@ -79,9 +79,9 @@ def _default_release_root() -> Path:
 # 路径解析
 # ---------------------------------------------------------------------------
 def _default_app_target() -> Path:
-    # 冻结决策 #2：App 默认落 LOCALAPPDATA\USB-WIKI\App（SSD 安装态）
+    # 冻结决策 #2：App 默认落 LOCALAPPDATA\Kavira\App（SSD 安装态）
     local = os.environ.get("LOCALAPPDATA")
-    base = Path(local) / "USB-WIKI" if local else Path.home() / "USB-WIKI"
+    base = Path(local) / "Kavira" if local else Path.home() / "Kavira"
     return base / APP_DIRNAME
 
 
@@ -154,15 +154,15 @@ def _default_library_target(app_target: Path | None = None) -> Path:
     """资料目录（Library）的默认值 —— **跟随 App 安装位置**（2026-10-02 决策）。
 
     为什么要改：此前无论程序装到哪（包括装进 U 盘），资料一律落
-    ``Documents\\USB-WIKI-Data``。于是「把 USB-WIKI 装到 U 盘随身携带」实际是把
+    ``Documents\\Kavira-Data``。于是「把 Kavira 装到 U 盘随身携带」实际是把
     资料留在了 C 盘 —— 换台电脑插同一根 U 盘看不到任何东西；而安装过程又从不
     告诉用户资料在哪，属于**静默失效**。
 
     现在的判定：
-      · 装到**默认位置**（``%LOCALAPPDATA%\\USB-WIKI\\App``，本机常规安装）
-        → 资料仍落 ``Documents\\USB-WIKI-Data``（**保持不变**，已这样装的用户不该被搬家）
+      · 装到**默认位置**（``%LOCALAPPDATA%\\Kavira\\App``，本机常规安装）
+        → 资料仍落 ``Documents\\Kavira-Data``（**保持不变**，已这样装的用户不该被搬家）
       · 装到**自定义位置**（另一块盘 / U 盘）→ 资料落到 App 的**兄弟目录**
-        ``<父目录>\\USB-WIKI-Data``，让程序与资料同行、整根 U 盘拔走即用
+        ``<父目录>\\Kavira-Data``，让程序与资料同行、整根 U 盘拔走即用
     """
     if app_target is None:
         return _documents_dir() / LIBRARY_DIRNAME
@@ -196,18 +196,18 @@ def _read_marker_library(app_target: Path) -> Path | None:
 # 用户级安装记录（install_state.json）—— 跨会话定位真实安装位置
 # ---------------------------------------------------------------------------
 def _state_dir() -> Path:
-    """USB-WIKI 自己的用户级配置区。
+    """Kavira 自己的用户级配置区。
 
-    刻意**与 App 目录解耦**：默认 App 落 ``%LOCALAPPDATA%\\USB-WIKI\\App``，
+    刻意**与 App 目录解耦**：默认 App 落 ``%LOCALAPPDATA%\\Kavira\\App``，
     但自定义安装可把 App 放到任意盘符；安装记录必须始终落在一个**固定**位置，
     这样卸载/重装/诊断才能找到真实安装位置，而不是假定默认目录。
     """
     # 测试隔离钩子：显式覆盖安装记录目录（正式运行不设置此变量）。
-    override = (os.environ.get("WIKIUSB_STATE_DIR") or "").strip()
+    override = (os.environ.get("KAVIRA_STATE_DIR") or "").strip()
     if override:
         return Path(override).expanduser()
     local = os.environ.get("LOCALAPPDATA")
-    base = Path(local) if local else (Path.home() / ".usb-wiki")
+    base = Path(local) if local else (Path.home() / ".kavira")
     return base / STATE_DIRNAME
 
 
@@ -278,8 +278,8 @@ def _state_library_target() -> Path | None:
 # ---------------------------------------------------------------------------
 # 自定义 App 安装目录：安全校验 + 解析
 # ---------------------------------------------------------------------------
-def _looks_like_usbwiki_app(p: Path) -> bool:
-    """目标目录是否已是一个 USB-WIKI App（允许 reinstall / transactional upgrade）。"""
+def _looks_like_kavira_app(p: Path) -> bool:
+    """目标目录是否已是一个 Kavira App（允许 reinstall / transactional upgrade）。"""
     p = Path(p)
     return ((p / "app" / "launcher.py").is_file()
             or (p / LAUNCHER_NAME).is_file()
@@ -291,7 +291,7 @@ def _validate_app_target(path: Path, release_root: Path | None = None) -> str | 
     """校验自定义 App 安装目录。合法返回 ``None``，否则返回**人话**错误描述。
 
     安全红线：路径合法 / 父目录可创建可写 / 不是文件 / 不装进发布介质 /
-    不指向 Windows 系统目录 / 已存在目录只能是 USB-WIKI App。
+    不指向 Windows 系统目录 / 已存在目录只能是 Kavira App。
 
     ⚠ 绝不为了「腾位置」删除未知文件 —— 目录已存在其它文件时直接拒绝，
       让用户另选空目录。
@@ -322,23 +322,23 @@ def _validate_app_target(path: Path, release_root: Path | None = None) -> str | 
     parent = p.parent
     try:
         parent.mkdir(parents=True, exist_ok=True)
-        probe = parent / ".usbwiki_writable_probe"
+        probe = parent / ".kavira_writable_probe"
         probe.write_text("x", encoding="utf-8")
         probe.unlink()
     except Exception as e:
         return f"父目录不可写（{e}）"
-    # 已存在目录：只允许是 USB-WIKI App（reinstall）；否则拒绝（绝不删未知文件腾位置）
-    if p.exists() and not _looks_like_usbwiki_app(p):
+    # 已存在目录：只允许是 Kavira App（reinstall）；否则拒绝（绝不删未知文件腾位置）
+    if p.exists() and not _looks_like_kavira_app(p):
         return (f"目录已存在且里面有其它文件：{p}\n"
                 "        为避免误删你的文件，安装器不会覆盖它。\n"
-                "        请换一个**尚不存在或为空**的目录，例如 D:\\Apps\\USB-WIKI-2")
+                "        请换一个**尚不存在或为空**的目录，例如 D:\\Apps\\Kavira-2")
     return None
 
 
 def _normalize_user_path(raw: str) -> str:
     """规整用户手输/粘贴的路径。
 
-    常见粘贴形态：`"D:\\Apps\\USB-WIKI"`（带引号）、首尾空白、末尾多余分隔符。
+    常见粘贴形态：`"D:\\Apps\\Kavira"`（带引号）、首尾空白、末尾多余分隔符。
     必须剥掉引号再交给 Path，否则会得到一个含引号的非法路径（WinError 123）——
     实测这正是「输入自定义目录后立刻失败」的一个真实成因。
     """
@@ -372,10 +372,10 @@ def _resolve_app_target(explicit: str | None, *, interactive: bool,
     if not (interactive and sys.stdin is not None and sys.stdin.isatty()):
         return default
 
-    print("USB-WIKI 安装程序\n")
+    print("Kavira 安装程序\n")
     print(f"程序将安装到（默认）：\n  {default}\n")
     for _ in range(3):
-        print("直接回车 = 使用上面的默认位置；或输入其它安装目录（例如 D:\\Apps\\USB-WIKI）：")
+        print("直接回车 = 使用上面的默认位置；或输入其它安装目录（例如 D:\\Apps\\Kavira）：")
         try:
             ans = input("> ")
         except EOFError:
@@ -438,9 +438,9 @@ def _copy_to_staging(payload: Path, staging: Path) -> None:
     shutil.copytree(payload / "app", staging / "app")
     shutil.copytree(payload / "python-runtime", staging / "runtime")
     # 应用图标（若随包提供）→ App 根，供桌面快捷方式引用其 IconLocation
-    ico = payload / "USB-WIKI.ico"
+    ico = payload / "Kavira.ico"
     if ico.is_file():
-        shutil.copy2(ico, staging / "USB-WIKI.ico")
+        shutil.copy2(ico, staging / "Kavira.ico")
     # 随包嵌入资源 → App/resources/embedding/（**属于 App，不属于 Library**）
     #   → 可重装 / 可覆盖 / 可 rollback / 可从 U 盘恢复；Library 完全不受影响。
     #   资源目录缺失不阻断安装：那是「未随包」的正常状态，运行时会降级为纯 FTS。
@@ -454,13 +454,13 @@ def _write_launcher(app_dir: Path, library_target: Path) -> None:
     (app_dir / LIBRARY_MARKER).write_text(str(library_target), encoding="utf-8")
     # 用 pythonw.exe 启动 → **不弹出控制台窗口**（客户版核心体验）。
     # `start ""` 让批处理立即退出、不留常驻控制台；Library 仍由本脚本从 marker 注入
-    # WIKIUSB_LIBRARY（runtime 只读环境变量、不读 marker —— 故入口必须保留 .bat）。
+    # KAVIRA_LIBRARY（runtime 只读环境变量、不读 marker —— 故入口必须保留 .bat）。
     lines = [
         "@echo off",
         "setlocal",
         "cd /d \"%~dp0\"",
         f"if exist {LIBRARY_MARKER} (",
-        f"  set /p WIKIUSB_LIBRARY=<{LIBRARY_MARKER}",
+        f"  set /p KAVIRA_LIBRARY=<{LIBRARY_MARKER}",
         ")",
         "set PYTHONUTF8=1",
         "set PYTHONIOENCODING=utf-8",
@@ -515,7 +515,7 @@ def _post_install_smoke(app_target: Path, library_target: Path, port: int) -> in
     if not _can_smoke(app_target):
         return 0
     exe = app_target / "runtime" / "python.exe"
-    env = {**os.environ, "WIKIUSB_LIBRARY": str(library_target),
+    env = {**os.environ, "KAVIRA_LIBRARY": str(library_target),
            "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
     proc = subprocess.Popen(
         [str(exe), "app/launcher.py", "--no-browser", "--port", str(port)],
@@ -573,7 +573,7 @@ def _post_install_smoke(app_target: Path, library_target: Path, port: int) -> in
                 proc.kill()
 
 
-SHORTCUT_NAME = "USB-WIKI.lnk"
+SHORTCUT_NAME = "Kavira.lnk"
 
 
 def _psq(s: str) -> str:
@@ -583,7 +583,7 @@ def _psq(s: str) -> str:
 
 def create_desktop_shortcut(app_target: Path,
                             desktop_dir: Path | None = None) -> bool:
-    """在桌面创建 USB-WIKI.lnk → 正式 App 的 启动-Windows.bat（Pilot P0-2）。
+    """在桌面创建 Kavira.lnk → 正式 App 的 启动-Windows.bat（Pilot P0-2）。
 
     设计约束：
       - 复用同一 lnk 文件（WScript.Shell 同名覆盖），重装绝不产生 (1)(2) 副本；
@@ -600,7 +600,7 @@ def create_desktop_shortcut(app_target: Path,
         desktop = Path(desktop_dir) if desktop_dir else _desktop_dir()
         desktop.mkdir(parents=True, exist_ok=True)
         lnk = desktop / SHORTCUT_NAME
-        ico = Path(app_target) / "USB-WIKI.ico"
+        ico = Path(app_target) / "Kavira.ico"
         icon_line = ("$s.IconLocation=" + _psq(str(ico) + ",0") + ";") if ico.is_file() else ""
         ps = ("[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;"
               "$s=(New-Object -ComObject WScript.Shell).CreateShortcut("
@@ -609,7 +609,7 @@ def create_desktop_shortcut(app_target: Path,
               "$s.WorkingDirectory=" + _psq(app_target) + ";"
               "$s.WindowStyle=7;"        # 最小化启动 → 减少批处理窗口闪现
               + icon_line                # 自定义图标（金色书卷）
-              + "$s.Description='USB-WIKI';$s.Save()")
+              + "$s.Description='Kavira';$s.Save()")
         r = subprocess.run(
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
             capture_output=True, timeout=60,
@@ -637,8 +637,8 @@ def _run(app_target: Path, library_target: Path, port: int, no_browser: bool) ->
     exe = app_target / "runtime" / "python.exe"
     if not exe.is_file():
         fail(f"嵌入式 Python 不存在：{exe}")
-    # 仅给本启动进程设置 WIKIUSB_LIBRARY（进程级，不写全局）
-    env = {**os.environ, "WIKIUSB_LIBRARY": str(library_target),
+    # 仅给本启动进程设置 KAVIRA_LIBRARY（进程级，不写全局）
+    env = {**os.environ, "KAVIRA_LIBRARY": str(library_target),
            "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
     args = [str(exe), "app/launcher.py"]
     if no_browser:
@@ -682,12 +682,12 @@ def verify_release(root: Path, *, deep: bool = True):
 
 def _prompt_menu(app_target: Path, library_target: Path) -> int:
     """交互卸载菜单：返回 1（保留资料，默认）或 2（彻底删除）。"""
-    print("USB-WIKI 卸载程序\n")
+    print("Kavira 卸载程序\n")
     print(f"程序目录：\n  {app_target}\n")
     print(f"资料目录：\n  {library_target}\n")
     print("请选择：\n")
     print("  [1] 仅卸载程序，保留我的资料（推荐）")
-    print("  [2] 卸载程序，并永久删除全部 USB-WIKI 资料\n")
+    print("  [2] 卸载程序，并永久删除全部 Kavira 资料\n")
     print("默认：1")
     try:
         ans = input("选择（1/2，直接回车 = 1）：").strip()
@@ -756,7 +756,7 @@ def uninstall(*, app_target_cli: Path | None = None,
     lnk_exists = lnk.exists()
 
     if not (app_exists or lib_exists or lnk_exists):
-        print("[uninstall] 未发现已安装的 USB-WIKI，无需卸载。")
+        print("[uninstall] 未发现已安装的 Kavira，无需卸载。")
         return 0
 
     # --- 决定模式：keep（保留资料）/ thorough（彻底清场）/ cancel（取消）---
@@ -791,14 +791,14 @@ def uninstall(*, app_target_cli: Path | None = None,
             _rmtree(library_target)
             print(f"[uninstall] 已删除资料库：{library_target}")
         _clear_state()
-        print("[uninstall] 已彻底卸载，并清除 USB-WIKI 安装记录。")
+        print("[uninstall] 已彻底卸载，并清除 Kavira 安装记录。")
     else:
         # 保留资料：清除安装记录（App 已不存在），资料库原样保留
         _clear_state()
         print("[uninstall] 程序已卸载。\n")
         print("你的资料仍保存在：")
         print(f"  {library_target}\n")
-        print("以后重新安装 USB-WIKI 可以继续使用这些资料。")
+        print("以后重新安装 Kavira 可以继续使用这些资料。")
     return 0
 
 
@@ -917,16 +917,16 @@ def verify_cmd(release_root: Path, *, as_json: bool = False, deep: bool = True) 
 def _parse(argv: list[str]):
     default_root = _default_release_root()
 
-    ap = argparse.ArgumentParser(description="USB-WIKI SSD 安装器（介质校验 + 事务化）")
+    ap = argparse.ArgumentParser(description="Kavira SSD 安装器（介质校验 + 事务化）")
     sub = ap.add_subparsers(dest="cmd")
 
     pinstall = sub.add_parser("install", help="事务化安装到 SSD")
     pinstall.add_argument("--release", default=str(default_root),
                           help="发布根目录（含 payload/ 与 RELEASE_MANIFEST.json）")
     pinstall.add_argument("--app-target", default=None,
-                          help="App 安装目录（默认 LOCALAPPDATA\\USB-WIKI\\App）")
+                          help="App 安装目录（默认 LOCALAPPDATA\\Kavira\\App）")
     pinstall.add_argument("--library-target", default=None,
-                          help="Library 目录（默认 文档\\USB-WIKI-Data）")
+                          help="Library 目录（默认 文档\\Kavira-Data）")
     pinstall.add_argument("--launch", action="store_true",
                           help="安装后启动（自动开浏览器）")
     pinstall.add_argument("--verify", action="store_true", default=True,
@@ -954,9 +954,9 @@ def _parse(argv: list[str]):
     puninstall = sub.add_parser(
         "uninstall", help="卸载（默认只删程序、保留资料；--delete-library 才清资料）")
     puninstall.add_argument("--app-target", default=None,
-                            help="App 目录（默认读安装记录，其次 LOCALAPPDATA\\USB-WIKI\\App）")
+                            help="App 目录（默认读安装记录，其次 LOCALAPPDATA\\Kavira\\App）")
     puninstall.add_argument("--library-target", default=None,
-                            help="Library 目录（默认读安装记录 / App 内记录 / 文档\\USB-WIKI-Data）")
+                            help="Library 目录（默认读安装记录 / App 内记录 / 文档\\Kavira-Data）")
     puninstall.add_argument("--desktop-dir", default=None, help=argparse.SUPPRESS)
     puninstall.add_argument("--delete-library", dest="delete_library", action="store_true",
                             help="彻底卸载：连同 Library 一起删除（破坏性；需配 --yes 或交互确认 DELETE）")

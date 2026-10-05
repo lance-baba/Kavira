@@ -204,7 +204,7 @@ def run_collections_tests() -> None:
 
 if __name__ == "__main__":
     # 独立运行：自建临时 Library 隔离（绝不碰真实 data/）
-    os.environ["WIKIUSB_LIBRARY"] = tempfile.mkdtemp(prefix="usbwiki-collections-")
+    os.environ["KAVIRA_LIBRARY"] = tempfile.mkdtemp(prefix="kavira-collections-")
     import importlib
 
     from app.core import paths as _paths

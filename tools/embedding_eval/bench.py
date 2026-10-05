@@ -34,7 +34,7 @@ EVAL_DIR = REPO / "runtime" / "models" / "_eval"
 #: §11.2 tokenizer 压力用例
 TOKENIZER_CASES = {
     "纯中文": "这是一段纯中文的测试文本，用来验证分词是否正确。",
-    "中英混合": "USB-WIKI 使用 SQLite FTS5 做混合检索 hybrid search。",
+    "中英混合": "Kavira 使用 SQLite FTS5 做混合检索 hybrid search。",
     "数字": "2026 年第 3 季度营收 1234567.89 元，同比增长 12.5%。",
     "URL": "参考 https://huggingface.co/BAAI/bge-small-zh-v1.5 与 http://127.0.0.1:11434/api/tags",
     "标点": "（一）、二；三：四！五？六……「七」——八。",
@@ -137,8 +137,8 @@ def run_one(cand: dict) -> dict:
     print("  tokenizer  : " + "; ".join(
         f"{k}={v['tokens']}" + (f"(UNK {v['unk']})" if v["unk"] else "")
         for k, v in tk.items()))
-    short_probe = emb._tok.encode("USB-WIKI").tokens       # noqa: SLF001
-    print(f"  例：'USB-WIKI' → {short_probe}")
+    short_probe = emb._tok.encode("Kavira").tokens       # noqa: SLF001
+    print(f"  例：'Kavira' → {short_probe}")
 
     # ---------- 3. CPU 性能 ----------
     s1 = "知识库检索质量评估：这是一个用于延迟测试的中文句子，长度接近真实查询。"

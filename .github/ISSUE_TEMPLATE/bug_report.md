@@ -9,7 +9,7 @@ labels: bug
 
 - 操作系统：
 - Python 版本：
-- Wiki-USB 版本 / 提交：
+- Kavira 版本 / 提交：
 - 运行方式：`python app/launcher.py` / 双击启动脚本 / 其它
 - 浏览器（若与界面相关）：
 
@@ -39,7 +39,7 @@ labels: bug
 
 ## 日志片段
 
-<!-- 控制台输出或 data/wiki-usb.log 的相关部分 -->
+<!-- 控制台输出或 data/kavira.log 的相关部分 -->
 
 ```
 （粘贴在这里）

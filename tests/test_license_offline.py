@@ -14,8 +14,8 @@
     runtime\\python-3.11-embed\\python.exe tests\\test_license_offline.py
 
 隔离声明：
-  * ``WIKIUSB_STATE_DIR`` 指向临时目录 → 绝不写真实 ``%LOCALAPPDATA%`` 或桌面；
-  * ``WIKIUSB_DEVICE_SEED`` 固定 → 用确定性「假设备」而非真实硬件。
+  * ``KAVIRA_STATE_DIR`` 指向临时目录 → 绝不写真实 ``%LOCALAPPDATA%`` 或桌面；
+  * ``KAVIRA_DEVICE_SEED`` 固定 → 用确定性「假设备」而非真实硬件。
 
 本文件**不接入** ``tests/test_suite.py``（不改动既有 Release Gate 行为）；独立运行。
 """
@@ -33,10 +33,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools" / "license_generator"))
 
 # ── 隔离保险丝（必须在 import app.core.license 之前设置）────────────────────
-_TMP_STATE = tempfile.mkdtemp(prefix="usb-wiki-lic-test-")
-os.environ["WIKIUSB_STATE_DIR"] = _TMP_STATE
-os.environ["WIKIUSB_DEVICE_SEED"] = "test-device-A"
-os.environ.setdefault("WIKIUSB_TEST_MODE", "1")
+_TMP_STATE = tempfile.mkdtemp(prefix="kavira-lic-test-")
+os.environ["KAVIRA_STATE_DIR"] = _TMP_STATE
+os.environ["KAVIRA_DEVICE_SEED"] = "test-device-A"
+os.environ.setdefault("KAVIRA_TEST_MODE", "1")
 
 try:
     import cryptography  # noqa: F401
@@ -68,7 +68,7 @@ def section(t: str) -> None:
 
 
 def set_device(seed: str) -> None:
-    os.environ["WIKIUSB_DEVICE_SEED"] = seed
+    os.environ["KAVIRA_DEVICE_SEED"] = seed
 
 
 def ephemeral_key() -> tuple[Ed25519PrivateKey, str]:
@@ -82,7 +82,7 @@ def ephemeral_key() -> tuple[Ed25519PrivateKey, str]:
 def gen(priv, *, device_hash: str, customer_id: str = "CUST", features=None,
         issued_at=None, expires_at=None) -> str:
     code, _ = license_gen.generate(
-        priv, product="USB-WIKI", device_code=device_hash, customer_id=customer_id,
+        priv, product="Kavira", device_code=device_hash, customer_id=customer_id,
         features=features or [], issued_at=issued_at, expires_at=expires_at)
     return code
 
@@ -94,7 +94,7 @@ def main() -> int:
 
     # 真实用户授权文件路径（用于「无污染」断言；本测试不应触碰它）
     real_local = os.environ.get("LOCALAPPDATA") or str(Path.home())
-    real_lic = Path(real_local) / "USB-WIKI" / "license.json"
+    real_lic = Path(real_local) / "Kavira" / "license.json"
     real_existed_before = real_lic.exists()
 
     lf = lic.license_file()

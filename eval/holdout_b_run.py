@@ -1,4 +1,4 @@
-"""USB-WIKI · Holdout B —— Release Candidate Gate 1 最终验收 Runner。
+"""Kavira · Holdout B —— Release Candidate Gate 1 最终验收 Runner。
 
 **只验收，不调算法。** 本轮禁止修改 app/core/{search,chunker,llm,relation_guard}.py、
 embedding、prompt、TopK、citation、UI。失败只记录，不现场修。
@@ -321,7 +321,7 @@ def per_category_recall(cases, rows) -> dict:
 def render_md(rep: dict) -> str:
     m, rel, cit, unec = rep["retrieval"], rep["relation"], rep["citation"], rep["unnecessary_guard"]
     p = lambda v: "—" if v is None else f"{v*100:.1f}%"
-    L = ["# USB-WIKI · Holdout B —— Release Candidate Gate 1", "",
+    L = ["# Kavira · Holdout B —— Release Candidate Gate 1", "",
          f"- 生成：{rep['generated_at']}　冻结：{rep['manifest']['frozen_at']}",
          f"- 规模：**{rep['n_cases']} 题 / {rep['n_fixtures']} 篇独立文档**，"
          f"hard case **{rep['manifest']['hard_case_ratio']*100:.0f}%**",

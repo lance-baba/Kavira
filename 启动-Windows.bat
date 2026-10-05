@@ -1,6 +1,6 @@
 @echo off
 rem =====================================================================
-rem  Wiki-USB  --  Windows launcher  (NO console window)
+rem  Kavira  --  Windows launcher  (NO console window)
 rem
 rem  IMPORTANT: keep this file ASCII-only.
 rem  cmd.exe parses batch files using the ACTIVE console codepage, so CJK
@@ -21,15 +21,15 @@ set PYTHONUTF8=1
 set PYTHONDONTWRITEBYTECODE=1
 setlocal enableextensions
 cd /d "%~dp0"
-title Wiki-USB
+title Kavira
 
 rem Dev mode: the bundled embedding model bytes live in vendor\cache\embedding\
 rem (Git-ignored, ~24MB; fetched by scripts\fetch_embedding_resource.py).
-rem Point WIKIUSB_EMBEDDING_DIR there so running straight from the repo also
+rem Point KAVIRA_EMBEDDING_DIR there so running straight from the repo also
 rem uses the local 512-dim ONNX model instead of degrading to Ollama.
 rem In a released install the installer places them under App\resources\embedding
 rem and this variable is not needed (harmless if left set).
-set "WIKIUSB_EMBEDDING_DIR=%~dp0vendor\cache\embedding"
+set "KAVIRA_EMBEDDING_DIR=%~dp0vendor\cache\embedding"
 
 set "EMBED_PYW=%~dp0runtime\python-3.11-embed\pythonw.exe"
 set "EMBED_PY=%~dp0runtime\python-3.11-embed\python.exe"
@@ -39,16 +39,16 @@ if not exist "%LAUNCHER%" goto :no_app
 
 if exist "%EMBED_PYW%" goto :embedded_pyw
 if exist "%EMBED_PY%" goto :embedded_py
-echo [Wiki-USB] embedded runtime absent, probing host Python...
+echo [Kavira] embedded runtime absent, probing host Python...
 goto :probe_host
 
 :embedded_pyw
-echo [Wiki-USB] starting WITHOUT a console window ...
+echo [Kavira] starting WITHOUT a console window ...
 start "" "%EMBED_PYW%" "%LAUNCHER%" %*
 goto :done
 
 :embedded_py
-echo [Wiki-USB] pythonw.exe missing - falling back to a console window.
+echo [Kavira] pythonw.exe missing - falling back to a console window.
 "%EMBED_PY%" "%LAUNCHER%" %*
 goto :done
 
@@ -57,7 +57,7 @@ where pyw >nul 2>nul
 if not errorlevel 1 goto :host_pyw
 where pythonw >nul 2>nul
 if not errorlevel 1 goto :host_pythonw
-echo [Wiki-USB] pythonw not found - falling back to a console window.
+echo [Kavira] pythonw not found - falling back to a console window.
 where py >nul 2>nul
 if not errorlevel 1 goto :host_py
 where python >nul 2>nul
@@ -89,7 +89,7 @@ goto :done
 :no_app
 echo.
 echo  [ERROR] app\launcher.py not found.
-echo          Please run this script from the Wiki-USB root folder.
+echo          Please run this script from the Kavira root folder.
 echo.
 pause
 endlocal & exit /b 2

@@ -117,7 +117,7 @@ normalizer: BertNormalizer(clean_text=True, handle_chinese_chars=True, lowercase
 
 - 这是 **base model 自带的官方语义**，三候选完全一致 → 不是选型差异因子，**不做任何改动**
   （给某个候选单独加 lowercasing 会破坏 apples-to-apples，也偏离官方用法）。
-- 但它直接影响**用户预期管理**：USB-WIKI 的输入大量是中英混合（`USB`/`API`/`SQL`/`FTS5`），
+- 但它直接影响**用户预期管理**：Kavira 的输入大量是中英混合（`USB`/`API`/`SQL`/`FTS5`），
   这些大写缩写拿不到向量语义 → **FTS 词法路必须继续作为一等公民**，embedding 只做补充召回，
   不能单独承担召回责任。
 - 值得在 A4.2b 之后单独做一次小实验：比较 `do_lower_case=True` 时中英混合文档的召回差异
@@ -309,11 +309,11 @@ INT8 与 FP32 的差异是**轻微重排**（Top-1 有 2 条不同、Top-3 集�
 ```
 
 **pin revision + pin SHA256 即可**，不需要在线可信服务器 / 公钥体系 / artifact 签名系统（§14）。
-USB-WIKI 只为「实际随盘发行的那一组固定字节」负责，不建模型鉴伪系统。
+Kavira 只为「实际随盘发行的那一组固定字节」负责，不建模型鉴伪系统。
 
 ---
 
-## 13. 是否需要 USB-WIKI 自行转换
+## 13. 是否需要 Kavira 自行转换
 
 **不需要。**
 

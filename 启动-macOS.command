@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-#  Wiki-USB v1.2  --  macOS launcher (双击运行)
+#  Kavira v1.2  --  macOS launcher (双击运行)
 #  依赖宿主 Python 3.10+，自动检测并按需引导安装缺失依赖
 # ============================================================
 set -u
@@ -26,7 +26,7 @@ pick_python() {
 
 PY="$(pick_python)" || {
   echo "=================================================="
-  echo " Wiki-USB 需要 Python 3.10 或更高版本"
+  echo " Kavira 需要 Python 3.10 或更高版本"
   echo " 未检测到可用 Python。请先安装："
   echo "   brew install python@3.11"
   echo " 或访问 https://www.python.org/downloads/"
@@ -35,5 +35,5 @@ PY="$(pick_python)" || {
   exit 1
 }
 
-echo "[Wiki-USB] 使用解释器: $PY ($("$PY" -V 2>&1))"
+echo "[Kavira] 使用解释器: $PY ($("$PY" -V 2>&1))"
 exec "$PY" "app/launcher.py" "$@"

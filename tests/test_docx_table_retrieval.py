@@ -142,7 +142,7 @@ def run(ctx, check, section, skip):
 
     # ---- H：端到端索引 + 检索 ----------------------------------------------
     import tempfile
-    tmp = Path(tempfile.mkdtemp(prefix="usb-wiki-dtbl-"))
+    tmp = Path(tempfile.mkdtemp(prefix="kavira-dtbl-"))
     try:
         dbp = tmp / "cache.db"
         db = Database(dbp)

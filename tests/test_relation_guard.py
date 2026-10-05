@@ -218,7 +218,7 @@ def _unit_cases(check) -> None:
 # --------------------------------------------------------------------------
 def _smoke(check) -> None:
     """隔离库 smoke：沙尘 / 大雾 两问（§13）。"""
-    tmp = Path(tempfile.mkdtemp(prefix="usb-wiki-rg-smoke-"))
+    tmp = Path(tempfile.mkdtemp(prefix="kavira-rg-smoke-"))
     try:
         from app.core import chunker, db as db_mod, indexer
         from app.core.embedder import HashEmbedder

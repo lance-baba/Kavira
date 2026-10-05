@@ -1,7 +1,7 @@
 
 "use strict";
 /* =========================================================================
- *  Wiki-USB 控制台（零框架 · 零 CDN）
+ *  Kavira 控制台（零框架 · 零 CDN）
  * ========================================================================= */
 const $  = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -51,7 +51,7 @@ function api(path, opts) {
     // 后端进程随之结束，页面还留在浏览器里。没有这层包装时 fetch 只会静默 reject，
     // 表现为「点笔记标题变、内容不变」，看起来像 bug，其实是服务已经没了。
     .catch(err => {
-      throw new Error("无法连接本地服务（Wiki-USB 可能已退出）："
+      throw new Error("无法连接本地服务（Kavira 可能已退出）："
         + ((err && err.message) || err));
     });
 }
@@ -186,7 +186,7 @@ function renderEmptyGuide(d) {
   box.innerHTML =
     '<div class="empty-guide"><h5>知识库还是空的 —— 先加内容，问答才有东西可查</h5><ol>' +
     '<li>点顶部 <b>「剪藏」</b> 标签 →  把 <code>.md</code> 文件拖进虚线框，或粘贴一个网址抓取</li>' +
-    '<li>也可以把 .md / .txt 笔记直接放进资料库的 <code>notes</code> 文件夹（安装版默认在 文档\\USB-WIKI-Data\\notes），15 秒内自动入库</li>' +
+    '<li>也可以把 .md / .txt 笔记直接放进资料库的 <code>notes</code> 文件夹（安装版默认在 文档\\Kavira-Data\\notes），15 秒内自动入库</li>' +
     '<li>入库后回到这里提问，回答会带 <b>[1]</b> 角标指向原文出处</li></ol>' +
     '<div style="margin-top:11px"><button class="btn primary" onclick="switchTab(\'capture\')">去添加第一份内容 →</button></div>' +
     "</div>";
@@ -1024,7 +1024,7 @@ async function openNoteItem(el, jump, nav, terms) {
       NOTE.payload = null;
       $("#noteSeg").hidden = true;
       $("#noteView").innerHTML = '<div class="alert err" style="margin:8px 0">'
-        + esc(e.message || "读取失败") + "<br>请重新启动 Wiki-USB（双击启动脚本）后刷新本页。</div>";
+        + esc(e.message || "读取失败") + "<br>请重新启动 Kavira（双击启动脚本）后刷新本页。</div>";
       return;
     }
     if (nav != null && nav !== NOTE_NAV_SEQ) return;                 // B：有更新的导航已发生 → 放弃
@@ -2214,7 +2214,7 @@ async function loadDataDir() {
       ["备份包约", fmtSize(d.export_bytes || 0)
         + "，导出约需 " + fmtDuration(d.est_export_seconds)],
     ].map(x => "<b>" + esc(x[0]) + "</b><span>" + esc(x[1]) + "</span>").join("");
-    // 剪藏页那句提示原本写死「文档\USB-WIKI-Data\notes」——自定义/U盘安装时是错的，
+    // 剪藏页那句提示原本写死「文档\Kavira-Data\notes」——自定义/U盘安装时是错的，
     // 这里按本次读到的真实资料目录回填。
     const nh = $("#ddNotesHint");
     if (nh && d.path) nh.innerHTML = "（当前在 " + esc(d.path + "/notes") + "）";

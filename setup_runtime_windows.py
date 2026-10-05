@@ -1,4 +1,4 @@
-"""Wiki-USB Windows 嵌入式运行时安装器（PRD 4.1「Windows 嵌入式环境配置补齐」）。
+"""Kavira Windows 嵌入式运行时安装器（PRD 4.1「Windows 嵌入式环境配置补齐」）。
 
 做四件事：
   1. 下载官方 **python-3.11 embeddable** amd64 包并解压到 ``runtime/python-3.11-embed``
@@ -213,7 +213,7 @@ def check_embedding_resource() -> tuple[bool, str]:
 def check() -> int:
     ok = True
     print("=" * 66)
-    print("  Wiki-USB 运行时体检")
+    print("  Kavira 运行时体检")
     print("=" * 66)
     print(f"  安装根目录 : {BASE}")
     print(f"  嵌入式运行时: {'✅ 存在' if EMBED_PY.exists() else '❌ 缺失'}  {EMBED_PY}")
@@ -391,7 +391,7 @@ def clean(*, dry_run: bool = False) -> int:
 
     verb = "将清除" if dry_run else "已清除"
     print("=" * 66)
-    print(f"  Wiki-USB 发布清理{'（预览，不做任何改动）' if dry_run else ''}")
+    print(f"  Kavira 发布清理{'（预览，不做任何改动）' if dry_run else ''}")
     print("=" * 66)
     print(f"  {verb}：目录 {len(dirs)} 个 / 文件 {len(files)} 个"
           f" ，释放约 {freed / 1048576:.1f} MB")
@@ -462,7 +462,7 @@ def verify(*, as_json: bool = False) -> int:
 
     if not as_json:
         print("=" * 66)
-        print("  Wiki-USB 发布完整性校验")
+        print("  Kavira 发布完整性校验")
         print("=" * 66)
         print(f"  发布根目录 : {BASE}")
         print(f"  校验平台   : {platform.system()} ({os.name})")
@@ -547,7 +547,7 @@ def verify(*, as_json: bool = False) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Wiki-USB Windows 嵌入式运行时安装器")
+    ap = argparse.ArgumentParser(description="Kavira Windows 嵌入式运行时安装器")
     ap.add_argument("--check", action="store_true", help="仅体检现有运行时能否跑起来")
     ap.add_argument("--verify", action="store_true",
                     help="发布完整性校验：文件/资产/启动脚本齐不齐、是否残留外链（答「能否交付」）")

@@ -537,7 +537,7 @@ def _collect_model_licenses(lic_root: Path, root: Path,
 
 def _render_notices(packages: list[dict], inventory: dict) -> str:
     out = io.StringIO()
-    out.write("Wiki-USB 第三方软件许可清单（THIRD-PARTY NOTICES）\n")
+    out.write("Kavira 第三方软件许可清单（THIRD-PARTY NOTICES）\n")
     out.write("=" * 72 + "\n\n")
     out.write("本文件由 scripts/collect_licenses.py 自动生成，覆盖本 Release **实际随包分发**的\n")
     out.write("第三方组件。未随包分发的组件（如本地 LLM / Ollama / ONNX 模型）不在此列。\n\n")

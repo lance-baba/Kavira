@@ -51,7 +51,7 @@ def t1_single_source() -> None:
     marked = TMP / "UdiskData"
     marked.mkdir(parents=True, exist_ok=True)
 
-    saved_env = os.environ.pop("WIKIUSB_LIBRARY", None)
+    saved_env = os.environ.pop("KAVIRA_LIBRARY", None)
     try:
         # 让 BASE_DIR 临时指向我们的假 App（markker 就写在它里面）
         real_base = paths.BASE_DIR
@@ -70,7 +70,7 @@ def t1_single_source() -> None:
                   f"{got} vs {expect}")
 
             # ③ 环境变量仍在时，两者还是要一致（环境变量优先级更高）
-            os.environ["WIKIUSB_LIBRARY"] = str(marked)
+            os.environ["KAVIRA_LIBRARY"] = str(marked)
             got_env = lib_mod.detect_library_root(base)
             check("③ 有环境变量时两处仍一致",
                   got_env == paths._detect_data_dir(base) == expect,
@@ -78,9 +78,9 @@ def t1_single_source() -> None:
         finally:
             paths.BASE_DIR = real_base
     finally:
-        os.environ.pop("WIKIUSB_LIBRARY", None)
+        os.environ.pop("KAVIRA_LIBRARY", None)
         if saved_env:
-            os.environ["WIKIUSB_LIBRARY"] = saved_env
+            os.environ["KAVIRA_LIBRARY"] = saved_env
 
 
 def t2_no_cwd_dependency() -> None:

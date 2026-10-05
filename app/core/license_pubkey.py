@@ -33,7 +33,7 @@ PUBLIC_KEY_B64 = "pH19Eop6WaQ5gsETHyBEJjADbrfwV2_B1GqeM90zAQs"
 KEY_ID = "045a1efb0148fef8"
 
 #: 客户端期望的产品标识（激活码里的 product 必须等于它）
-PRODUCT = "USB-WIKI"
+PRODUCT = "Kavira"
 
 
 def _b64url_decode(text: str) -> bytes:

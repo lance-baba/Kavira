@@ -149,7 +149,7 @@ def resolve_git_commit(repo: Path) -> str:
             return r.stdout.strip()
     except Exception:
         pass
-    for key in ("WIKIUSB_BUILD_COMMIT", "GITHUB_SHA"):
+    for key in ("KAVIRA_BUILD_COMMIT", "GITHUB_SHA"):
         val = os.environ.get(key, "").strip()
         if val:
             return val

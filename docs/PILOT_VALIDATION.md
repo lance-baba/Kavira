@@ -7,7 +7,7 @@
 ## 0. 背景
 
 - 目标：让真实的人尽快碰到产品，验证「是否有人真正愿意使用」。
-- 范围：数字分发的 Windows 安装包（`USB-WIKI-v1.3.0-pilot-win-x64`）。
+- 范围：数字分发的 Windows 安装包（`Kavira-v1.3.0-pilot-win-x64`）。
 - 主路径：下载 ZIP → 解压 → 双击安装 → 启动 → 导入资料 → 搜索/语义检索 → 查看引用。
 - Chat 是 optional capability，不是 Pilot 成功的硬前提。
 

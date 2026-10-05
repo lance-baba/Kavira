@@ -1,9 +1,9 @@
 @echo off
 rem =====================================================================
-rem  Wiki-USB  --  Windows stop script
+rem  Kavira  --  Windows stop script
 rem
 rem  Stops a server started by the no-console launcher (which has no
-rem  window to close). It reads wiki-usb.pid (written by app\launcher.py)
+rem  window to close). It reads kavira.pid (written by app\launcher.py)
 rem  and first asks the service to shut down gracefully via
 rem  /api/system/shutdown -- that runs a WAL checkpoint before exiting.
 rem  If that does not finish quickly, it falls back to taskkill.
@@ -13,7 +13,7 @@ rem =====================================================================
 chcp 65001 > nul
 setlocal enableextensions
 cd /d "%~dp0"
-set "PIDFILE=%~dp0wiki-usb.pid"
+set "PIDFILE=%~dp0kavira.pid"
 
 if not exist "%PIDFILE%" goto :none
 
@@ -28,34 +28,34 @@ if defined WPORT if not "%WPORT%"=="0" goto :try_api
 goto :try_kill
 
 :try_api
-echo [Wiki-USB] asking the service to shut down gracefully (port %WPORT%) ...
+echo [Kavira] asking the service to shut down gracefully (port %WPORT%) ...
 rem NOTE: /api/system/shutdown is POST-only (GET returns 404), so send a POST.
 curl -s -m 3 -X POST -H "Content-Type: application/json" -d "{}" "http://127.0.0.1:%WPORT%/api/system/shutdown" >nul 2>nul
 rem wait ~2s for the WAL checkpoint (ping is used as a portable sleep)
 ping -n 3 127.0.0.1 >nul 2>nul
 if not exist "%PIDFILE%" goto :end_ok
-echo [Wiki-USB] graceful shutdown did not complete, forcing (pid %WPID%) ...
+echo [Kavira] graceful shutdown did not complete, forcing (pid %WPID%) ...
 goto :try_kill
 
 :try_kill
-echo [Wiki-USB] stopping process tree (pid %WPID%) ...
+echo [Kavira] stopping process tree (pid %WPID%) ...
 taskkill /PID %WPID% /T /F >nul 2>nul
 del /q "%PIDFILE%" >nul 2>nul
-echo [Wiki-USB] stopped.
+echo [Kavira] stopped.
 goto :end_ok
 
 :none
-echo [Wiki-USB] no wiki-usb.pid found - the server does not appear to be running.
+echo [Kavira] no kavira.pid found - the server does not appear to be running.
 echo            (If it is running, close it from the app: top-right "safe exit".)
 goto :end_pause
 
 :bad
-echo [Wiki-USB] wiki-usb.pid is malformed - removing it.
+echo [Kavira] kavira.pid is malformed - removing it.
 del /q "%PIDFILE%" >nul 2>nul
 goto :end_pause
 
 :end_ok
-echo [Wiki-USB] done.
+echo [Kavira] done.
 goto :end_pause
 
 :end_pause

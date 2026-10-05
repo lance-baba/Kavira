@@ -1,6 +1,6 @@
 @echo off
 rem =====================================================================
-rem  Wiki-USB  --  offline license generator launcher  (maintainer only)
+rem  Kavira  --  offline license generator launcher  (maintainer only)
 rem
 rem  IMPORTANT: keep this file ASCII-only. cmd.exe parses batch files using
 rem  the ACTIVE console codepage, so CJK literals here would garble on a
@@ -15,7 +15,7 @@ set PYTHONUTF8=1
 set PYTHONDONTWRITEBYTECODE=1
 setlocal enableextensions
 cd /d "%~dp0"
-title Wiki-USB License Generator
+title Kavira License Generator
 
 set "EMBED_PY=%~dp0runtime\python-3.11-embed\python.exe"
 set "GEN=%~dp0tools\license_generator\license_gen.py"
@@ -29,7 +29,7 @@ goto :hold
 
 :no_gen
 echo [ERROR] tools\license_generator\license_gen.py not found.
-echo         Please run this script from the Wiki-USB root folder.
+echo         Please run this script from the Kavira root folder.
 set RC=2
 goto :hold
 

@@ -1,4 +1,4 @@
-# USB-WIKI · Collections & Library Management Layer（ADR / POST_V1 Architecture Freeze）
+# Kavira · Collections & Library Management Layer（ADR / POST_V1 Architecture Freeze）
 
 > **状态：架构冻结（Design Freeze）｜未实现｜本轮仅落档**
 >
@@ -13,7 +13,7 @@
 
 ## 1. 产品目标
 
-USB-WIKI 的定位**不是**「分类文件柜」，而是：
+Kavira 的定位**不是**「分类文件柜」，而是：
 
 ```
 个人全能知识库
@@ -96,7 +96,7 @@ USB-WIKI 的定位**不是**「分类文件柜」，而是：
   → 被分类过滤掉 → 漏召回 → 错答/拒答 → 用户认为知识库不可靠
 ```
 
-> **USB-WIKI 默认不得因为系统自动分类而排除任何文档。**
+> **Kavira 默认不得因为系统自动分类而排除任何文档。**
 
 即使系统把某篇资料建议分为「生活」，该资料只要**文本相关，仍必须能被召回**。
 

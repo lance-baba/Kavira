@@ -14,7 +14,7 @@
 --------
 * **大文件不进 Git**：资源字节在 gitignored 的 ``vendor/cache/embedding/``，
   由 ``scripts/fetch_embedding_resource.py`` 取回。取不到时相关用例 **SKIP**（不红）。
-* 需要切换资源目录的用例通过 ``WIKIUSB_EMBEDDING_DIR`` + reload ``app.core.paths`` 实现，
+* 需要切换资源目录的用例通过 ``KAVIRA_EMBEDDING_DIR`` + reload ``app.core.paths`` 实现，
   与生产路径完全同源（不另造一套解析逻辑）。
 * 依赖 ``onnxruntime`` / ``tokenizers``（已在 requirements.txt + lock 里）；
   缺失时同样 SKIP，不把「本机没装」伪装成产品缺陷。
@@ -88,7 +88,7 @@ def sha256_file(path: Path, chunk: int = 1 << 20) -> str:
 
 
 class _embedding_env:
-    """把 ``WIKIUSB_EMBEDDING_DIR`` 指向 *path* 并就地更新嵌入目录常量；退出时还原。
+    """把 ``KAVIRA_EMBEDDING_DIR`` 指向 *path* 并就地更新嵌入目录常量；退出时还原。
 
     ⚠ 不调用 ``importlib.reload(paths)``：reload 会重跑 ``_detect_data_dir``，把
     ``NOTES_DIR`` / ``DATA_DIR`` 等重置回**真实路径**，破坏 ``test_suite`` 的
@@ -109,14 +109,14 @@ class _embedding_env:
 
     def __enter__(self):
         if self.path:
-            os.environ["WIKIUSB_EMBEDDING_DIR"] = self.path
+            os.environ["KAVIRA_EMBEDDING_DIR"] = self.path
         else:
-            os.environ.pop("WIKIUSB_EMBEDDING_DIR", None)
+            os.environ.pop("KAVIRA_EMBEDDING_DIR", None)
         self._apply()
         return self
 
     def __exit__(self, *exc):
-        os.environ.pop("WIKIUSB_EMBEDDING_DIR", None)
+        os.environ.pop("KAVIRA_EMBEDDING_DIR", None)
         self._apply()
         return False
 
@@ -142,7 +142,7 @@ def cleanup() -> None:
 # ---------------------------------------------------------------------------
 TOKENIZER_CASES = {
     "纯中文": "这是一段纯中文的测试文本，用来验证分词是否正确。",
-    "中英混合": "USB-WIKI 使用 SQLite FTS5 做混合检索 hybrid search。",
+    "中英混合": "Kavira 使用 SQLite FTS5 做混合检索 hybrid search。",
     "数字": "2026 年第 3 季度营收 1234567.89 元，同比增长 12.5%。",
     "URL": "参考 https://huggingface.co/BAAI/bge-small-zh-v1.5 与 http://127.0.0.1:11434/api/tags",
     "标点": "（一）、二；三：四！五？六……「七」——八。",
@@ -270,7 +270,7 @@ def _t_c_retrieval() -> None:
         return
 
     tmp = Path(tempfile.mkdtemp(prefix="a42b-rag-"))
-    os.environ["WIKIUSB_LIBRARY"] = str(tmp / "Library")
+    os.environ["KAVIRA_LIBRARY"] = str(tmp / "Library")
     from app.core import paths as _paths
     from app.core import db as _db_mod
     orig_notes = _paths.NOTES_DIR
@@ -353,7 +353,7 @@ def _t_c_retrieval() -> None:
                 except Exception:  # noqa: BLE001
                     pass
     finally:
-        os.environ.pop("WIKIUSB_LIBRARY", None)
+        os.environ.pop("KAVIRA_LIBRARY", None)
         _paths.NOTES_DIR = orig_notes
         # 还原全局 db 单例：C 的 boot 会把它重指到私有 tmp/cache.db，
         # 其 shutdown 又会置 None；还原回套件共享 db，杜绝跨测试串库。
@@ -447,7 +447,7 @@ def _t_f_artifact_tamper() -> None:
     sys.path.insert(0, str(REPO / "scripts"))
     import release_integrity as ri                        # noqa: E402
 
-    root = Path(tempfile.mkdtemp(prefix="a42b-media-")) / "USB-WIKI-v1.3.0-win-x64"
+    root = Path(tempfile.mkdtemp(prefix="a42b-media-")) / "Kavira-v1.3.0-win-x64"
     try:
         payload = root / "payload" / "embedding"
         payload.mkdir(parents=True)

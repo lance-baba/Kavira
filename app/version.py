@@ -32,10 +32,10 @@ from __future__ import annotations
 APP_VERSION = "1.3.0"
 
 # 便于构建脚本与 User-Agent 复用，避免各处自己拼
-APP_NAME = "Wiki-USB"
+APP_NAME = "Kavira"
 APP_NAME_CN = "随身知识库"
 # HTTP Server 头 / User-Agent 用的紧凑形式
-USER_AGENT_TOKEN = f"WikiUSB/{APP_VERSION}"
+USER_AGENT_TOKEN = f"Kavira/{APP_VERSION}"
 
 
 def version() -> str:
@@ -49,12 +49,12 @@ def version_tag() -> str:
 
 
 def release_zip_name(platform: str = "win-x64") -> str:
-    """未来 Release 包名：``USB-WIKI-v1.3.0-win-x64.zip``。
+    """未来 Release 包名：``Kavira-v1.3.0-win-x64.zip``。
 
     本轮不做发布流水线，但先把命名规则钉在版本源里，
     免得将来又变成「构建脚本里再硬编码一次」。
     """
-    return f"USB-WIKI-v{APP_VERSION}-{platform}.zip"
+    return f"Kavira-v{APP_VERSION}-{platform}.zip"
 
 
 # 说明（A3）：BUILD_INFO.json 的**生成器**是 `scripts/release_integrity.py`

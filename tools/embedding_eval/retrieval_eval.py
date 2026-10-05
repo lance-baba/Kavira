@@ -3,7 +3,7 @@
 
 比较对象（同一套语料、同一套查询、同一套指标）：
 
-    baseline   → embedding=None（纯 FTS 词法，USB-WIKI 的 Level 1 能力）
+    baseline   → embedding=None（纯 FTS 词法，Kavira 的 Level 1 能力）
     candidate  → 各 ONNX artifact（真实 tokenizer + CLS + L2，见 runner.py）
 
 **每个候选独立进程 + 独立临时 Library**：向量签名不同，必须各自全量重建索引，
@@ -32,11 +32,11 @@ TOP_K = 5
 
 
 # ---------------------------------------------------------------------------
-# 子进程侧：真正跑一次评测（必须在设置 WIKIUSB_LIBRARY 之后才 import app.*）
+# 子进程侧：真正跑一次评测（必须在设置 KAVIRA_LIBRARY 之后才 import app.*）
 # ---------------------------------------------------------------------------
 def _run_one(embedder_id: str, suite: str, semantic_only: bool = False) -> dict:
     tmp = Path(tempfile.mkdtemp(prefix=f"a42a-{suite}-{embedder_id}-"))
-    os.environ["WIKIUSB_LIBRARY"] = str(tmp / "Library")
+    os.environ["KAVIRA_LIBRARY"] = str(tmp / "Library")
     sys.path.insert(0, str(REPO))
     sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -64,7 +64,7 @@ def _run_one(embedder_id: str, suite: str, semantic_only: bool = False) -> dict:
 
         # ---------- 库 ----------
         # 用 none 启动上下文：不触发任何真实嵌入源解析（我们要自己指定候选）
-        os.environ.setdefault("WIKIUSB_TEST_ISOLATED", "1")
+        os.environ.setdefault("KAVIRA_TEST_ISOLATED", "1")
         from app.core import config                              # noqa: E402
         config.update({"AI": {"embedding_source": "none", "provider": "offline"}},
                       persist=False)

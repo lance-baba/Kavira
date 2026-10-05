@@ -37,7 +37,7 @@ def run(args, td, input_text=None, env_extra=None):
     localapp = Path(td) / "_localapp"
     localapp.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "LOCALAPPDATA": str(localapp),
-           "WIKIUSB_STATE_DIR": str(localapp / "USB-WIKI"), **(env_extra or {})}
+           "KAVIRA_STATE_DIR": str(localapp / "Kavira"), **(env_extra or {})}
     p = subprocess.run(
         [PY, str(INSTALLER), "uninstall", *args],
         input=input_text, capture_output=True, text=True, timeout=120, env=env,
@@ -76,13 +76,13 @@ with tempfile.TemporaryDirectory() as td:
     (default_lib / "keep.md").write_text("y", encoding="utf-8")
     desk = td / "Desktop"
     desk.mkdir()
-    (desk / "USB-WIKI.lnk").write_text("lnk", encoding="utf-8")
+    (desk / "Kavira.lnk").write_text("lnk", encoding="utf-8")
 
     rc, out, err = run(["--app-target", str(app), "--library-target", str(default_lib),
                         "--desktop-dir", str(desk), "--yes"], td)
     check("T1 rc=0", rc == 0)
     check("T1 App 已删", not app.exists())
-    check("T1 桌面 lnk 已删", not (desk / "USB-WIKI.lnk").exists())
+    check("T1 桌面 lnk 已删", not (desk / "Kavira.lnk").exists())
     check("T1 marker Library 被保留", marker_lib.exists())
     check("T1 默认 Library 被保留", default_lib.exists())
 
@@ -92,11 +92,11 @@ with tempfile.TemporaryDirectory() as td:
     td = Path(td)
     desk = td / "Desktop"
     desk.mkdir()
-    rc, out, err = run(["--app-target", str(td / "App"), "--library-target", str(td / "USB-WIKI-Data"),
+    rc, out, err = run(["--app-target", str(td / "App"), "--library-target", str(td / "Kavira-Data"),
                         "--desktop-dir", str(desk), "--yes"], td)
     check("T2 rc=0", rc == 0)
     check("T2 未创建 App", not (td / "App").exists())
-    check("T2 未创建 Library", not (td / "USB-WIKI-Data").exists())
+    check("T2 未创建 Library", not (td / "Kavira-Data").exists())
     check("T2 提示无需卸载", "无需卸载" in out)
 
 # ---------------------------------------------------------------------------
@@ -104,17 +104,17 @@ print("[T3] 交互直接回车（默认 1）→ 保留资料")
 with tempfile.TemporaryDirectory() as td:
     td = Path(td)
     app = _seed_app(td)
-    lib = td / "USB-WIKI-Data"
+    lib = td / "Kavira-Data"
     lib.mkdir()
     (lib / "keep.md").write_text("y", encoding="utf-8")
     desk = td / "Desktop"
     desk.mkdir()
-    (desk / "USB-WIKI.lnk").write_text("lnk", encoding="utf-8")
+    (desk / "Kavira.lnk").write_text("lnk", encoding="utf-8")
     rc, out, err = run(["--app-target", str(app), "--library-target", str(lib),
                         "--desktop-dir", str(desk)], td, input_text="\n")
     check("T3 rc=0", rc == 0)
     check("T3 App 已删", not app.exists())
-    check("T3 lnk 已删", not (desk / "USB-WIKI.lnk").exists())
+    check("T3 lnk 已删", not (desk / "Kavira.lnk").exists())
     check("T3 Library 保留", lib.exists())
 
 # ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ print("[T4] 交互选 1 → 保留资料")
 with tempfile.TemporaryDirectory() as td:
     td = Path(td)
     app = _seed_app(td)
-    lib = td / "USB-WIKI-Data"
+    lib = td / "Kavira-Data"
     lib.mkdir()
     (lib / "keep.md").write_text("y", encoding="utf-8")
     desk = td / "Desktop"
@@ -138,18 +138,18 @@ print("[T5] 彻底卸载二次确认：'2' 后输入 yes → 取消，什么都�
 with tempfile.TemporaryDirectory() as td:
     td = Path(td)
     app = _seed_app(td)
-    lib = td / "USB-WIKI-Data"
+    lib = td / "Kavira-Data"
     lib.mkdir()
     (lib / "keep.md").write_text("y", encoding="utf-8")
     desk = td / "Desktop"
     desk.mkdir()
-    (desk / "USB-WIKI.lnk").write_text("lnk", encoding="utf-8")
+    (desk / "Kavira.lnk").write_text("lnk", encoding="utf-8")
     rc, out, err = run(["--app-target", str(app), "--library-target", str(lib),
                         "--desktop-dir", str(desk)], td, input_text="2\nyes\n")
     check("T5 rc=0", rc == 0)
     check("T5 App 仍在", app.exists())
     check("T5 Library 仍在", lib.exists())
-    check("T5 lnk 仍在", (desk / "USB-WIKI.lnk").exists())
+    check("T5 lnk 仍在", (desk / "Kavira.lnk").exists())
     check("T5 提示已取消", "已取消" in out)
 
 # ---------------------------------------------------------------------------
@@ -157,31 +157,31 @@ print("[T6] 交互 '2' + 'DELETE' → 彻底删除")
 with tempfile.TemporaryDirectory() as td:
     td = Path(td)
     app = _seed_app(td)
-    lib = td / "USB-WIKI-Data"
+    lib = td / "Kavira-Data"
     lib.mkdir()
     (lib / "keep.md").write_text("y", encoding="utf-8")
     desk = td / "Desktop"
     desk.mkdir()
-    (desk / "USB-WIKI.lnk").write_text("lnk", encoding="utf-8")
+    (desk / "Kavira.lnk").write_text("lnk", encoding="utf-8")
     rc, out, err = run(["--app-target", str(app), "--library-target", str(lib),
                         "--desktop-dir", str(desk)], td, input_text="2\nDELETE\n")
     check("T6 rc=0", rc == 0)
     check("T6 App 已删", not app.exists())
     check("T6 Library 已删", not lib.exists())
-    check("T6 lnk 已删", not (desk / "USB-WIKI.lnk").exists())
+    check("T6 lnk 已删", not (desk / "Kavira.lnk").exists())
 
 # ---------------------------------------------------------------------------
 print("[T7] --delete-library --yes → 彻底删除并清除安装记录")
 with tempfile.TemporaryDirectory() as td:
     td = Path(td)
     app = _seed_app(td)
-    lib = td / "USB-WIKI-Data"
+    lib = td / "Kavira-Data"
     lib.mkdir()
     (lib / "keep.md").write_text("y", encoding="utf-8")
     desk = td / "Desktop"
     desk.mkdir()
-    (desk / "USB-WIKI.lnk").write_text("lnk", encoding="utf-8")
-    state_dir = td / "_localapp" / "USB-WIKI"
+    (desk / "Kavira.lnk").write_text("lnk", encoding="utf-8")
+    state_dir = td / "_localapp" / "Kavira"
     state_dir.mkdir(parents=True)
     (state_dir / "install_state.json").write_text(
         json.dumps({"app_path": str(app), "library_path": str(lib)}), encoding="utf-8")
@@ -190,23 +190,23 @@ with tempfile.TemporaryDirectory() as td:
     check("T7 rc=0", rc == 0)
     check("T7 App 已删", not app.exists())
     check("T7 Library 已删", not lib.exists())
-    check("T7 lnk 已删", not (desk / "USB-WIKI.lnk").exists())
+    check("T7 lnk 已删", not (desk / "Kavira.lnk").exists())
     check("T7 安装记录已清除", not (state_dir / "install_state.json").exists())
 
 # ---------------------------------------------------------------------------
 print("[T8] 非默认 App 位置：从安装记录反查真实 App 并删除（保留 Library）")
 with tempfile.TemporaryDirectory() as td:
     td = Path(td)
-    custom_app = td / "d_drive" / "Apps" / "USB-WIKI"
+    custom_app = td / "d_drive" / "Apps" / "Kavira"
     custom_app.mkdir(parents=True)
     (custom_app / "启动-Windows.bat").write_text("@echo off", encoding="ascii")  # App 特征
-    lib = td / "USB-WIKI-Data"
+    lib = td / "Kavira-Data"
     lib.mkdir()
     (lib / "keep.md").write_text("y", encoding="utf-8")
     desk = td / "Desktop"
     desk.mkdir()
-    (desk / "USB-WIKI.lnk").write_text("lnk", encoding="utf-8")
-    state_dir = td / "_localapp" / "USB-WIKI"
+    (desk / "Kavira.lnk").write_text("lnk", encoding="utf-8")
+    state_dir = td / "_localapp" / "Kavira"
     state_dir.mkdir(parents=True)
     (state_dir / "install_state.json").write_text(
         json.dumps({"app_path": str(custom_app), "library_path": str(lib)}), encoding="utf-8")
@@ -215,7 +215,7 @@ with tempfile.TemporaryDirectory() as td:
     rc, out, err = run(["--desktop-dir", str(desk), "--yes"], td)
     check("T8 rc=0", rc == 0)
     check("T8 自定义 App 已删", not custom_app.exists())
-    check("T8 lnk 已删", not (desk / "USB-WIKI.lnk").exists())
+    check("T8 lnk 已删", not (desk / "Kavira.lnk").exists())
     check("T8 Library 保留", lib.exists())
     check("T8 安装记录已清除", not (state_dir / "install_state.json").exists())
 

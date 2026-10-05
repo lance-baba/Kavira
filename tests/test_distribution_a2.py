@@ -133,10 +133,10 @@ class _tmp:
 # 安装测试安全沙箱（RELEASE_REQUIRED / Test Safety Isolation Defect, 2026-09-26）
 # ---------------------------------------------------------------------------
 # A2 安装测试同样会写真实副作用：
-#   * in-process install（_install_inproc）→ 成功后在**真实桌面**建 USB-WIKI.lnk +
-#     写真实 %LOCALAPPDATA%/USB-WIKI/install_state.json；
+#   * in-process install（_install_inproc）→ 成功后在**真实桌面**建 Kavira.lnk +
+#     写真实 %LOCALAPPDATA%/Kavira/install_state.json；
 #   * subprocess install（_install_subprocess，B real verify）→ 真实 installer 同样默认
-#     走真实桌面 + 真实 install_state.json（此前没传 --desktop-dir / 没注入 WIKIUSB_STATE_DIR）。
+#     走真实桌面 + 真实 install_state.json（此前没传 --desktop-dir / 没注入 KAVIRA_STATE_DIR）。
 # 统一用 context manager 在 os.environ 注入隔离变量（in-process 实时读取；subprocess 继承），
 # 并对所有安装显式传 desktop_dir=<TEMP>/Desktop。进入时保存原值、退出时精确恢复：
 # 原本存在→恢复原值，原本不存在→删除注入值。**从一开始就不写真实位置**（禁止写后再删）。
@@ -152,22 +152,22 @@ class _install_sandbox:
 
     沙箱目录（全部位于 TEMP，绝不触碰真实 Desktop/LOCALAPPDATA/Library/Documents）：
         <root>/localapp            → 冒充 LOCALAPPDATA
-        <root>/localapp/USB-WIKI   → 冒充 WIKIUSB_STATE_DIR（install_state.json 落此）
+        <root>/localapp/Kavira   → 冒充 KAVIRA_STATE_DIR（install_state.json 落此）
         <root>/Desktop             → 冒充桌面（快捷方式落此）
-    注入：LOCALAPPDATA / WIKIUSB_STATE_DIR / PYTHONUTF8=1 / PYTHONIOENCODING=utf-8。
+    注入：LOCALAPPDATA / KAVIRA_STATE_DIR / PYTHONUTF8=1 / PYTHONIOENCODING=utf-8。
     """
 
     def __init__(self) -> None:
         self._root = Path(tempfile.mkdtemp(prefix="wikiusb-a2-sandbox-"))
         self._localapp = self._root / "localapp"
-        self._statedir = self._localapp / "USB-WIKI"
+        self._statedir = self._localapp / "Kavira"
         self._desktop = self._root / "Desktop"
         self._localapp.mkdir(parents=True, exist_ok=True)
         self._statedir.mkdir(parents=True, exist_ok=True)
         self._desktop.mkdir(parents=True, exist_ok=True)
         self._overrides = {
             "LOCALAPPDATA": str(self._localapp),
-            "WIKIUSB_STATE_DIR": str(self._statedir),
+            "KAVIRA_STATE_DIR": str(self._statedir),
             "PYTHONUTF8": "1",
             "PYTHONIOENCODING": "utf-8",
         }
@@ -206,9 +206,9 @@ def _snapshot_real_side_effects() -> dict:
     必须在 sandbox 之外（用真实 env）调用——进入沙箱前拍一次，退出沙箱后拍一次。
     """
     paths = [
-        Path.home() / "Desktop" / "USB-WIKI.lnk",
-        Path(os.environ.get("LOCALAPPDATA") or (Path.home() / ".usb-wiki"))
-        / "USB-WIKI" / "install_state.json",
+        Path.home() / "Desktop" / "Kavira.lnk",
+        Path(os.environ.get("LOCALAPPDATA") or (Path.home() / ".kavira"))
+        / "Kavira" / "install_state.json",
     ]
     snap: dict[str, tuple[str, object]] = {}
     for p in paths:
@@ -236,7 +236,7 @@ def _fake_payload(tmp: Path, marker: str) -> Path:
 def _install_inproc(iw, release, app, lib, **kw) -> int:
     """in-process 安装；自动注入 sandbox 的 desktop_dir（若存在），把快捷方式落到
     TEMP/Desktop，绝不写真实桌面。install_state.json 的隔离由 _install_sandbox 的
-    WIKIUSB_STATE_DIR 负责。"""
+    KAVIRA_STATE_DIR 负责。"""
     if "desktop_dir" not in kw:
         d = _sandbox_desktop_dir()
         if d is not None:
@@ -288,7 +288,7 @@ def _install_subprocess(release, app, lib, extra=None,
                         timeout: int = 1200) -> subprocess.CompletedProcess:
     """真实安装子进程（有界；1200s 上限与 A1 一致，容纳真实重装删除尖峰）。
 
-    隔离：显式传 --desktop-dir 把快捷方式落到 TEMP/Desktop；WIKIUSB_STATE_DIR 由
+    隔离：显式传 --desktop-dir 把快捷方式落到 TEMP/Desktop；KAVIRA_STATE_DIR 由
     _install_sandbox 注入 os.environ，subprocess 继承后 install_state.json 落 TEMP，
     绝不写真实桌面 / 真实 LOCALAPPDATA。
     """
@@ -372,7 +372,7 @@ def _t_reinstall_success_verify() -> None:
         if b.returncode != 0:
             skip("B(verify) 重装 + 真实启动验证", f"build 失败：{b.stderr[-200:]}")
             return
-        release = dist / f"USB-WIKI-v{APP_VERSION}-win-x64"
+        release = dist / f"Kavira-v{APP_VERSION}-win-x64"
         app = tmp / "App"
         lib = tmp / "Library"
         # 先装一次
@@ -521,8 +521,8 @@ def _t_library_untouched_on_failure() -> None:
             iw._verify_staging = orig
         ok = rc != 0 and _sha256_tree(lib) == lib_sha0
         # 关键：Library 目录未被当成 staging / backup / 重命名
-        ok &= not (lib.parent / "USB-WIKI-Data.staging").exists()
-        ok &= not (lib.parent / "USB-WIKI-Data.backup").exists()
+        ok &= not (lib.parent / "Kavira-Data.staging").exists()
+        ok &= not (lib.parent / "Kavira-Data.backup").exists()
         check("G 失败场景 Library SHA 完全一致 + 未被 staging/backup 触碰", ok, f"rc={rc}")
 
 
@@ -546,7 +546,7 @@ def run_a2_tests() -> None:
     snap_before = _snapshot_real_side_effects()
     with _install_sandbox() as sb:
         print(f"  ℹ 安装沙箱：LOCALAPPDATA→{os.environ['LOCALAPPDATA']} "
-              f"WIKIUSB_STATE_DIR→{os.environ['WIKIUSB_STATE_DIR']} "
+              f"KAVIRA_STATE_DIR→{os.environ['KAVIRA_STATE_DIR']} "
               f"desktop_dir→{sb.desktop_dir}")
         for label, fn in (
             ("A_first_install", _t_first_install_success),

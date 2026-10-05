@@ -1,7 +1,7 @@
 """A1 —— Release Builder + SSD Installer 骨架验收（临时目录，零真实 LOCALAPPDATA/Documents 写入）。
 
 覆盖：
-  构建     build_release → dist/USB-WIKI-vX-win-x64/{installer,payload/{app,python-runtime}}
+  构建     build_release → dist/Kavira-vX-win-x64/{installer,payload/{app,python-runtime}}
   安装     install 到临时 app-target / library-target（--app-target / --library-target）
   边界     Library 独立；App/Runtime 可覆盖
   负向     缺 app → 明确失败；缺 python-runtime → 明确失败
@@ -139,18 +139,18 @@ def _sandbox(tmp: Path) -> tuple[dict, Path]:
     """A1 subprocess 沙箱：LOCALAPPDATA / 安装记录 / 桌面 **全部**重定向到 TEMP。
 
     为什么必须有它：生产 ``install()`` 成功后会调用 ``create_desktop_shortcut()``
-    与 ``_write_state()``，分别写**真实桌面**的 ``USB-WIKI.lnk`` 和
-    ``%LOCALAPPDATA%\\USB-WIKI\\install_state.json``。不隔离就违反本文件自我约定的
+    与 ``_write_state()``，分别写**真实桌面**的 ``Kavira.lnk`` 和
+    ``%LOCALAPPDATA%\\Kavira\\install_state.json``。不隔离就违反本文件自我约定的
     「零真实 LOCALAPPDATA/Documents 写入」——A1 会改掉用户的真实安装记录与桌面。
     """
     localapp = tmp / "localapp"
-    state = localapp / "USB-WIKI"
+    state = localapp / "Kavira"
     desk = tmp / "Desktop"
     for d in (localapp, state, desk):
         d.mkdir(parents=True, exist_ok=True)
     env = {**os.environ,
            "LOCALAPPDATA": str(localapp),
-           "WIKIUSB_STATE_DIR": str(state),
+           "KAVIRA_STATE_DIR": str(state),
            "PYTHONUTF8": "1",
            "PYTHONIOENCODING": "utf-8"}
     return env, desk
@@ -194,7 +194,7 @@ def _build(tmp: Path, timeout: int = 900) -> Path:
         phase="build_release", timeout=timeout, env=env)
     if out.returncode != 0:
         print(out.stdout, out.stderr)
-    return dist / f"USB-WIKI-v{APP_VERSION}-win-x64"
+    return dist / f"Kavira-v{APP_VERSION}-win-x64"
 
 
 def _install(release: Path, app: Path, lib: Path, tmp: Path,
@@ -226,9 +226,9 @@ def _install(release: Path, app: Path, lib: Path, tmp: Path,
 def _real_side_effects() -> dict:
     """只读快照**真实**（非沙箱）位置：桌面快捷方式 + 安装记录。"""
     desk = Path(os.environ.get("USERPROFILE", "")) / "Desktop"
-    state = Path(os.environ.get("LOCALAPPDATA", "")) / "USB-WIKI" / "install_state.json"
+    state = Path(os.environ.get("LOCALAPPDATA", "")) / "Kavira" / "install_state.json"
     snap = {}
-    for key, p in (("desktop_lnk", desk / "USB-WIKI.lnk"),
+    for key, p in (("desktop_lnk", desk / "Kavira.lnk"),
                    ("install_state", state)):
         try:
             st = p.stat()
@@ -305,9 +305,9 @@ def _case_c_fresh_install(sess: _Session) -> None:
     check("已有 Library → 安装后原文件不被覆盖",
           r.returncode == 0 and preserved, f"rc={r.returncode} preserved={preserved}")
     # 沙箱捕获验证：安装记录必须落在 TEMP 沙箱，而不是真实 LOCALAPPDATA
-    captured = (d / "localapp" / "USB-WIKI" / "install_state.json").is_file()
+    captured = (d / "localapp" / "Kavira" / "install_state.json").is_file()
     check("安装记录被沙箱捕获（写 TEMP 而非真实 LOCALAPPDATA）",
-          captured, f"state={d / 'localapp' / 'USB-WIKI' / 'install_state.json'}")
+          captured, f"state={d / 'localapp' / 'Kavira' / 'install_state.json'}")
     if r.returncode == 0:
         sess.app, sess.lib = app, lib
 
@@ -367,7 +367,7 @@ def _case_f_failure_leaves_library(sess: _Session) -> None:
 def _smoke_run(exe: Path, app: Path, lib: Path) -> None:
     import http.client
     port = 28997
-    env = {**os.environ, "WIKIUSB_LIBRARY": str(lib),
+    env = {**os.environ, "KAVIRA_LIBRARY": str(lib),
            "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
     logf = open(app / "a1-smoke.log", "wb")
     proc = subprocess.Popen(

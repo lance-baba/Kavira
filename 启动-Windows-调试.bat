@@ -1,10 +1,10 @@
 @echo off
 rem =====================================================================
-rem  Wiki-USB  --  Windows debug launcher  (KEEPS the console window)
+rem  Kavira  --  Windows debug launcher  (KEEPS the console window)
 rem
 rem  Same as the normal launcher, except it never uses pythonw: the
 rem  console window stays open so you can read the startup banner and any
-rem  error output. Also mirrors the log to data\wiki-usb.log as usual.
+rem  error output. Also mirrors the log to data\kavira.log as usual.
 rem
 rem  Keep this file ASCII-only (see the note in the normal launcher).
 rem =====================================================================
@@ -14,7 +14,7 @@ set PYTHONUTF8=1
 set PYTHONDONTWRITEBYTECODE=1
 setlocal enableextensions
 cd /d "%~dp0"
-title Wiki-USB (debug)
+title Kavira (debug)
 
 set "EMBED_PY=%~dp0runtime\python-3.11-embed\python.exe"
 set "LAUNCHER=%~dp0app\launcher.py"
@@ -23,11 +23,11 @@ set "RC=0"
 if not exist "%LAUNCHER%" goto :no_app
 
 if exist "%EMBED_PY%" goto :embedded_py
-echo [Wiki-USB] embedded runtime absent, probing host Python...
+echo [Kavira] embedded runtime absent, probing host Python...
 goto :probe_host
 
 :embedded_py
-echo [Wiki-USB] embedded runtime detected (console stays open)
+echo [Kavira] embedded runtime detected (console stays open)
 "%EMBED_PY%" "%LAUNCHER%" %*
 goto :finish
 
@@ -55,7 +55,7 @@ goto :finish
 :no_app
 echo.
 echo  [ERROR] app\launcher.py not found.
-echo          Please run this script from the Wiki-USB root folder.
+echo          Please run this script from the Kavira root folder.
 echo.
 pause
 endlocal & exit /b 2
@@ -77,6 +77,6 @@ endlocal & exit /b 0
 
 :failed
 echo.
-echo  [Wiki-USB] launcher exited with code %RC%
+echo  [Kavira] launcher exited with code %RC%
 pause
 endlocal & exit /b %RC%

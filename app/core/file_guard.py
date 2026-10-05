@@ -31,7 +31,7 @@ ZIP 炸弹的防护**不能只看中央目录里的声明值**（`ZipInfo.file_s
 2. **实际限流**：读取时累计**真实输出字节**，超限立即停
 
 两层都要有。另外拒绝重复 entry 名与特殊文件类型（symlink / device 等）——
-USB-WIKI 没有理由从 Office/EPUB 里恢复符号链接。
+Kavira 没有理由从 Office/EPUB 里恢复符号链接。
 """
 
 from __future__ import annotations

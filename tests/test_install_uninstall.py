@@ -69,10 +69,10 @@ def _make_fake_release(root: Path) -> Path:
 
 
 def _env(localapp: Path) -> dict:
-    # 同时重定向 LOCALAPPDATA（默认 App 位置）与安装记录目录（WIKIUSB_STATE_DIR），
-    # 覆盖 test_suite 全局注入的 WIKIUSB_STATE_DIR，保证每个场景独立、零真实写入。
+    # 同时重定向 LOCALAPPDATA（默认 App 位置）与安装记录目录（KAVIRA_STATE_DIR），
+    # 覆盖 test_suite 全局注入的 KAVIRA_STATE_DIR，保证每个场景独立、零真实写入。
     return {**os.environ, "LOCALAPPDATA": str(localapp),
-            "WIKIUSB_STATE_DIR": str(localapp / "USB-WIKI"),
+            "KAVIRA_STATE_DIR": str(localapp / "Kavira"),
             "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
 
 
@@ -98,7 +98,7 @@ def _uninstall(env: dict, args: list, input_text: str | None = None):
 
 
 def _state_file(localapp: Path) -> Path:
-    return localapp / "USB-WIKI" / "install_state.json"
+    return localapp / "Kavira" / "install_state.json"
 
 
 def _shortcut_ok(out: str, lnk: Path) -> bool:
@@ -115,7 +115,7 @@ def _shortcut_ok(out: str, lnk: Path) -> bool:
 # ---------------------------------------------------------------------------
 def run(ctx, check, section, skip) -> None:  # noqa: ARG001
     section("安装 / 卸载 · 安全收口（默认保留资料 · 自定义目录 · 彻底清场）")
-    root = Path(tempfile.mkdtemp(prefix="usbwiki_iut_"))
+    root = Path(tempfile.mkdtemp(prefix="kavira_iut_"))
     try:
         release = _make_fake_release(root / "release")
         mt = ri.verify_media(release)
@@ -126,7 +126,7 @@ def run(ctx, check, section, skip) -> None:  # noqa: ARG001
         A = root / "A"
         localapp, desk = A / "localapp", A / "desktop"
         desk.mkdir(parents=True)
-        app, lib = A / "App", A / "docs" / "USB-WIKI-Data"
+        app, lib = A / "App", A / "docs" / "Kavira-Data"
         env = _env(localapp)
         rc, out, err = _install(env, release, app, lib, desk)
         check("A 默认位置安装成功", rc == 0 and app.is_dir() and app.joinpath("app", "launcher.py").is_file(),
@@ -140,7 +140,7 @@ def run(ctx, check, section, skip) -> None:  # noqa: ARG001
         check("A 安装记录（install_state.json）记录真实 App/Library", ok_state)
         check("A Library 已创建（资料目录独立于程序）", lib.is_dir())
 
-        lnk = desk / "USB-WIKI.lnk"
+        lnk = desk / "Kavira.lnk"
         if IS_WIN:
             check("A 桌面快捷方式存在", lnk.is_file())
             check("A 快捷方式指向真实 App", _shortcut_ok(out, lnk))
@@ -160,7 +160,7 @@ def run(ctx, check, section, skip) -> None:  # noqa: ARG001
         B = root / "B"
         localapp2, desk2 = B / "localapp", B / "desktop"
         desk2.mkdir(parents=True)
-        app2, lib2 = B / "App", B / "docs" / "USB-WIKI-Data"
+        app2, lib2 = B / "App", B / "docs" / "Kavira-Data"
         env2 = _env(localapp2)
         rc, out, err = _install(env2, release, app2, lib2, desk2)
         lib2.joinpath("keep.md").write_text("data", encoding="utf-8")
@@ -172,7 +172,7 @@ def run(ctx, check, section, skip) -> None:  # noqa: ARG001
         C = root / "C"
         localapp3, desk3 = C / "localapp", C / "desktop"
         desk3.mkdir(parents=True)
-        app3, lib3 = C / "App", C / "docs" / "USB-WIKI-Data"
+        app3, lib3 = C / "App", C / "docs" / "Kavira-Data"
         env3 = _env(localapp3)
         rc, out, err = _install(env3, release, app3, lib3, desk3)
         lib3.joinpath("old.md").write_text("old", encoding="utf-8")
@@ -189,7 +189,7 @@ def run(ctx, check, section, skip) -> None:  # noqa: ARG001
         D = root / "D"
         localapp4, desk4 = D / "localapp", D / "desktop"
         desk4.mkdir(parents=True)
-        app4, lib4 = D / "App", D / "docs" / "USB-WIKI-Data"
+        app4, lib4 = D / "App", D / "docs" / "Kavira-Data"
         env4 = _env(localapp4)
         _install(env4, release, app4, lib4, desk4)
         lib4.joinpath("keep.md").write_text("data", encoding="utf-8")
@@ -206,8 +206,8 @@ def run(ctx, check, section, skip) -> None:  # noqa: ARG001
         E = root / "E"
         localapp5, desk5 = E / "localapp", E / "desktop"
         desk5.mkdir(parents=True)
-        custom_app = E / "d_drive" / "Apps" / "USB-WIKI"
-        lib5 = E / "docs" / "USB-WIKI-Data"      # Library 仍走独立目录（默认概念）
+        custom_app = E / "d_drive" / "Apps" / "Kavira"
+        lib5 = E / "docs" / "Kavira-Data"      # Library 仍走独立目录（默认概念）
         env5 = _env(localapp5)
         rc, out, err = _install(env5, release, custom_app, lib5, desk5)
         check("自定义 App 路径安装成功",
@@ -221,7 +221,7 @@ def run(ctx, check, section, skip) -> None:  # noqa: ARG001
               Path(st5.get("app_path", "")).resolve() == custom_app.resolve())
         if IS_WIN:
             check("自定义安装的快捷方式指向自定义 App",
-                  _shortcut_ok(out, desk5 / "USB-WIKI.lnk"))
+                  _shortcut_ok(out, desk5 / "Kavira.lnk"))
         else:
             skip("自定义安装的快捷方式指向自定义 App", "非 Windows")
 
@@ -270,7 +270,7 @@ def run(ctx, check, section, skip) -> None:  # noqa: ARG001
         check("uninstall.bat 带 uninstall 子命令", "install.py uninstall" in un_bat)
 
         import install_windows as _iw
-        q_target = root / "q" / "USB-WIKI"
+        q_target = root / "q" / "Kavira"
         quoted = '"' + str(q_target) + '"'
         check("粘贴的带引号路径被剥离引号",
               _iw._normalize_user_path(quoted) == str(q_target),

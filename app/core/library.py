@@ -1,9 +1,9 @@
-"""USB-WIKI Library：用户**永久资料**的边界与协议。
+"""Kavira Library：用户**永久资料**的边界与协议。
 
 ## 两个必须分清的东西
 
-    USB-WIKI App       程序目录 / Python 运行时 / 依赖 / 模型 —— **可以整个删除**
-    USB-WIKI Library   用户在 data/ 下的资料                  —— **不可以丢**
+    Kavira App       程序目录 / Python 运行时 / 依赖 / 模型 —— **可以整个删除**
+    Kavira Library   用户在 data/ 下的资料                  —— **不可以丢**
 
 本项目此前把两者绑在一起：`DATA_DIR = BASE_DIR / "data"`。
 删掉程序目录，用户的笔记与原件也跟着没了。本模块建立边界：
@@ -15,7 +15,7 @@
       ├─ assets/          永久：网页归档资产（网页可能已消失）
       ├─ snapshots/       永久：降级抓取的原始快照
       ├─ cache.db         可重建：纯派生索引
-      └─ wiki-usb.log     临时：可删
+      └─ kavira.log     临时：可删
 
 ## 终局目标（Data Contract V1）
 
@@ -47,7 +47,7 @@ log = get_logger()
 #     SCHEMA_VERSION       cache.db 索引结构版本，可以频繁升（坏了删了重建）
 #     DATA_FORMAT_VERSION  永久用户资料格式，**整个项目里最谨慎升级**
 # 三者之间任何 `X = Y` 的赋值都是设计错误。
-LIBRARY_FORMAT = "usb-wiki-library"
+LIBRARY_FORMAT = "kavira-library"
 DATA_FORMAT_VERSION = 1
 
 MANIFEST_NAME = "library.json"
@@ -55,7 +55,7 @@ MANIFEST_NAME = "library.json"
 # Library 内的永久子目录（相对路径，永不落绝对路径）
 PERMANENT_DIRS = ("notes", "originals", "assets", "snapshots")
 
-_ENV_ROOT = "WIKIUSB_LIBRARY"
+_ENV_ROOT = "KAVIRA_LIBRARY"
 
 
 class DataFormatTooNewError(RuntimeError):
@@ -69,7 +69,7 @@ class DataFormatTooNewError(RuntimeError):
         self.lib_version = lib_version
         self.app_version = app_version
         super().__init__(
-            f"此资料库由更新版本的 USB-WIKI 创建（资料格式 {lib_version}，"
+            f"此资料库由更新版本的 Kavira 创建（资料格式 {lib_version}，"
             f"当前程序支持 {app_version}）。请升级程序后使用。"
         )
 
@@ -93,7 +93,7 @@ class ManifestCorruptedError(RuntimeError):
         )
 
 
-# 历史 USB-WIKI 资料库：有 notes/originals/assets 等资料结构，但没有 manifest。
+# 历史 Kavira 资料库：有 notes/originals/assets 等资料结构，但没有 manifest。
 LEGACY_DATA_FORMAT = 0
 
 
@@ -127,7 +127,7 @@ class Library:
 
     @property
     def log_file(self) -> Path:
-        return self.root / "wiki-usb.log"
+        return self.root / "kavira.log"
 
     @property
     def manifest_path(self) -> Path:
@@ -227,7 +227,7 @@ class Library:
         fmt = m.get("format")
         if fmt and fmt != LIBRARY_FORMAT:
             # 不是我们的资料库（用户指错了目录）—— 不擅自改动
-            raise ValueError(f"该目录不是 USB-WIKI 资料库（format={fmt!r}）")
+            raise ValueError(f"该目录不是 Kavira 资料库（format={fmt!r}）")
         # 版本更旧：留给将来的 migration（本轮不动）
         # ⚠ 未知字段 / 未来字段：读取时忽略即可，**不得读一次就把文件重写成
         #   当前程序的简化格式**（否则旧程序+新 manifest 会静默降级）。
@@ -255,7 +255,7 @@ class Library:
 def detect_library_root(base_dir: Path) -> Path:
     """资料库根的解析顺序（**统一委托给 ``paths``，此处不再自己实现**）：
 
-    1. 环境变量 ``WIKIUSB_LIBRARY`` —— 便携/多资料库/测试隔离用
+    1. 环境变量 ``KAVIRA_LIBRARY`` —— 便携/多资料库/测试隔离用
     2. **App 内 ``library_path.txt`` 标记** —— 安装器 / 设置页迁移写入
     3. 默认 ``<程序目录>/data``（保持向后兼容，不强行搬目录）
 

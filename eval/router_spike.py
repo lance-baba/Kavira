@@ -1,4 +1,4 @@
-"""USB-WIKI · Attribution Scope Router Spike V1
+"""Kavira · Attribution Scope Router Spike V1
 
 **只在 eval/ 内实现；不改 app/；不调用任何模型**（无 LLM / embedding / reranker / ONNX / 网络）。
 
@@ -171,7 +171,7 @@ def render_md(rep: dict) -> str:
     r, d, a, cb = rep["router"], rep["dev72"], rep["attr_dev"], rep["combination"]
     def f(v):
         return "—" if v is None else f"{v*100:.1f}%"
-    L = ["# USB-WIKI · Attribution Scope Router Spike V1", "",
+    L = ["# Kavira · Attribution Scope Router Spike V1", "",
          f"- 生成：{rep['generated_at']}",
          f"- Router DEV：**{r['cases']} 题**（GUARD {r['n_guard_gold']} / "
          f"PASS_THROUGH {r['n_pass_gold']}，边界负例 {r['n_pass_gold']/r['cases']*100:.0f}%）"

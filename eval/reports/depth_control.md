@@ -1,4 +1,4 @@
-# USB-WIKI · Candidate Depth Control（split = dev，72 题）
+# Kavira · Candidate Depth Control（split = dev，72 题）
 
 同一套生产 `hybrid_search()`，**未改任何算法**。A1/A2 只加深候选池并**保持原始排序**，
 再截 Top5；rerank 两列来自上一轮 Spike（pool=N20）。

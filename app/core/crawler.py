@@ -752,7 +752,7 @@ def inject_base_href(html_text: str, source_url: str) -> str:
 def find_orphan_originals(note_paths) -> list:
     """**只报告、不删除**：列出暂未关联到笔记的原件文件名。
 
-    USB-WIKI Data Contract：``originals/`` 是用户导入/保存的**原始资料**，
+    Kavira Data Contract：``originals/`` 是用户导入/保存的**原始资料**，
     是 durable 数据 —— 不能因为「Markdown 暂时不存在 / 索引未加载 / Library 切换 /
     同步基线异常 / 测试环境状态」就被后台自动删除。真实事故：原件目录 4 份文件暂时
     没有对应笔记（首次启动、索引尚未建立），同步器把它们当孤儿**删掉了**。

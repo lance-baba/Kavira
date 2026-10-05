@@ -1,4 +1,4 @@
-Wiki-USB Portable Knowledge Base  -  User Manual
+Kavira Portable Knowledge Base  -  User Manual
 ====================================================================
 
 
@@ -24,7 +24,7 @@ Contents
 
 1. What This Is
 --------------------------------------------------------------------
-Wiki-USB is a personal knowledge base that lives on your own computer
+Kavira is a personal knowledge base that lives on your own computer
 or on portable storage.
 
 You collect web pages, Word documents, PDFs, spreadsheets, slides,
@@ -78,7 +78,7 @@ an existing library it takes it over as-is.
 
 4. Starting and Exiting
 --------------------------------------------------------------------
-To start: double-click "USB-WIKI" on your desktop.
+To start: double-click "Kavira" on your desktop.
 Your browser opens the control page automatically, and everything is
 done from that page.
 
@@ -95,7 +95,7 @@ otherwise data being written may be left incomplete.
 If there is no desktop shortcut, open the program folder (default
 location below) and double-click "Start-Windows.bat":
 
-    %LOCALAPPDATA%\USB-WIKI\App
+    %LOCALAPPDATA%\Kavira\App
 
 For troubleshooting, double-click "Start-Windows-Debug.bat" in the same
 folder -- it keeps a console window open showing startup messages and
@@ -265,7 +265,7 @@ Backup
 
     You get a file like this; save it to cloud storage or another drive:
 
-        USB-WIKI-backup-20261005-0930.zip
+        Kavira-backup-20261005-0930.zip
 
     The package contains your note text, imported originals, image
     assets and collection data, plus a readme explaining recovery.
@@ -283,7 +283,7 @@ Restore
     1) Create an empty folder to be your new library folder;
     2) Put notes, originals, assets, metadata and snapshots from the
        backup into it, and place library.json in the root of that folder;
-    3) Open USB-WIKI -> Settings -> "Library Folder" and point it there;
+    3) Open Kavira -> Settings -> "Library Folder" and point it there;
     4) On first start the index rebuilds automatically; after a short
        wait, search and asking work again.
 

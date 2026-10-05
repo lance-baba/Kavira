@@ -7,7 +7,7 @@
     "top_k": 5,
     "embedder": "local_hash(512)  # 离线可复现；不依赖 ollama",
     "elapsed_s": 0.26,
-    "library": "C:\\Users\\huqih\\AppData\\Local\\Temp\\usb-wiki-eval-uryfis93"
+    "library": "C:\\Users\\huqih\\AppData\\Local\\Temp\\kavira-eval-uryfis93"
   },
   "counts_by_category": {
     "attribution": 4,

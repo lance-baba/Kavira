@@ -1,8 +1,8 @@
-# USB-WIKI · RAG Eval Lab V1 — Baseline Report
+# Kavira · RAG Eval Lab V1 — Baseline Report
 
 - 生成时间：2026-09-22 21:23:08
 - 题量：**35**（top_k=5，embedder=local_hash(512)  # 离线可复现；不依赖 ollama）
-- 隔离库：`C:\Users\huqih\AppData\Local\Temp\usb-wiki-eval-uryfis93`（TEMP，未触碰真实 Library）
+- 隔离库：`C:\Users\huqih\AppData\Local\Temp\kavira-eval-uryfis93`（TEMP，未触碰真实 Library）
 - 耗时：0.26s
 
 ## 总指标

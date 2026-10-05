@@ -7,7 +7,7 @@
     "top_k": 5,
     "embedder": "local_hash(512)  # 离线可复现；不依赖 ollama",
     "elapsed_s": 0.39,
-    "library": "C:\\Users\\huqih\\AppData\\Local\\Temp\\usb-wiki-eval-cymzopa_"
+    "library": "C:\\Users\\huqih\\AppData\\Local\\Temp\\kavira-eval-cymzopa_"
   },
   "counts_by_category": {
     "attribution": 5,

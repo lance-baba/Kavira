@@ -1,4 +1,4 @@
-# USB-WIKI · Attribution Guard Spike V1
+# Kavira · Attribution Guard Spike V1
 
 - 生成：2026-09-23 07:28:41
 - Attribution DEV Pack：**33 题**（{'causal': 15, 'impact': 3, 'property': 4, 'responsibility': 6, 'confusion': 3, 'event': 2}）

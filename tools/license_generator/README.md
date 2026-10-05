@@ -1,4 +1,4 @@
-# USB-WIKI 离线授权 · 签发工具
+# Kavira 离线授权 · 签发工具
 
 本目录是**授权方专用**的离线激活码生成器。它签发激活码，**不参与**客户端的运行。
 
@@ -59,7 +59,7 @@ runtime\python-3.11-embed\python.exe tools\license_generator\license_gen.py ^
 | `--perpetual` | 永久授权 —— **默认行为，一般不需要写** |
 | `--expires` | ⚠ 进阶选项，产品默认**不使用**（到期时间 `YYYY-MM-DD` 或完整 ISO8601） |
 | `--features` | 功能位，逗号分隔，如 `pro,sync` |
-| `--product` | 产品标识，默认 `USB-WIKI` |
+| `--product` | 产品标识，默认 `Kavira` |
 | `--private` | 私钥路径，默认 `keys/private_ed25519.pem` |
 | `--out` | 把激活码写入文件（默认只打印） |
 | `--self-test` | 内置自检：临时密钥对→签发→客户端逻辑验签 |
@@ -82,7 +82,7 @@ runtime\python-3.11-embed\python.exe tools\license_generator\license_gen.py --se
 
 ```json
 {
-  "product": "USB-WIKI",
+  "product": "Kavira",
   "device_hash": "<64 位十六进制设备指纹>",
   "customer_id": "CUST-0001",
   "features": ["pro"],
@@ -103,7 +103,7 @@ runtime\python-3.11-embed\python.exe tools\license_generator\license_gen.py --se
 
 ```bat
 rem 1) 备份旧密钥（轮换不可逆，旧码将全部失效）
-xcopy /E /I /Y tools\license_generator\keys  "%USERPROFILE%\.usb-wiki-license\keys-backup" >nul
+xcopy /E /I /Y tools\license_generator\keys  "%USERPROFILE%\.kavira-license\keys-backup" >nul
 
 rem 2) 生成新密钥对（--force 才允许覆盖已有私钥）
 runtime\python-3.11-embed\python.exe tools\license_generator\genkey.py --force
@@ -123,6 +123,6 @@ rem 3) 把打印出的两行覆盖进 app/core/license_pubkey.py，然后重启�
 
 ```bat
 runtime\python-3.11-embed\python.exe tools\license_generator\license_gen.py ^
-    --private "%USERPROFILE%\.usb-wiki-license\keys\private_ed25519.pem" ^
+    --private "%USERPROFILE%\.kavira-license\keys\private_ed25519.pem" ^
     --device-code "…" --customer-id CUST-0003
 ```

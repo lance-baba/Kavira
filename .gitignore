@@ -11,7 +11,7 @@ data/cache.db-shm
 # 结构升级时自动产生的旧索引备份（cache.db.v14r20260916-114002.bak[+-wal/-shm]）。
 # 属于派生索引的备份，绝不入库；不忽略的话 `git add -A` 会把它们扫进提交。
 data/cache.db.v*.bak*
-data/wiki-usb.log*
+data/kavira.log*
 data/temp_chrome_profile/
 
 # ---- 发布构建产物（Release Builder 生成，非源码）----
@@ -70,7 +70,7 @@ id_ed25519
 *_secret.txt
 
 # 无控制台启动时写入的运行时 PID（供停止脚本使用），不入库
-wiki-usb.pid
+kavira.pid
 
 # 离线授权：签发私钥**只在本机**（*.pem / *.key 上面已全局忽略）。
 # 这里再显式钉死目录意图 —— 私钥绝不入库、绝不被 build_release.py 拷进发布产物

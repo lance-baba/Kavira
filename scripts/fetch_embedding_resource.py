@@ -39,7 +39,7 @@ BASE = Path(__file__).resolve().parent.parent
 CONTRACT = BASE / "resources" / "embedding" / "default.json"
 CACHE_DIR = BASE / "vendor" / "cache" / "embedding"
 ARTIFACT_JSON = "artifact.json"
-UA = {"User-Agent": "usb-wiki-embedding-resource"}
+UA = {"User-Agent": "kavira-embedding-resource"}
 
 #: 单个文件的安全上限：契约里若出现超限条目，说明契约本身有问题，拒绝下载
 MAX_FILE_BYTES = 200 * 1024 * 1024
@@ -179,7 +179,7 @@ def main(argv=None) -> int:
         return 1
 
     # 契约复制成 artifact.json —— 让 cache 目录本身就是一个「可直接使用的资源目录」
-    # （运行时按 artifact.json 解析；开发机也可用 WIKIUSB_EMBEDDING_DIR 指向它）
+    # （运行时按 artifact.json 解析；开发机也可用 KAVIRA_EMBEDDING_DIR 指向它）
     shutil.copyfile(CONTRACT, dest_dir / ARTIFACT_JSON)
     log(f"契约已落位：{dest_dir / ARTIFACT_JSON}")
     log("✓ 资源就绪（构建阶段将只做本地拷贝，绝不联网）")

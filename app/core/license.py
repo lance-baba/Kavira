@@ -19,8 +19,8 @@
 * **客户端无密**：只内置公钥；签名能力（``sign_*``）只存在于 tools/ 工具里。
 * **失败不落盘**：只有验签**通过**才写激活文件；任何失败路径都不碰磁盘
   （需求：激活失败不得污染真实目录）。
-* **状态存用户目录**：``%LOCALAPPDATA%\\USB-WIKI\\license.json``
-  （``WIKIUSB_STATE_DIR`` 可覆盖，供测试隔离），**绝不写程序目录**。
+* **状态存用户目录**：``%LOCALAPPDATA%\\Kavira\\license.json``
+  （``KAVIRA_STATE_DIR`` 可覆盖，供测试隔离），**绝不写程序目录**。
 * **cryptography 懒加载**：运行时缺它也只降级为「无法验证」，绝不让 import 崩掉应用。
 """
 from __future__ import annotations
@@ -43,7 +43,7 @@ from . import license_pubkey as pubkey_mod
 CODE_PREFIX = "USBWIKI-1-"
 
 #: 用户状态目录名（与 scripts/install_windows.py 保持一致）
-STATE_DIRNAME = "USB-WIKI"
+STATE_DIRNAME = "Kavira"
 LICENSE_FILENAME = "license.json"
 
 # 状态码 --------------------------------------------------------------------
@@ -145,10 +145,10 @@ def device_components() -> dict:
     """采集用于派生设备指纹的**分量字典**。
 
     * 生产：Windows 取 ``MachineGuid`` + 卷序列号 + 架构；Linux/macOS 取 machine-id。
-    * 测试：``WIKIUSB_DEVICE_SEED`` 存在时**完全替换**为 ``{"seed": <值>}``，
+    * 测试：``KAVIRA_DEVICE_SEED`` 存在时**完全替换**为 ``{"seed": <值>}``，
       让测试能确定性地模拟「同一台」「另一台」机器，且**不碰真实硬件**。
     """
-    seed = os.environ.get("WIKIUSB_DEVICE_SEED")
+    seed = os.environ.get("KAVIRA_DEVICE_SEED")
     if seed is not None and seed != "":
         return {"seed": seed}
 
@@ -326,16 +326,16 @@ def verify_code(code: str, *, public_key_b64: str | None = None,
 # 激活状态存储（用户状态目录，原子写）
 # ---------------------------------------------------------------------------
 def state_dir() -> Path:
-    """用户级状态目录：``WIKIUSB_STATE_DIR`` 覆盖 → 否则 ``%LOCALAPPDATA%\\USB-WIKI``。
+    """用户级状态目录：``KAVIRA_STATE_DIR`` 覆盖 → 否则 ``%LOCALAPPDATA%\\Kavira``。
 
     与 ``scripts/install_windows.py`` 的 ``_state_dir`` 采用**同一约定**，
     激活文件因此与安装记录（``install_state.json``）同处一目录、便于整体迁移。
     """
-    override = (os.environ.get("WIKIUSB_STATE_DIR") or "").strip()
+    override = (os.environ.get("KAVIRA_STATE_DIR") or "").strip()
     if override:
         return Path(override).expanduser()
     local = os.environ.get("LOCALAPPDATA")
-    base = Path(local) if local else (Path.home() / ".usb-wiki")
+    base = Path(local) if local else (Path.home() / ".kavira")
     return base / STATE_DIRNAME
 
 

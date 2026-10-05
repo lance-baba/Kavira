@@ -1,4 +1,4 @@
-"""Wiki-USB 自愈启动器（PRD 4.1）。
+"""Kavira 自愈启动器（PRD 4.1）。
 
 职责：
 1. 端口探测与避让（28765 → 28775，连续重试 10 次）
@@ -54,7 +54,7 @@ def _notify(msg: str) -> None:
         try:
             import ctypes  # noqa: PLC0415
 
-            ctypes.windll.user32.MessageBoxW(0, msg, "Wiki-USB", 0x10)  # type: ignore[attr-defined]
+            ctypes.windll.user32.MessageBoxW(0, msg, "Kavira", 0x10)  # type: ignore[attr-defined]
         except Exception:  # noqa: BLE001
             pass
 
@@ -67,7 +67,7 @@ def _fatal(msg: str, code: int = 2) -> int:
 
 #: PID 文件放在**程序根目录**（而非数据目录）—— 停止脚本按自身位置相对查找，
 #: 不用去猜用户把 Library 放到了哪个盘。
-_PID_FILE = paths.BASE_DIR / "wiki-usb.pid"
+_PID_FILE = paths.BASE_DIR / "kavira.pid"
 
 
 def _write_pid(port: int = 0) -> None:
@@ -180,7 +180,7 @@ def _banner(host: str, port: int, ctx_report: dict | None) -> str:
 
 # --------------------------------------------------------------------------
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="Wiki-USB", add_help=True)
+    parser = argparse.ArgumentParser(prog="Kavira", add_help=True)
     parser.add_argument("--host", default=None, help="监听地址（默认读 config.ini）")
     parser.add_argument("--port", type=int, default=None, help="起始端口（默认读 config.ini）")
     parser.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
@@ -272,7 +272,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.exit(_fatal(
             "无法打开该知识库：索引结构为 " + _probe.version
             + "，而当前程序只支持 " + _migrations.CURRENT_SCHEMA_VERSION + "。\n"
-            "该索引由更新版本的 USB-WIKI 创建，请升级 USB-WIKI 后再打开。\n"
+            "该索引由更新版本的 Kavira 创建，请升级 Kavira 后再打开。\n"
             "（不会自动重建或降级，以免破坏新版本产生的数据状态）"
         ))
     # 3) 先起服务框架（此时 /api/status 返回 ready:false，前端显示初始化中）

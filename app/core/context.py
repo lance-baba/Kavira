@@ -202,9 +202,9 @@ class AppContext:
                     )
 
             # 6.5) 向量自愈：签名不兼容时后台重建，**不阻塞首屏**。
-            #      ⚠ 测试模式（WIKIUSB_TEST_MODE）不自愈 —— 后台重建会干扰用例断言，
+            #      ⚠ 测试模式（KAVIRA_TEST_MODE）不自愈 —— 后台重建会干扰用例断言，
             #         因此既有 Release Gate 行为完全不变。
-            if self._needs_vec_rebuild and not os.environ.get("WIKIUSB_TEST_MODE"):
+            if self._needs_vec_rebuild and not os.environ.get("KAVIRA_TEST_MODE"):
                 threading.Thread(target=self._heal_vectors,
                                  name="vec-selfheal", daemon=True).start()
 

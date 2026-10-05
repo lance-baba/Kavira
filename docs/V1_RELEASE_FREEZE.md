@@ -22,15 +22,15 @@
 
 ## 2. Distribution Layer A1（已冻结）
 
-1. **发布产物是构建产物**：`scripts/build_release.py` 生成 `dist/USB-WIKI-v{APP_VERSION}-{platform}/`；
+1. **发布产物是构建产物**：`scripts/build_release.py` 生成 `dist/Kavira-v{APP_VERSION}-{platform}/`；
    `dist/` 不进 Git；大型 runtime / 模型 / Ollama 二进制不进 Git。
 2. **SSD 默认目录**：
-   - App：`%LOCALAPPDATA%\USB-WIKI\App`（App 根由 `paths.py` 用 `__file__` 推导，
-     **不新增 `WIKIUSB_APP_ROOT`**）
-   - Library：`%USERPROFILE%\Documents\USB-WIKI-Data`
+   - App：`%LOCALAPPDATA%\Kavira\App`（App 根由 `paths.py` 用 `__file__` 推导，
+     **不新增 `KAVIRA_APP_ROOT`**）
+   - Library：`%USERPROFILE%\Documents\Kavira-Data`
      - Windows 优先经 Known Folder API 取真实 Documents（覆盖 OneDrive 重定向 / 企业策略 / 迁移），
        失败 fallback `%USERPROFILE%\Documents`
-     - 经已有环境变量 `WIKIUSB_LIBRARY` 重定向；**安装器只设进程级 env，绝不写系统全局环境变量**
+     - 经已有环境变量 `KAVIRA_LIBRARY` 重定向；**安装器只设进程级 env，绝不写系统全局环境变量**
 3. **客户安装零 pip**：发布时随包交付预构建 **Python Embedded Runtime**，整体拷贝到 SSD；
    无 `get-pip` / `pip install` / 联网下载；**wheelhouse 不是 V1 客户安装路径**。
 4. **Library 是绝对保护边界**：App / Runtime 可覆盖；**Library 绝不覆盖 / 删除 / 重命名 / 移动 /

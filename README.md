@@ -1,4 +1,4 @@
-# Wiki-USB · 随身知识库
+# Kavira · 随身知识库
 
 > 承载于 U 盘 / 移动存储的 **Local-First 便携式个人知识库与混合 RAG 问答引擎**。
 > 数据资产 100% 属于用户：文章与笔记以标准 Markdown 落在本地文件系统，SQLite 只做高性能索引缓存。
@@ -6,7 +6,7 @@
 > 当前版本见 `app/version.py`（此处**不写死版本号** —— 它漂移过一次：程序已到 1.3.0 时
 > 这里还写着 v1.2。版本号有单一来源，文档不重复维护）。
 
-[![tests](https://github.com/lance-baba/USB-WIKI/actions/workflows/tests.yml/badge.svg)](https://github.com/lance-baba/USB-WIKI/actions/workflows/tests.yml)
+[![tests](https://github.com/lance-baba/Kavira/actions/workflows/tests.yml/badge.svg)](https://github.com/lance-baba/Kavira/actions/workflows/tests.yml)
 ![python](https://img.shields.io/badge/python-3.11%20%7C%203.13-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
@@ -30,8 +30,8 @@
 installer\install.bat
 ```
 
-默认装到 `%LOCALAPPDATA%\USB-WIKI\App`，安装完成后自动在桌面创建
-「USB-WIKI」快捷方式。安装结束时会明确打印两行：
+默认装到 `%LOCALAPPDATA%\Kavira\App`，安装完成后自动在桌面创建
+「Kavira」快捷方式。安装结束时会明确打印两行：
 
 ```text
 [install] 程序已安装到：<位置>
@@ -42,8 +42,8 @@ installer\install.bat
 
 | 安装位置 | 资料目录 |
 | --- | --- |
-| 本机默认（`%LOCALAPPDATA%\USB-WIKI\App`） | `文档\USB-WIKI-Data` |
-| 自定义位置（另一块盘 / U 盘） | 安装位置**旁边**的 `USB-WIKI-Data` |
+| 本机默认（`%LOCALAPPDATA%\Kavira\App`） | `文档\Kavira-Data` |
+| 自定义位置（另一块盘 / U 盘） | 安装位置**旁边**的 `Kavira-Data` |
 
 也就是说，装进 U 盘时程序与资料同行 —— 整根盘拔走就带走了全部资料，
 插到另一台电脑上照样能用。这条规则由 `scripts/install_windows.py`
@@ -58,7 +58,7 @@ installer\install.bat
 
 - **停止服务**：界面右上角「安全退出」（推荐，会做 WAL 检查点），或双击 `停止-Windows.bat`。
 - **需要排错**：双击 `启动-Windows-调试.bat`（保留控制台窗口，可看启动横幅与报错）；
-  两种方式都会把日志写入资料目录的 `wiki-usb.log`。
+  两种方式都会把日志写入资料目录的 `kavira.log`。
 - ⚠ 默认无控制台窗口，所以**关掉浏览器不会停止服务**；请用上面两种方式之一停止后再拔盘。
 
 > **发布包体积**：核心运行时含自包含 Python 解释器与全部依赖。
@@ -148,7 +148,7 @@ chmod +x 启动-macOS.command 启动-Linux.sh
 ## 3. 目录结构
 
 ```
-Wiki-USB/
+Kavira/
 ├── 启动-Windows.bat            # Windows 入口（默认无控制台窗口；UTF-8 编码锁死）
 ├── 启动-Windows-调试.bat       # 排错入口：保留控制台窗口，便于看启动横幅与报错
 ├── 停止-Windows.bat            # 停止无窗口运行的服务（优先 /api/system/shutdown 优雅退出）

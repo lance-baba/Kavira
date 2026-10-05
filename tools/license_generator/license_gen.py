@@ -126,7 +126,7 @@ def _self_test() -> int:
 
     device_hash = license_mod.device_hash({"seed": "self-test"})
     code, _ = generate(
-        priv, product="USB-WIKI", device_code=device_hash, customer_id="SELF-TEST",
+        priv, product="Kavira", device_code=device_hash, customer_id="SELF-TEST",
         features=["pro"], issued_at=None, expires_at=None)
     res = license_mod.verify_code(code, public_key_b64=pub_b64,
                                   device_hash_value=device_hash)
@@ -155,7 +155,7 @@ def _emit(priv, *, product, device_code, customer_id, features,
         priv, product=product, device_code=device_code, customer_id=customer_id,
         features=features, issued_at=issued_at, expires_at=expires_at)
     print("─" * 68)
-    print("USB-WIKI 激活码（发给客户，让他们粘贴进「设置 → 产品授权」）")
+    print("Kavira 激活码（发给客户，让他们粘贴进「设置 → 产品授权」）")
     print("─" * 68)
     print(code)
     print("─" * 68)
@@ -175,7 +175,7 @@ def _emit(priv, *, product, device_code, customer_id, features,
 def _interactive(private_path: Path, product: str) -> int:
     """双击/无参数运行时的引导式签发（逐项提问，免记命令行参数）。"""
     print("=" * 68)
-    print("  Wiki-USB 离线授权 · 签发激活码")
+    print("  Kavira 离线授权 · 签发激活码")
     print("=" * 68)
     print("  流程：客户在程序「设置 → 产品授权」里复制「设备码」→ 发给你 →")
     print("        你在下面粘贴设备码 → 生成激活码 → 发回客户激活。")
@@ -204,7 +204,7 @@ def _interactive(private_path: Path, product: str) -> int:
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(
-        description="USB-WIKI 离线激活码生成器（Ed25519 签名，私钥不出本机）",
+        description="Kavira 离线激活码生成器（Ed25519 签名，私钥不出本机）",
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--device-code", help="客户提供的设备码（可带横线/大小写）")
     ap.add_argument("--customer-id", help="客户标识（写入激活码，便于对账）")
