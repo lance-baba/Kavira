@@ -93,7 +93,65 @@ where you are -- you must judge that and bear the responsibility:
      licensing and contains no personal data about you.
 
 
-5. Third-Party Components and Trademarks
+5. Notices for Specific Countries or Regions
+--------------------------------------------------------------------
+The Software runs on equipment you own, and the developer has no access
+to your material. The following explains additional points to be aware of
+in particular jurisdictions.
+
+  1. European Union (GDPR)
+     The Software does not collect or transmit your personal data, so the
+     developer is not the controller or processor of the material you
+     keep. You decide what to store and where -- you are the controller
+     of that data and carry the corresponding compliance obligations.
+
+     Because your material sits on your own device, your data subject
+     rights (access, rectification, export, erasure) are exercised
+     directly by you: the material consists of ordinary files that you
+     can open, edit or delete at any time, without requesting anything
+     from a third party.
+
+     If you use a cloud AI, the relevant content is handled by that
+     provider under its own terms. Assess its compliance and its data
+     location yourself.
+
+  2. California, USA (CCPA / CPRA)
+     The Software does not collect personal information and does not
+     record the content of your material. There is therefore no sale or
+     sharing of personal information, and no "Do Not Sell" mechanism is
+     required or applicable.
+
+  3. EU Artificial Intelligence Act
+     The AI conversation capability is implemented by a model that you
+     provide or configure yourself. The developer does not supply any AI
+     model, does not operate an AI service, and takes no part in your
+     questions or in the answers you receive.
+
+     Be aware that you are interacting with an artificial intelligence
+     system, and that its output may be inaccurate -- see section 3.
+
+  4. United States Export Controls (EAR)
+     The Software includes the Ed25519 digital signature algorithm, used
+     solely to verify activation codes. Under the U.S. Export
+     Administration Regulations, openly available encryption software
+     generally qualifies for an exemption; the relevant provisions may
+     require the exporter to give notice. The Software is published
+     openly as open source, and its source code is publicly available
+     for inspection.
+
+  5. Consumer Rights (Returns and Warranty)
+     If you purchased through a reseller, warranty, returns and refund
+     rights are determined by your sales relationship with that reseller
+     and may differ from this notice. Please also read the reseller's
+     terms of sale and after-sales policy.
+
+     The Software is a digital product that is fully usable once
+     delivered. Whether a right of withdrawal applies, and under what
+     conditions, depends on the consumer protection law of your
+     jurisdiction and on the reseller's policy.
+
+
+6. Third-Party Components and Trademarks
 --------------------------------------------------------------------
   1. The names, versions and licenses of the third-party open-source
      components used are listed in "LICENSES/THIRD_PARTY.json" and
@@ -110,7 +168,7 @@ where you are -- you must judge that and bear the responsibility:
      Wikimedia project.
 
 
-6. About Encryption
+7. About Encryption
 --------------------------------------------------------------------
 The Software includes the Ed25519 digital signature algorithm. It is used
 solely to verify the validity of activation codes. It is not used to
@@ -121,7 +179,7 @@ The Software contains no password-cracking, protection-circumvention or
 access-control-bypass functionality.
 
 
-7. Disclaimer and Limitation of Liability
+8. Disclaimer and Limitation of Liability
 --------------------------------------------------------------------
 The Software is provided "as is", without warranty of any kind, express
 or implied, including but not limited to the warranties of
@@ -141,7 +199,7 @@ The complete disclaimer is governed by the MIT License text in the
 "LICENSE" file alongside this document.
 
 
-8. Governing Law and Disputes
+9. Governing Law and Disputes
 --------------------------------------------------------------------
 This notice is governed by the laws of [state your jurisdiction].
 Disputes arising from the Software are subject to the courts of
@@ -152,7 +210,7 @@ after-sales policy also apply -- warranty, returns and refunds are
 determined by that sales relationship and may differ from this notice.)
 
 
-9. Contact
+10. Contact
 --------------------------------------------------------------------
 Technical support and enquiries: [provide support email or contact]
 
