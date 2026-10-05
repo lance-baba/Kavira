@@ -3,8 +3,7 @@
 > 承载于 U 盘 / 移动存储的 **Local-First 便携式个人知识库与混合 RAG 问答引擎**。
 > 数据资产 100% 属于用户：文章与笔记以标准 Markdown 落在本地文件系统，SQLite 只做高性能索引缓存。
 >
-> 当前版本见 `app/version.py`（此处**不写死版本号** —— 它漂移过一次：程序已到 1.3.0 时
-> 这里还写着 v1.2。版本号有单一来源，文档不重复维护）。
+> 版本号以 `app/version.py` 为唯一来源，本文不重复维护。
 
 [![tests](https://github.com/lance-baba/Kavira/actions/workflows/tests.yml/badge.svg)](https://github.com/lance-baba/Kavira/actions/workflows/tests.yml)
 ![python](https://img.shields.io/badge/python-3.11%20%7C%203.13-blue)
@@ -69,10 +68,9 @@ installer\install.bat
 > `docs/EMBEDDING_ARTIFACT_SELECTION.md`）。
 > 缺任何一种嵌入能力时，按 `local_onnx → ollama → api → 纯 FTS5` 逐级降级，不影响启动。
 
-> **已实测**：`runtime/python-3.11-embed/python.exe tests/test_suite.py`
-> 会输出一行机器可读的结果（`TOTAL=… PASS=… SKIP=… FAIL=…`）。
-> 测试数量不再手写在文档里（它曾漂移过 48 项，且本身会随网络环境浮动）——完整状态见 GitHub Actions，本地跑 `python tests/test_suite.py` 会输出
-`TOTAL=… PASS=… SKIP=… FAIL=…` 这一行稳定格式。
+> **运行测试**：`runtime/python-3.11-embed/python.exe tests/test_suite.py`
+> 末行输出机器可读的 `TOTAL=… PASS=… SKIP=… FAIL=…`（数量会随网络环境浮动，
+> 故不手写进文档；完整状态见 GitHub Actions）。
 > （Python 3.11.9 + SQLite 3.45.1 + FTS5 + sqlite-vec 全部在自包含运行时内就绪）。
 
 ### macOS / Linux（极简环境引导）
