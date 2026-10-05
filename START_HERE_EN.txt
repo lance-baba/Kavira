@@ -1,0 +1,128 @@
+Wiki-USB Portable Knowledge Base  -  Read Me First
+================================================================
+
+Thank you for choosing Wiki-USB.
+
+This file gets you started in a few minutes. For the complete guide,
+troubleshooting and every option explained, see "User-Manual.txt"
+in the same folder.
+
+
+A note on the interface language
+----------------------------------------------------------------
+The application interface is currently available in Chinese only.
+An English interface is on the roadmap; the steps below describe the
+same screens and buttons, so you can follow them by their position
+and icon even if the labels are in Chinese.
+
+
+Install
+----------------------------------------------------------------
+After unzipping, open the "installer" folder and double-click
+install.bat. Wait for it to finish.
+
+You are done when these two lines appear on screen:
+
+    [install] Program installed to: ...
+    [install] Library folder:  ...
+
+Pay attention to the second line. All of your material is stored there.
+
+
+Open / Close
+----------------------------------------------------------------
+Double-click "USB-WIKI" on your desktop. Your browser opens the
+control page automatically.
+
+Closing the page does NOT stop the service, so exit like this:
+
+    Click "Secure Exit" in the top-right of the page (recommended).
+    If the page is already closed, double-click "Stop-Windows.bat"
+    in the program folder.
+
+If there is no desktop shortcut, use the fallback: open the program
+folder (default location below -- paste it into the File Explorer
+address bar) and double-click "Start-Windows.bat" inside it.
+
+    %LOCALAPPDATA%\USB-WIKI\App
+
+On portable storage, always exit this way before unplugging the drive.
+
+
+Add Your First Material
+----------------------------------------------------------------
+Open the page and click the "Capture" tab at the top. Three ways in:
+
+    - Drag Word / PDF / PPT / Excel / web pages / Markdown / text
+      into the dashed box
+    - Paste a web address and click "Fetch" (fetching a web page
+      requires an internet connection to read that page)
+    - Paste text directly into the box at the bottom and save
+
+
+Find Your Material
+----------------------------------------------------------------
+Go back to the "Ask" tab and simply ask in plain language.
+
+Citations like [1] [2] appear in the answer. Click one to see exactly
+which document and which passage the sentence came from.
+
+
+"AI Not Configured" Is Normal
+----------------------------------------------------------------
+AI conversation needs an extra model: either Ollama installed on your
+machine, or a cloud API.
+
+Without one, local search, citations and reading your material all work
+normally -- nothing is broken. To enable it, open "Settings" and pick an
+installed local model, or choose a cloud API and fill in the endpoint and
+key provided by your vendor.
+
+Local search and local models run entirely on your own computer. Only
+after you actively configure a cloud AI will the content needed for an
+answer be sent to the AI provider you chose.
+
+
+Where Your Data Lives
+----------------------------------------------------------------
+The library folder follows wherever you installed the program:
+
+    Installed to the default location  ->  Documents\USB-WIKI-Data
+    Installed to a USB drive / other   ->  USB-WIKI-Data next to it
+
+On portable storage the program and your data live on the same drive, so
+unplugging the drive takes everything with you. (The exact path was
+printed on screen when installation finished.)
+
+Reinstalling, upgrading and uninstalling never delete your material.
+To relocate it: Settings -> "Library Folder". Existing material is copied
+in full and the old copy is kept until you remove it yourself.
+
+
+Backup (if the drive is lost or fails)
+----------------------------------------------------------------
+Settings -> "Data Management" -> "Export Library Backup". You get a zip
+file. Put it on cloud storage or another drive and you are backed up.
+
+Recovery steps are written in the readme file included inside the
+backup package.
+
+
+Troubleshooting
+----------------------------------------------------------------
+Start with the "FAQ" chapter of "User-Manual.txt" in this folder --
+most questions are answered there.
+
+The "Runtime Details" section in Settings records the program's state.
+If you need help, screenshot that panel and send it to technical
+support; it makes diagnosis much faster.
+
+
+Uninstall
+----------------------------------------------------------------
+Double-click installer\uninstall.bat.
+
+By default only the program itself is removed. Your material is kept and
+can be reused after a future reinstall. If you do want to erase the
+material as well, choose the permanent-delete option and type DELETE to
+confirm. That cannot be undone.

@@ -1,0 +1,384 @@
+Wiki-USB Portable Knowledge Base  -  User Manual
+====================================================================
+
+
+Contents
+--------------------------------------------------------------------
+   1. What This Is
+   2. System Requirements
+   3. Installing
+   4. Starting and Exiting
+   5. Interface Overview
+   6. Adding Material
+   7. Finding and Asking
+   8. Browsing and Managing Notes
+   9. Collections
+  10. Settings
+  11. Library Folder and Relocation
+  12. Backup and Restore
+  13. Licensing and Activation
+  14. FAQ
+  15. Uninstalling
+  16. Getting Help
+
+
+1. What This Is
+--------------------------------------------------------------------
+Wiki-USB is a personal knowledge base that lives on your own computer
+or on portable storage.
+
+You collect web pages, Word documents, PDFs, spreadsheets, slides,
+images and your own notes into it. Later you ask questions in plain
+language and it finds answers in your own material, showing exactly
+which document and which passage each answer came from.
+
+Three things worth knowing:
+
+  - The material is yours. Notes are stored as standard Markdown text
+    files. Any text editor can open them; you do not need this software
+    to read your own data.
+  - Offline by default. Local search and on-device AI models run
+    entirely on your own machine.
+  - Portable. When installed to a USB drive or portable hard disk, the
+    program and your material sit on the same drive -- plug it into
+    another computer and everything comes with you.
+
+
+2. System Requirements
+--------------------------------------------------------------------
+  - Operating system: Windows 10 / 11 (64-bit)
+  - Disk space: roughly 250 MB for the program, plus your material
+  - AI conversation is optional. Search and reading work without it.
+    To use AI chat you need either Ollama installed on the machine,
+    or a cloud AI endpoint.
+
+When installing to portable storage, a USB 3.0 or faster port is
+recommended.
+
+
+3. Installing
+--------------------------------------------------------------------
+Unzip the package you received, open the "installer" folder and
+double-click install.bat.
+
+The installer runs a completeness check and creates a desktop shortcut.
+When it finishes, two lines are printed -- pay attention to the second:
+
+    [install] Program installed to: <where the program lives>
+    [install] Library folder:  <where your material is kept>
+
+The library folder is where all your material lives. It is worth
+writing down.
+
+If you install to portable storage, the program and the library are
+placed on the same drive, so unplugging the drive takes everything
+with you. The installer never overwrites existing material; if it finds
+an existing library it takes it over as-is.
+
+
+4. Starting and Exiting
+--------------------------------------------------------------------
+To start: double-click "USB-WIKI" on your desktop.
+Your browser opens the control page automatically, and everything is
+done from that page.
+
+To exit (important):
+
+    Click "Secure Exit" in the top-right of the page.
+    If the page is already closed, double-click "Stop-Windows.bat" in
+    the program folder.
+
+Note: closing the browser tab does NOT stop the background service.
+On portable storage, always exit this way before unplugging the drive,
+otherwise data being written may be left incomplete.
+
+If there is no desktop shortcut, open the program folder (default
+location below) and double-click "Start-Windows.bat":
+
+    %LOCALAPPDATA%\USB-WIKI\App
+
+For troubleshooting, double-click "Start-Windows-Debug.bat" in the same
+folder -- it keeps a console window open showing startup messages and
+errors.
+
+
+5. Interface Overview
+--------------------------------------------------------------------
+Note on language: the application interface is currently available in
+Chinese only. An English interface is on the roadmap. The four tabs and
+the buttons are described below by position, so you can navigate by
+matching them.
+
+There are four tabs across the top:
+
+    Ask (问答)        Ask questions and read answers with citations
+    Capture (剪藏)    Bring outside material into the knowledge base
+    Notes (笔记)      Browse, read and manage what is already stored
+    Settings (设置)   Configuration, library folder, data, licensing
+
+The top-right corner also has "Refresh" and "Secure Exit".
+
+
+6. Adding Material
+--------------------------------------------------------------------
+Open the "Capture" tab. Three ways in -- use whichever suits you:
+
+  (1) Drag files in
+      Drag Word / PDF / PPT / Excel / EPUB / web archive / Markdown /
+      plain text files into the dashed box. You can drop several at once.
+
+  (2) Fetch a web page
+      Paste a web address into the URL field and click "Fetch"
+      (fetching a web page requires an internet connection to read that
+      page). The article body becomes a note, and images and other
+      assets from the page are saved locally as well.
+
+  (3) Paste text
+      Paste text into the box at the bottom and click "Save and Index".
+
+When you import a file, the original file itself is kept as well, so you
+can open the original at any time from the "Notes" tab.
+
+
+7. Finding and Asking
+--------------------------------------------------------------------
+Open the "Ask" tab and simply ask in plain language.
+
+    Enter sends. Shift + Enter starts a new line.
+
+Citations like [1] [2] appear in the answer. Click one to see which
+document and which passage the sentence came from.
+
+If no AI model is configured yet, the page says so. Local search,
+citations and reading your material all still work -- you just do not
+get a conversational answer. See section 10, "Settings", for how to
+configure one.
+
+
+8. Browsing and Managing Notes
+--------------------------------------------------------------------
+Open the "Notes" tab. The note list is on the left, the content on
+the right.
+
+Two filters sit above the list:
+
+    - "Filter by title / path" narrows the list by keyword
+    - The collection dropdown narrows it by collection
+
+    (Both affect only what the list shows. They do not change the
+    scope of search or asking.)
+
+Once a note is open you can switch between three views:
+
+    Reading     the formatted text, best for normal reading
+    Original    the file you originally imported (PDF, Word, ...)
+    Markdown    the raw text of the note
+
+In the Reading view you can edit the note body and save your changes.
+
+
+9. Collections
+--------------------------------------------------------------------
+Collections group notes under topics so they are easier to find.
+
+  - A note can belong to several collections at once.
+  - Collections are just your own organising system. They do not affect
+    search or asking -- everything is searchable whether or not it is
+    filed.
+  - Deleting a collection does not delete the notes inside it; it only
+    removes the grouping.
+  - Deleting a note moves it to the recycle bin first, and it can be
+    restored.
+
+You set a note's collections from the "Notes" tab.
+
+
+10. Settings
+--------------------------------------------------------------------
+The "Settings" tab is divided into several blocks, top to bottom:
+
+  Configuration
+      Choose the model used for AI conversation.
+      - If Ollama is installed locally, pick one of its models from the
+        dropdown.
+      - To use a cloud AI, select the cloud API option and fill in the
+        endpoint and key provided by your vendor.
+      Click "Save Settings" to apply. "Restore Defaults" resets them.
+
+  Library Folder
+      Shows where your material is stored, how much space it uses, and
+      how much is free on that drive. You can relocate it here; see
+      section 11.
+
+  Data Management
+      "Export Library Backup" packages all your material into a single
+      zip file; see section 12.
+
+  Product License
+      Enter an activation code, or clear the activation on this machine.
+      See section 13.
+
+  Runtime Status
+      Shows how many documents and index entries you have, and the
+      overall size class of your library.
+
+  Index Maintenance
+      "Rebuild Full Index" rescans the library folder and rebuilds the
+      search index. You normally never need this; it is useful if your
+      material was heavily modified by other programs.
+
+  Runtime Details
+      Program version and environment diagnostics. Screenshot this panel
+      when you need technical support.
+
+
+11. Library Folder and Relocation
+--------------------------------------------------------------------
+The library folder is the folder that holds all of your material.
+
+To see where it is: Settings -> "Library Folder". The page shows the
+full path, space used, and free space on that drive.
+
+To move it somewhere else (for example from your computer to a portable
+drive):
+
+    1) Enter the target path in the field (or click "Check" to run the
+       pre-check first);
+    2) Once the check passes, click "Start Migration".
+
+Things to know about migration:
+
+  - Your material is copied, not moved. The old copy is kept as-is
+    until you confirm the new location works and remove it yourself.
+  - The migration verifies file counts and contents before switching
+    over.
+  - If anything fails midway it returns to the original location; your
+    material is not affected.
+  - Do not close the program or unplug the drive while it runs.
+
+
+12. Backup and Restore
+--------------------------------------------------------------------
+Backup
+
+    Settings -> "Data Management" -> "Export Library Backup".
+
+    You get a file like this; save it to cloud storage or another drive:
+
+        USB-WIKI-backup-20261005-0930.zip
+
+    The package contains your note text, imported originals, image
+    assets and collection data, plus a readme explaining recovery.
+    The search index and logs are not included -- they rebuild
+    automatically, and including them would make the file several
+    times larger.
+
+    For safety, cloud API keys are cleared from the backup. Fill them
+    in again after restoring.
+
+    Portable storage can be lost or fail. Back up regularly.
+
+Restore
+
+    1) Create an empty folder to be your new library folder;
+    2) Put notes, originals, assets, metadata and snapshots from the
+       backup into it, and place library.json in the root of that folder;
+    3) Open USB-WIKI -> Settings -> "Library Folder" and point it there;
+    4) On first start the index rebuilds automatically; after a short
+       wait, search and asking work again.
+
+
+13. Licensing and Activation
+--------------------------------------------------------------------
+Before activation the software runs in restricted mode:
+
+    Works without activation: browsing notes, local search, importing
+    files, pasting text, changing settings
+    Requires activation: fetching web pages, AI conversation
+
+To activate:
+
+    1) Open Settings -> "Product License";
+    2) Paste the activation code your vendor sent you;
+    3) Click "Activate".
+
+The activation is stored on the machine (not in the program folder),
+which means:
+
+  - Uninstalling and reinstalling, or upgrading to a new version, does
+    not require re-activation;
+  - Using it on a different computer does require activating on
+    that computer.
+
+Activation codes are issued by your vendor and are normally permanent.
+To clear the activation on this machine (for example when handing the
+device to someone else), click "Clear Local Activation" in the same
+place.
+
+
+14. FAQ
+--------------------------------------------------------------------
+Q: AI chat says it is not configured. Is something broken?
+A: No. AI chat needs a model configured separately. Without one, local
+   search, citations and reading all work. See section 10.
+
+Q: Double-clicking the desktop icon does nothing.
+A: Run "Start-Windows-Debug.bat" from the program folder -- it shows the
+   error. Common causes are a port already in use, or security software
+   blocking the program.
+
+Q: Does the program keep running after I close the browser?
+A: Yes. Closing the page does not stop the service. Use "Secure Exit" in
+   the page, or double-click "Stop-Windows.bat".
+
+Q: I moved to another computer and cannot open my material.
+A: If the program is on a USB drive, your material is on that same drive
+   and travels with it. However, licensing is bound to the device, so
+   you need to activate again on the new computer.
+
+Q: Will reinstalling or upgrading lose my material?
+A: No. The program and your material are stored separately, and the
+   installer never touches your material.
+
+Q: How much can I store?
+A: As much as the disk holds. Index size depends mainly on the number of
+   notes (.md files). Images and originals are not indexed, so a large
+   number of images will not slow search down. Up to tens of thousands
+   of notes, search stays quick.
+
+Q: Is my material uploaded anywhere?
+A: Local search and on-device models run entirely on your own computer.
+   Only after you actively configure a cloud AI will the content needed
+   for an answer be sent to the AI provider you selected.
+
+Q: Can I put the library on another drive or in a sync folder?
+A: Yes -- use Settings -> "Library Folder" to relocate it anywhere.
+   However, avoid pointing it at a folder that a cloud sync tool syncs
+   in real time, as that can interfere with the program's writes.
+
+
+15. Uninstalling
+--------------------------------------------------------------------
+Double-click installer\uninstall.bat.
+
+By default only the program itself and the desktop shortcut are removed.
+Your material is kept and can be reused after a future reinstall.
+
+If you really want to remove the program together with all material,
+choose the permanent-delete option in the uninstaller and type DELETE to
+confirm. This cannot be undone.
+
+
+16. Getting Help
+--------------------------------------------------------------------
+When something goes wrong:
+
+    1) Check section 14, "FAQ", in this manual;
+    2) Open Settings -> "Runtime Details" and screenshot that panel;
+    3) Send the screenshot together with a description of what happened
+       to technical support.
+
+This manual ships alongside the program and is updated with it.
+
+====================================================================
+

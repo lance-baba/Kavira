@@ -33,6 +33,13 @@ SKIP: list[str] = []
 FORBIDDEN_CLAIMS = ("永不上传", "绝不上传", "完全不会联网",
                     "不上传任何", "不联网上传", "全部数据只在本机")
 
+#: 英文文档里同样禁止的绝对声明。产品要面向英语母语用户，
+#: 这些说法与中文版一样属于**不准确**的承诺，必须一并守住。
+FORBIDDEN_CLAIMS_EN = ("never uploads", "never sends anything",
+                       "completely offline", "no data ever leaves",
+                       "fully offline", "all data stays on your machine",
+                       "never connects to the internet")
+
 
 def check(name: str, cond: bool, detail: str = "") -> bool:
     (PASS if cond else FAIL).append(name if cond else f"{name} :: {detail}")
@@ -143,20 +150,52 @@ def run() -> dict:
               _sha256_file(lib / "user_data.md") == lib_marker)
 
         # ---- T5：用户可见文案不再有绝对隐私声明 ----
-        targets = [REPO / "START_HERE.txt", REPO / "app" / "web" / "index.html",
-                   REPO / "app" / "web" / "app.js"]
+        # ⚠ 检查范围必须覆盖**全部随包面向用户的文档**（含英文版）：
+        #   2026-10-05 新增英文文档后，若只查中文的 START_HERE，
+        #   英文版就可能悄悄写进 "never uploads" 这类绝对声明而没人拦。
+        targets = [
+            REPO / "START_HERE.txt", REPO / "START_HERE_EN.txt",
+            REPO / "使用手册.txt", REPO / "User-Manual.txt",
+            REPO / "app" / "web" / "index.html", REPO / "app" / "web" / "app.js",
+        ]
         bad = []
         for f in targets:
+            if not f.is_file():
+                continue
             text = f.read_text(encoding="utf-8", errors="replace")
+            low = text.lower()
             for phrase in FORBIDDEN_CLAIMS:
                 if phrase in text:
                     bad.append(f"{f.name}:{phrase}")
-        check("T5 无绝对隐私声明（不上传/永不联网类）", not bad, "; ".join(bad))
+            for phrase in FORBIDDEN_CLAIMS_EN:
+                if phrase.lower() in low:
+                    bad.append(f"{f.name}:{phrase}")
+        check("T5 无绝对隐私声明（中英，不上传/永不联网类）", not bad, "; ".join(bad))
         st = (REPO / "START_HERE.txt").read_text(encoding="utf-8")
         check("T5 START_HERE 含云端 AI 准确表述", "主动配置云端 AI" in st)
         check("T5 START_HERE 桌面为主路径", "双击桌面的「USB-WIKI」" in st
               and "备用方法" in st)
         check("T5 START_HERE 含抓网页联网说明", "抓取网页时需要联网读取该网页" in st)
+
+        # ---- T5b：英文文档必须与中文版**成对存在且同样准确** ----
+        # 产品后续要卖给英语母语用户，英文文档不是可选项；
+        # 这里守住「成对 + 同样交代了联网与云端 AI 的前提」两条底线。
+        for zh_name, en_name in (("START_HERE.txt", "START_HERE_EN.txt"),
+                                 ("使用手册.txt", "User-Manual.txt")):
+            zh_p, en_p = REPO / zh_name, REPO / en_name
+            check(f"T5b {zh_name} 有对应英文版", en_p.is_file(), str(en_p))
+            if en_p.is_file():
+                en = en_p.read_text(encoding="utf-8", errors="replace")
+                check(f"T5b {en_name} 字数与中文版相当（不低于一半）",
+                      len(en) >= len(zh_p.read_text(encoding="utf-8")) * 0.5,
+                      f"{len(en)} vs {len(zh_p.read_text(encoding='utf-8'))}")
+        en_sh = REPO / "START_HERE_EN.txt"
+        if en_sh.is_file():
+            e = en_sh.read_text(encoding="utf-8")
+            check("T5b 英文版交代了抓网页需联网",
+                  "internet connection to read that page" in e)
+            check("T5b 英文版交代了需主动配置云端 AI",
+                  "actively configure a cloud AI" in e)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
