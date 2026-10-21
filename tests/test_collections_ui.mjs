@@ -22,8 +22,10 @@ const ok = (name, cond, detail = "") => {
 process.on("unhandledRejection", () => {});
 
 const html = readFileSync(path.join(ROOT, "app/web/index.html"), "utf8");
-const dom = new JSDOM(html, { runScripts: "outside-only", pretendToBeVisual: true });
+// 该用例断言的是中文界面文案 —— 固定语言，避免跟随宿主 navigator.language 漂移
+const dom = new JSDOM(html, { runScripts: "outside-only", pretendToBeVisual: true, url: "http://localhost/" });
 const { window } = dom;
+window.localStorage.setItem("kavira.lang", "zh");
 const doc = window.document;
 if (window.Element && window.Element.prototype) window.Element.prototype.scrollIntoView = function () {};
 

@@ -71,7 +71,7 @@ _PID_FILE = paths.BASE_DIR / "kavira.pid"
 
 
 def _write_pid(port: int = 0) -> None:
-    """写 PID 文件（两行：PID / 端口），供「停止-Windows.bat」精确停止服务。
+    """写 PID 文件（两行：PID / 端口），供「stop-windows.bat」精确停止服务。
 
     记录端口是为了让停止脚本能**先走 /api/system/shutdown 优雅退出**（触发 WAL
     检查点），失败再退回 taskkill。无控制台运行时没有窗口可关，这是主要的停止入口。
@@ -165,7 +165,7 @@ def _banner(host: str, port: int, ctx_report: dict | None) -> str:
         f"   数据目录　： {paths.DATA_DIR}",
         "   ────────────────────────────────────────────────────",
         "   停止服务：界面右上角「安全退出」（推荐，会做 WAL 检查点）",
-        "             或双击程序目录下的「停止-Windows.bat」",
+        "             或双击程序目录下的「stop-windows.bat」",
         "   注意：本程序默认**不显示控制台窗口**，关掉浏览器并不会停止服务。",
         "",
     ]

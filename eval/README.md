@@ -19,6 +19,8 @@ eval/
 ├─ depth_control.py       # V1.1：A0/A1/A2 候选池深度对照（隔离"加深 pool"与"rerank"）
 ├─ reranker_spike.py      # V1：reranker 离线 A/B（fetch / verify / run）
 ├─ build_gold.py          # 维护者工具：生成 DEV+HOLDOUT gold 并做完整性校验
+├─ holdout_b_run.py       # Holdout B —— Release Candidate Gate 1 验收 runner
+├─ metric_selfcheck.py    # 关系指标口径（A′）自证：五桶语义 / 分母恒等式 / 报告重算
 ├─ datasets/
 │  ├─ core_gold.jsonl     # **DEV SET**：72 条（14 类，每条带 "split": "dev"）
 │  ├─ holdout/
@@ -166,6 +168,39 @@ python3 eval/run_eval.py compare --candidate reranker
 | Attribution 误归因率 | 归因题 top-1 命中了他事件的词 |
 | Citation 结构合法率 | 全库引用的 doc_id/parent_id 存在、range 合法、parent 属于该 doc |
 | Citation 相交率 | 引用区间与 gold 证据区间相交 |
+
+## 关系指标口径（A′ · `holdout_b_run.py::relation_metrics`）
+
+`answer_state` 是 gold 对「**这题该怎么答**」的声明，归因指标**按它分五个桶**。
+旧实现把一切非 `yes`/`no` 的值都塞进 `else` 当 `insufficient`，于是 `answered` 的**查找题**
+也被要求「必须弃答」—— `hb_p_data`（谁负责数据平差与报表编制？→ 李岚）因此被记成
+**False Association 12.5%**，而它其实是**答对了**。
+
+| gold `answer_state` | 语义 | Guard = YES | 其它 |
+| --- | --- | --- | --- |
+| `yes` | 应声称该关系 | 记正确（`positive_relation_accuracy` 分子） | `positive_miss` |
+| `no` | 应否定该关系 | **计 FA**（`fp`） | Guard=NO 记正确；INSUFFICIENT → `negative_miss` |
+| `insufficient` | 应弃答 | **计 FA**（`fp`） | Guard=INSUFFICIENT 记正确；NO → `insufficient_miss` |
+| **`answered`** | **查找题**（可回答，答案即 `must_contain`） | 负责人对 → `answered_correct`（**不计 FA**）<br>负责人不符 / 取不到 → `answered_fp`（**计 FA**） | 非 YES → `answered_miss`（**不计 FA**，由 Unnecessary Guard 的 blocked 口径监督） |
+| 其它未知值 | 未定义 | **计 FA**（保守） | 单列 `unknown_miss`（**绝不默认当 insufficient**） |
+
+* **False Association 语义钉死**：*声称了 gold 说无证据的关系，**或答错了责任人***。
+  `fa_fp = fp_no + fp_ins + answered_fp + fp_unknown`
+* **FA 分母 = `n_no + n_ins + n_answered + n_unknown` = `n_guard − n_yes`**。
+  本次（Holdout B）= 4 + 3 + 1 + 0 = **8**，与旧口径的 8 **完全相同** ⇒
+  `FA 12.5% → 0%` **不是靠缩小分母换来的**，分子确实从 1 变成 0。
+* **owner 匹配方向是双向子串**（`gold_term in owner|reason` 或反向）：gold 常写全称、
+  guard 可能只抓到短名（「市应急管理局」vs「应急管理局」）。该方向的失效模式是**低估 FA**
+  （该报未报），不会把「完全不同的人」算成答对。**不要收紧成等值匹配** ——
+  那会凭空造出假 FA；若真出现「抓到的短名恰是 gold 全称子串、却指向别人」的实例，再改成
+  等值/后缀匹配。
+* ⚠ **`answered` 桶本次 n = 1**（`hb_p_data`）。**`answered_accuracy 100% (1/1)` 只代表
+  这 1 题，不可外推**成「查找题准确率 100%」；`abstention_accuracy` 的分母也相应从 4 变 3。
+
+**留痕（换口径前后都成立）**：用 A′ 重算冻结基线 `c5451b8`（读 `reports/holdout_b.json`
+的 per_case，**不重跑算法**）仍是 `FA 0% (0/8)`；而它在新口径下暴露 `answered_miss = 1`
+（该答却阻断），这 1 例在旧口径里被藏在 `unnecessary_guard 2.27%` 中。
+自证脚本：`eval/metric_selfcheck.py`（可直接跑，覆盖五桶语义与分母不缩）。
 
 ## 失败归因
 

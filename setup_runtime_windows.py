@@ -272,7 +272,7 @@ VERIFY_ROOT_FILES = [
     "requirements.txt", "requirements-release.lock",
     "setup_runtime_windows.py",
 ]
-VERIFY_LAUNCHERS = ["启动-Windows.bat", "启动-macOS.command", "启动-Linux.sh"]
+VERIFY_LAUNCHERS = ["start-windows.bat", "start-macos.command", "start-linux.sh"]
 # ⚠ data/notes、data/originals 是**用户真相源**，由运行期按需创建，
 # 不随发布包分发，也不该出现在干净 checkout 里 —— 不算交付缺项。
 # data 根目录保留（若已随仓库提交则校验其存在；运行期也会自建）。
@@ -576,7 +576,7 @@ def main() -> int:
 
     if os.name != "nt":
         print("[setup] 提示：本脚本用于生成 Windows 发布版。")
-        print("        macOS / Linux 无需嵌入式包 —— 直接运行 启动-macOS.command / 启动-Linux.sh，")
+        print("        macOS / Linux 无需嵌入式包 —— 直接运行 start-macos.command / start-linux.sh，")
         print("        启动脚本会自动检测宿主 Python 3.10+ 并提示安装缺失依赖。")
 
     if sys.version_info[:2] < (3, 9):

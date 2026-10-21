@@ -1,7 +1,7 @@
 """测试隔离环境（Test Harness Safety Fuse）—— 破坏性测试的唯一入口。
 
 背景（真实事故，2026-09-21）：`tests/test_suite.py::reset_workspace()` 在**未隔离的
-开发 Library**（`F:\\项目\\USB-WIKI\\data`）上运行，删除了用户真实 `notes/*.md`、
+开发 Library**（`<repo>/data`，即仓库内的 `data/` 目录）上运行，删除了用户真实 `notes/*.md`、
 `snapshots/*`、`cache.db`。三者在 .gitignore 内，git 无法恢复。
 
 教训：「记得设置 KAVIRA_LIBRARY」是**人的纪律**，不是安全机制。本模块把它变成

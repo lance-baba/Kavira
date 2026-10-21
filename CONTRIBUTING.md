@@ -1,5 +1,7 @@
 # 贡献指南
 
+[English](CONTRIBUTING_EN.md) | 中文
+
 感谢你有兴趣改进 Kavira。这个项目的核心约束是**便携与零安装**——
 所有改动都要经得起这一条的检验。
 
@@ -33,30 +35,26 @@ python scripts/fetch_embedding_resource.py # **另一步**：按契约取回模�
 python tests/test_suite.py
 ```
 
-CI 会在 **Linux + Windows × Python 3.11 + 3.13** 四个组合加 Windows Portable 共 5 路上
-跑同一套测试，依赖全部来自 `requirements-release.lock`（含 `onnxruntime` / `tokenizers`）。
+CI 在 **5 路**上跑同一套测试，两条链路缺一不可：
 
-embedding 相关用例需要模型字节（大文件不进 Git）：CI 会先跑取件脚本；
-取不到时相关用例 **SKIP**（不把「本机没取件」伪装成产品缺陷）。
-「嵌入源不可用时的降级链」由 `tests/test_embedding_a42b.py` 的 D / E 用例直接模拟验证，
+- **4 路矩阵（开发环境兼容性）**：`Linux + Windows × Python 3.11 + 3.13`，用 runner 的系统 Python，
+  依赖从 `requirements-release.lock` 安装（**含 `onnxruntime` / `tokenizers`**）。
+- **1 路 Windows Portable（产品真实形态）**：`setup_runtime_windows.py` 构建自包含嵌入式运行时
+  （**默认不加 `--with-onnx`，即发布形态不含 `onnxruntime`**），随后依次执行
+  运行时体检 → **取件**（`scripts/fetch_embedding_resource.py`）→ 用嵌入式运行时跑同一套测试 →
+  `scripts/build_release.py --strict` Stage Gate（`RUNTIME_LOCK_MISMATCH=0` / `LOCK_ENTRY_MISSING=0`）→
+  启动冒烟。任一门禁不达即非零退出。
+
+**任何平台的失败都必须让 workflow 真正失败** —— 不得为了「让徽章变绿」把某个 lane 改成非阻塞。
+
+**触发策略**：完整 5 路只在**手动 `workflow_dispatch`** 与 **`v*` tag** 时触发；
+普通 push 到 `main` **不触发**（GitHub 在本项目里是代码备份 + 版本回退，不是每次提交的发布验收）。
+不要为了「让徽章动起来」把 `push.branches` 加回来。
+
+embedding 相关用例需要模型字节（大文件不进 Git）：4 路矩阵 job **不取件**，相关用例记为 **SKIP**
+（不把「本机没取件」伪装成产品缺陷）；Portable job **会先取件**，取件失败即该 job 失败。
+「嵌入源不可用时的降级链」另由 `tests/test_embedding_a42b.py` 的 D / E 用例直接模拟验证，
 不依赖真的缺依赖。
-
-> ⚠️ **已知问题**：Windows job 在 GitHub runner 上存在尚未定位的失败
-> （本地 Windows 双环境 189/189 通过，Linux runner 亦全绿），
-> 故该 job 标记为 `continue-on-error`，不会阻塞徽章。
-> 若你是 Windows 用户且 CI 失败，欢迎把该 job 的「运行测试套件」步骤日志尾部贴到 issue。
-> 欢迎提供能稳定复现的环境信息（OS 版本 / Python 版本 / 代码页）。
-
-
-CI 会在 **Linux + Windows × Python 3.11 + 3.13** 四个组合上跑同一套测试，
-并且**故意不安装 `onnxruntime`** —— 用来验证嵌入源的降级链在缺依赖时依然正确。
-
-> ⚠️ **已知问题**：Windows job 在 GitHub runner 上存在尚未定位的失败
-> （本地 Windows 双环境 189/189 通过，Linux runner 亦全绿），
-> 故该 job 标记为 `continue-on-error`，不会阻塞徽章。
-> 若你是 Windows 用户且 CI 失败，欢迎把该 job 的「运行测试套件」步骤日志尾部贴到 issue。
-> 欢迎提供能稳定复现的环境信息（OS 版本 / Python 版本 / 代码页）。
-
 
 新增功能请一并补测试。测试素材尽量**由代码现场合成**（参见 `tests/test_converters.py`
 里手写 xref 的 PDF、以及用 `zipfile` 现造的 OOXML），不要提交二进制样本文件。
@@ -82,14 +80,14 @@ CI 会在 **Linux + Windows × Python 3.11 + 3.13** 四个组合上跑同一套�
    用 `filename*=UTF-8''…` 编码。
 8. **依赖清单只有一处** —— 所有安装入口都读 `requirements.txt`，不要新增硬编码列表。
 
-更完整的技术约束与踩坑记录见 [`docs/设计与实现.md`](docs/设计与实现.md)。
+更完整的技术约束与踩坑记录见 [`docs/design-and-implementation.md`](docs/design-and-implementation.md)。
 
 ---
 
 ## 关于依赖
 
 - 新增依赖前请先问：**它能不能用标准库替代？** 运行时体积是这个项目的核心指标之一。
-- `docs/设计与实现.md` 记录了各项依赖的体积代价。
+- `docs/design-and-implementation.md` 记录了各项依赖的体积代价。
 - `onnxruntime` / `tokenizers` 现已转为**标准运行依赖**（本地语义检索是 V1 标准能力），
   写在 `requirements.txt` 里并由 lock 精确锁定；新增依赖前仍请先算体积代价。
 - **模型字节不进 Git**：只在 `resources/embedding/default.json` 里 pin
@@ -103,7 +101,7 @@ CI 会在 **Linux + Windows × Python 3.11 + 3.13** 四个组合上跑同一套�
 
 - 一个 PR 只做一件事；避免「顺手重构 + 新功能」混在一起。
 - 提交信息请描述**为什么**这么改，而不只是改了哪里。
-- 若改动了行为，请同步更新 `README.md` 或 `docs/`。
+- 若改动了行为，请同步更新 `README.md` / `README_EN.md` 或 `docs/`。
 - 新增文件请确认没有把 `data/`、`config.ini`、`runtime/` 加进版本控制。
 
 ## 报告问题

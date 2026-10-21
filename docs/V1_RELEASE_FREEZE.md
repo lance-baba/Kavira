@@ -47,7 +47,7 @@
 - **任意阶段失败必须 rollback**：payload copy / runtime copy / launcher 生成 / staging 验证 /
   swap / 安装后 smoke 任一失败 → 恢复旧 App；**首次安装失败则清理半成品，绝不留下可误启动的 App**。
 - **Library 全程不碰**：安装 / 更新 / rollback 前后 `Library SHA256` 完全一致；Library 不参与任何程序侧事务。
-- **用户启动入口**：`App\启动-Windows.bat` 默认 `runtime\python.exe app\launcher.py`
+- **用户启动入口**：`App\start-windows.bat` 默认 `runtime\python.exe app\launcher.py`
   （**不含 `--no-browser`**，自动开浏览器）。`--no-browser` 仅用于测试 / CI / 调试，不得写死进用户入口。
 - **构建 strict gate**：`python scripts/build_release.py --strict` 在缺
   `app` / `嵌入式 runtime` / `installer` 任一时**非零退出**，不产生「看起来成功但不可安装」的发布包；

@@ -280,7 +280,8 @@ def _build_real(dist: Path, timeout: int = 600) -> subprocess.CompletedProcess:
     global BUILD_COUNT
     BUILD_COUNT += 1
     return _run_bounded(
-        [sys.executable, str(REPO / "scripts" / "build_release.py"), "--output", str(dist)],
+        [sys.executable, str(REPO / "scripts" / "build_release.py"),
+         "--lang", "zh", "--output", str(dist)],
         phase="build_release", timeout=timeout)
 
 
@@ -316,8 +317,8 @@ def _t_first_install_success() -> None:
         lib = tmp / "Library"
         rc = _install_inproc(iw, payload, app, lib, smoke=False)
         ok = rc == 0 and (app / "app" / "VERSION.txt").read_text(encoding="utf-8") == "v1"
-        ok &= (app / "启动-Windows.bat").is_file()
-        bat = (app / "启动-Windows.bat").read_text(encoding="utf-8")
+        ok &= (app / "start-windows.bat").is_file()
+        bat = (app / "start-windows.bat").read_text(encoding="utf-8")
         ok &= "--no-browser" not in bat           # 用户入口不得含测试参数
         ok &= "app\\launcher.py" in bat
         # 事务收尾：staging / backup 必须清理
@@ -372,7 +373,7 @@ def _t_reinstall_success_verify() -> None:
         if b.returncode != 0:
             skip("B(verify) 重装 + 真实启动验证", f"build 失败：{b.stderr[-200:]}")
             return
-        release = dist / f"Kavira-v{APP_VERSION}-win-x64"
+        release = dist / f"Kavira-v{APP_VERSION}-win-x64-zh"
         app = tmp / "App"
         lib = tmp / "Library"
         # 先装一次

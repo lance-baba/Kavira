@@ -1,0 +1,67 @@
+{
+  "format_version": 1,
+  "package": "multilingual-e5-small",
+  "kind": "bundled_model",
+  "base_model": {
+    "id": "intfloat/multilingual-e5-small",
+    "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+    "license": "MIT",
+    "license_source": {
+      "project": "https://github.com/microsoft/unilm",
+      "ref": "master",
+      "commit": "31c5b904ca1bf2afb4c234a6675c683a4e5fc7cd",
+      "file": "LICENSE",
+      "url": "https://raw.githubusercontent.com/microsoft/unilm/31c5b904ca1bf2afb4c234a6675c683a4e5fc7cd/LICENSE",
+      "sha256": "904dc4d8749877f1dba1cda48200d2462dccbeb7c134d5e4ef6fa75e0198c8fe",
+      "size": 1104
+    },
+    "note": "HF 模型仓库 intfloat/multilingual-e5-small 只有 license: mit 声明、没有 LICENSE 文件；e5 系列上游为 Microsoft unilm 项目，故取其 MIT 原文（pin commit）。版权行为 'Copyright (c) Microsoft Corporation'。"
+  },
+  "conversion_artifact": {
+    "repository": "Xenova/multilingual-e5-small",
+    "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+    "file": "onnx/model_quantized.onnx",
+    "sha256": "f80102d3f2a1229f387d3c81909990d8945513e347b0eab049f7de3c6f98c193",
+    "size": 118308185,
+    "precision": "int8",
+    "repository_license": "unspecified",
+    "license_basis": "derived_from_base_model",
+    "note": "该转换仓库自身未声明 license。此处**不**把它硬标为 MIT —— 只如实记录「它是上述 MIT base model 的 ONNX INT8（quantized）转换产物」。"
+  },
+  "tokenizer_files": {
+    "tokenizer.json": {
+      "size": 17082730,
+      "sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39"
+    },
+    "tokenizer_config.json": {
+      "size": 443,
+      "sha256": "a1d6bc8734a6f635dc158508bef000f8e2e5a759c7d92f984b2c86e5ff53425b"
+    },
+    "special_tokens_map.json": {
+      "size": 167,
+      "sha256": "d05497f1da52c5e09554c0cd874037a083e1dc1b9cfd48034d1c717f1afc07a7"
+    }
+  },
+  "pooling": "mean",
+  "dimension": 384,
+  "normalization": "l2",
+  "max_length": 512,
+  "prefixes": {
+    "query": "query: ",
+    "document": "passage: ",
+    "note": "e5 系列官方要求检索时 query 加 'query: '、document 加 'passage: ' 前缀；已纳入 artifact manifest 协议（EmbeddingResource.query_prefix/document_prefix）。"
+  },
+  "files": [
+    {
+      "name": "LICENSE",
+      "source_url": "https://raw.githubusercontent.com/microsoft/unilm/31c5b904ca1bf2afb4c234a6675c683a4e5fc7cd/LICENSE",
+      "size": 1104,
+      "sha256": "904dc4d8749877f1dba1cda48200d2462dccbeb7c134d5e4ef6fa75e0198c8fe"
+    }
+  ],
+  "notes": [
+    "本 artifact 为随包分发（离线可用、零联网）。",
+    "体积：model.onnx 118,308,185 B + tokenizer 合计 ≈ 135 MB。",
+    "许可：MIT（可商用）。转换仓库未声明 license，按 base model 溯源记录。"
+  ]
+}

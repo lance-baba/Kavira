@@ -1,5 +1,7 @@
 # Kavira · 随身知识库
 
+[English](README_EN.md) | 中文
+
 > 承载于 U 盘 / 移动存储的 **Local-First 便携式个人知识库与混合 RAG 问答引擎**。
 > 数据资产 100% 属于用户：文章与笔记以标准 Markdown 落在本地文件系统，SQLite 只做高性能索引缓存。
 >
@@ -9,13 +11,14 @@
 ![python](https://img.shields.io/badge/python-3.11%20%7C%203.13-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
-📖 **文档**：[项目架构说明](docs/项目架构说明.md) ·
-[设计与实现（含缺陷根因与体积实测）](docs/设计与实现.md) ·
-[测试报告](docs/测试报告.md) ·
+📖 **文档**：[项目架构说明](docs/architecture.md) ·
+[设计与实现（含缺陷根因与体积实测）](docs/design-and-implementation.md) ·
+[测试报告](docs/test-report.md) ·
 [更新日志](CHANGELOG.md) ·
 [贡献指南](CONTRIBUTING.md) ·
 [行为准则](CODE_OF_CONDUCT.md) ·
-[安全策略](SECURITY.md)
+[安全策略](SECURITY.md) ·
+[English README](README_EN.md)
 
 ---
 
@@ -55,8 +58,8 @@ installer\install.bat
 
 浏览器会自动打开 `http://127.0.0.1:28765`。
 
-- **停止服务**：界面右上角「安全退出」（推荐，会做 WAL 检查点），或双击 `停止-Windows.bat`。
-- **需要排错**：双击 `启动-Windows-调试.bat`（保留控制台窗口，可看启动横幅与报错）；
+- **停止服务**：界面右上角「安全退出」（推荐，会做 WAL 检查点），或双击 `stop-windows.bat`。
+- **需要排错**：双击 `start-windows-debug.bat`（保留控制台窗口，可看启动横幅与报错）；
   两种方式都会把日志写入资料目录的 `kavira.log`。
 - ⚠ 默认无控制台窗口，所以**关掉浏览器不会停止服务**；请用上面两种方式之一停止后再拔盘。
 
@@ -75,9 +78,9 @@ installer\install.bat
 
 ### macOS / Linux（极简环境引导）
 ```bash
-chmod +x 启动-macOS.command 启动-Linux.sh
-./启动-macOS.command          # macOS 双击亦可
-./启动-Linux.sh               # Linux
+chmod +x start-macos.command start-linux.sh
+./start-macos.command          # macOS 双击亦可
+./start-linux.sh               # Linux
 ```
 需要宿主 Python 3.10+。脚本会自动检测依赖，缺失时给出单行终端安装提示。
 
@@ -116,7 +119,7 @@ chmod +x 启动-macOS.command 启动-Linux.sh
 > **明确不支持**：旧版二进制 Office（`.doc` `.ppt` `.xls`）、图片、音视频 ——
 > 这些都需要 OCR / 语音转写**模型**，单是模型就会让发布包从 122MB 涨到 GB 级，
 > 与本项目「U 盘便携、零安装」的定位冲突。请先用 Office/WPS 另存为新格式。
-> 完整的方案取舍（哪些格式必须用模型、哪些用标准库就能解）见[设计与实现](docs/设计与实现.md)。
+> 完整的方案取舍（哪些格式必须用模型、哪些用标准库就能解）见[设计与实现](docs/design-and-implementation.md)。
 
 ### 原版预览（笔记页三种视图）
 
@@ -147,12 +150,12 @@ chmod +x 启动-macOS.command 启动-Linux.sh
 
 ```
 Kavira/
-├── 启动-Windows.bat            # Windows 入口（默认无控制台窗口；UTF-8 编码锁死）
-├── 启动-Windows-调试.bat       # 排错入口：保留控制台窗口，便于看启动横幅与报错
-├── 停止-Windows.bat            # 停止无窗口运行的服务（优先 /api/system/shutdown 优雅退出）
-├── 签发激活码.bat              # 授权方专用：签发激活码（双击＝引导模式，无需记参数）
-├── 启动-macOS.command          # macOS 入口（权限与依赖检测）
-├── 启动-Linux.sh               # Linux 入口
+├── start-windows.bat            # Windows 入口（默认无控制台窗口；UTF-8 编码锁死）
+├── start-windows-debug.bat       # 排错入口：保留控制台窗口，便于看启动横幅与报错
+├── stop-windows.bat            # 停止无窗口运行的服务（优先 /api/system/shutdown 优雅退出）
+├── issue-license.bat              # 授权方专用：签发激活码（双击＝引导模式，无需记参数）
+├── start-macos.command          # macOS 入口（权限与依赖检测）
+├── start-linux.sh               # Linux 入口
 ├── setup_runtime_windows.py    # 嵌入式运行时安装器 / 体检器 / 发布校验器 / 垃圾清理
 ├── config.ini                  # 主配置（明文；首次运行自动生成）
 ├── requirements.txt

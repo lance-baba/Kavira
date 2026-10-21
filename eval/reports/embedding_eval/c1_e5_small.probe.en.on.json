@@ -1,0 +1,4087 @@
+{
+  "meta": {
+    "generated_at": "2026-10-16 20:58:08",
+    "app_version": "1.3.0",
+    "top_k": 5,
+    "corpus_dir": "eval/fixtures_paraphrase_en",
+    "corpus_docs": [
+      "en_bridge.md",
+      "en_clinic.md",
+      "en_flood.md",
+      "en_lab.md",
+      "en_software.md",
+      "en_substation.md",
+      "en_subway.md",
+      "en_warehouse.md"
+    ],
+    "queries_file": "eval/paraphrase_en/queries_en.json",
+    "embedding_dir": "<repo>/vendor/cache/embedding_candidates/c1_e5_small",
+    "library": "C:\\Users\\huqih\\AppData\\Local\\Temp\\kavira-paraphrase-8ysv51kj",
+    "embedder": {
+      "tier": "local_onnx",
+      "model_id": "multilingual-e5-small-int8",
+      "dimension": 384,
+      "signature": "local_onnx:multilingual-e5-small-int8:384",
+      "resource_id": "multilingual-e5-small-int8",
+      "base_model": "intfloat/multilingual-e5-small",
+      "precision": "int8",
+      "fallback_reason": "",
+      "resolve_notes": [
+        "内置模型已启动：multilingual-e5-small-int8（384 维）"
+      ],
+      "resolve_warnings": []
+    },
+    "vector_route": {
+      "vec_table_ready": true,
+      "signature_mismatch": "",
+      "vec_rows": 40
+    },
+    "semantic_channel": {
+      "allow_semantic_only": true,
+      "semantic_floor": 0.6,
+      "semantic_margin": 0.05,
+      "semantic_penalty": 0.04,
+      "exclude_qtypes": [
+        "coverage"
+      ]
+    },
+    "elapsed_s": 1.52
+  },
+  "metrics": {
+    "cases": 24,
+    "failure_rate@5": 0.0417,
+    "recall@1": 0.7083,
+    "recall@3": 0.9167,
+    "recall@5": 0.9583,
+    "mrr": 0.8139,
+    "empty_result_rate": 0.0,
+    "no_lexical_hit_rate": 0.0,
+    "accepted_zero_rate": 0.0,
+    "zero_lexical_overlap_rate": 0.0417,
+    "avg_lexical_candidates": 5.08,
+    "avg_vector_candidates": 20.0,
+    "semantic_released_total": 17,
+    "queries_with_release": 1,
+    "queries_with_release_rate": 0.0417,
+    "semantic_only_references": 5
+  },
+  "zero_lexical_subset": {
+    "cases": 1,
+    "failure_rate@5": 0.0,
+    "recall@1": 0.0,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "mrr": 0.5,
+    "empty_result_rate": 0.0,
+    "no_lexical_hit_rate": 0.0,
+    "accepted_zero_rate": 0.0,
+    "zero_lexical_overlap_rate": 1.0,
+    "avg_lexical_candidates": 0.0,
+    "avg_vector_candidates": 20.0,
+    "semantic_released_total": 17,
+    "queries_with_release": 1,
+    "queries_with_release_rate": 1.0,
+    "semantic_only_references": 5
+  },
+  "sem_floor_note": {
+    "SEM_FLOOR": 0.6,
+    "queries_best_rejected_sim_ge_floor": 24,
+    "of_which_empty": 0,
+    "example_ids": [
+      "pe_en_bridge_device",
+      "pe_en_bridge_joints",
+      "pe_en_bridge_year",
+      "pe_en_clinic_fast",
+      "pe_en_clinic_flow",
+      "pe_en_clinic_reagent",
+      "pe_en_flood_drain",
+      "pe_en_flood_gate"
+    ]
+  },
+  "rejection_histogram": {
+    "vector-only(no-lexical-overlap)": 364
+  },
+  "failure_cases": [
+    {
+      "id": "pe_en_lab_cycle",
+      "query": "How often must these devices be recalibrated?",
+      "gold_doc": "en_lab.md",
+      "answer_hint": "Instrument Ledger: share a calibration cycle of 12 months",
+      "empty": false,
+      "n_refs": 2,
+      "route": "fts",
+      "system_warning": "",
+      "warnings": [],
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "top_rejected_reason": "vector-only(no-lexical-overlap)",
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "best_rejected_similarity": 0.8046,
+      "top5_docs": [
+        "en_substation.md",
+        "en_clinic.md"
+      ]
+    }
+  ],
+  "per_query": [
+    {
+      "id": "pe_en_bridge_year",
+      "query": "When did the Riverside Viaduct start carrying traffic?",
+      "gold_doc": "en_bridge.md",
+      "answer_hint": "Overview: opened to traffic in 2011",
+      "avoid_terms": [
+        "opened to traffic"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 7,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 7,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 7,
+      "rejected": 13,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 13
+      },
+      "grounded_reasons": {
+        "lexical": 7
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "Riverside",
+        "Viaduct",
+        "start",
+        "carrying",
+        "traffic"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8871,
+        "threshold": 0.9371,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "200d27863b9c9aec": 7,
+          "82971648630cd090": 5,
+          "ac289e59769a5625": 3,
+          "df88719b851b68ec": 3,
+          "0dd6b6eb563918e6": 1,
+          "6c0329fccc8e6c56": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9371,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.7561,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8871,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_bridge.md",
+        "en_bridge.md",
+        "en_bridge.md",
+        "en_bridge.md",
+        "en_bridge.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_bridge_joints",
+      "query": "How many gaps are laid out across the road surface of the viaduct?",
+      "gold_doc": "en_bridge.md",
+      "answer_hint": "Expansion Joints: four joints SS-01 to SS-04",
+      "avoid_terms": [
+        "expansion joints"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 12,
+        "vec_candidates": 20,
+        "fused": 22,
+        "parents": 5
+      },
+      "lexical_candidates": 12,
+      "vector_candidates": 20,
+      "fused": 22,
+      "accepted": 12,
+      "rejected": 10,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 10
+      },
+      "grounded_reasons": {
+        "lexical": 12
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "many",
+        "gaps",
+        "laid",
+        "out",
+        "across",
+        "road",
+        "surface",
+        "viaduct"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8148,
+        "threshold": 0.8648,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "ac289e59769a5625": 5,
+          "c864c9d4dbfcc069": 1,
+          "200d27863b9c9aec": 7,
+          "82971648630cd090": 4,
+          "df88719b851b68ec": 3
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8648,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.766,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8148,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_bridge.md",
+        "en_bridge.md",
+        "en_bridge.md",
+        "en_bridge.md",
+        "en_bridge.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_bridge_device",
+      "query": "Until what date is the certificate for the instrument that gauges concrete cracking valid?",
+      "gold_doc": "en_bridge.md",
+      "answer_hint": "Inspection Equipment: crack width gauge ZBL-F120 valid until 2026-12-05",
+      "avoid_terms": [
+        "crack width gauge",
+        "calibration certificate"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 3,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "Until",
+        "date",
+        "certificate",
+        "instrument",
+        "gauges",
+        "concrete",
+        "cracking",
+        "valid"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8418,
+        "threshold": 0.8918,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "200d27863b9c9aec": 6,
+          "c864c9d4dbfcc069": 4,
+          "4e5c2710c8d9c3c7": 3,
+          "ac289e59769a5625": 3,
+          "6c0329fccc8e6c56": 1,
+          "82971648630cd090": 2,
+          "0dd6b6eb563918e6": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8918,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.79,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8418,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_lab.md",
+        "en_bridge.md",
+        "en_lab.md"
+      ],
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 2,
+      "rr": 0.5
+    },
+    {
+      "id": "pe_en_wh_scope",
+      "query": "How many different kinds of goods were checked during the audit?",
+      "gold_doc": "en_warehouse.md",
+      "answer_hint": "Audit Scope: 128 items counted",
+      "avoid_terms": [
+        "stock items"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 7,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 5
+      },
+      "lexical_candidates": 7,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 7,
+      "rejected": 14,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 14
+      },
+      "grounded_reasons": {
+        "lexical": 7
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "many",
+        "different",
+        "kinds",
+        "goods",
+        "checked",
+        "during",
+        "audit"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8333,
+        "threshold": 0.8833,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "200d27863b9c9aec": 4,
+          "6c0329fccc8e6c56": 5,
+          "c864c9d4dbfcc069": 4,
+          "ac289e59769a5625": 1,
+          "82971648630cd090": 4,
+          "df88719b851b68ec": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8833,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.7716,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8333,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_warehouse.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_wh_short",
+      "query": "For the M12 fasteners in warehouse A, how many pieces went missing?",
+      "gold_doc": "en_warehouse.md",
+      "answer_hint": "Warehouse A: A-1001 hexagonal bolt M12, book 2400 / counted 2396, shortage of 4",
+      "avoid_terms": [
+        "hexagonal bolt",
+        "shortage"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 5,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 5
+      },
+      "lexical_candidates": 5,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 5,
+      "rejected": 16,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 16
+      },
+      "grounded_reasons": {
+        "lexical": 5
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "M12",
+        "fasteners",
+        "warehouse",
+        "many",
+        "pieces",
+        "went",
+        "missing"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8242,
+        "threshold": 0.8742,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "6c0329fccc8e6c56": 4,
+          "df88719b851b68ec": 5,
+          "200d27863b9c9aec": 2,
+          "82971648630cd090": 1,
+          "ac289e59769a5625": 3,
+          "0dd6b6eb563918e6": 1,
+          "c864c9d4dbfcc069": 3,
+          "4e5c2710c8d9c3c7": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8742,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.7802,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8242,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_warehouse.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_wh_review",
+      "query": "Who performed the final sign-off on the audit result?",
+      "gold_doc": "en_warehouse.md",
+      "answer_hint": "Sign-off: final review carried out by Zhou Tao",
+      "avoid_terms": [
+        "warehouse supervisor"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 8,
+        "vec_candidates": 20,
+        "fused": 22,
+        "parents": 5
+      },
+      "lexical_candidates": 8,
+      "vector_candidates": 20,
+      "fused": 22,
+      "accepted": 8,
+      "rejected": 14,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 14
+      },
+      "grounded_reasons": {
+        "lexical": 8
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "performed",
+        "final",
+        "sign",
+        "off",
+        "audit",
+        "result"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8374,
+        "threshold": 0.8874,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "6c0329fccc8e6c56": 5,
+          "82971648630cd090": 3,
+          "200d27863b9c9aec": 4,
+          "4e5c2710c8d9c3c7": 3,
+          "0dd6b6eb563918e6": 2,
+          "c864c9d4dbfcc069": 2,
+          "df88719b851b68ec": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8874,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.7581,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8374,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_warehouse.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_flood_rain",
+      "query": "How much rain fell during the June storm?",
+      "gold_doc": "en_flood.md",
+      "answer_hint": "Rainfall Event: cumulative rainfall of 210 millimetres",
+      "avoid_terms": [
+        "cumulative rainfall"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 6,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 5
+      },
+      "lexical_candidates": 6,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 6,
+      "rejected": 15,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 15
+      },
+      "grounded_reasons": {
+        "lexical": 6
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "much",
+        "rain",
+        "fell",
+        "during",
+        "June",
+        "storm"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.846,
+        "threshold": 0.896,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "82971648630cd090": 5,
+          "200d27863b9c9aec": 6,
+          "6c0329fccc8e6c56": 2,
+          "ac289e59769a5625": 3,
+          "df88719b851b68ec": 4
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.896,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.7517,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.846,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_flood.md",
+        "en_flood.md",
+        "en_bridge.md",
+        "en_subway.md",
+        "en_flood.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_flood_gate",
+      "query": "How many openings did the reservoir use to release water?",
+      "gold_doc": "en_flood.md",
+      "answer_hint": "Spillway Operation: reservoir opened three gates on 12 June",
+      "avoid_terms": [
+        "three gates"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 13,
+        "vec_candidates": 20,
+        "fused": 25,
+        "parents": 5
+      },
+      "lexical_candidates": 13,
+      "vector_candidates": 20,
+      "fused": 25,
+      "accepted": 13,
+      "rejected": 12,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 12
+      },
+      "grounded_reasons": {
+        "lexical": 13
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "many",
+        "openings",
+        "reservoir",
+        "use",
+        "release",
+        "water"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8746,
+        "threshold": 0.9246,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "82971648630cd090": 5,
+          "6c0329fccc8e6c56": 1,
+          "200d27863b9c9aec": 5,
+          "ac289e59769a5625": 5,
+          "df88719b851b68ec": 3,
+          "c864c9d4dbfcc069": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9246,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.766,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8746,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_flood.md",
+        "en_warehouse.md",
+        "en_warehouse.md",
+        "en_flood.md",
+        "en_warehouse.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_flood_drain",
+      "query": "Which office is responsible for draining the city?",
+      "gold_doc": "en_flood.md",
+      "answer_hint": "Emergency Duties: urban drainage assigned to the Drainage Management Office",
+      "avoid_terms": [
+        "Drainage Management Office"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 2,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "office",
+        "responsible",
+        "draining",
+        "city"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.831,
+        "threshold": 0.881,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "82971648630cd090": 5,
+          "0dd6b6eb563918e6": 1,
+          "200d27863b9c9aec": 6,
+          "ac289e59769a5625": 5,
+          "c864c9d4dbfcc069": 1,
+          "4e5c2710c8d9c3c7": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.881,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.771,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.831,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_substation.md",
+        "en_flood.md"
+      ],
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 2,
+      "rr": 0.5
+    },
+    {
+      "id": "pe_en_clinic_fast",
+      "query": "How long must a person go without food before a blood draw?",
+      "gold_doc": "en_clinic.md",
+      "answer_hint": "Quality Requirements: fast for more than 8 hours",
+      "avoid_terms": [
+        "Fasting blood collection"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 5,
+        "vec_candidates": 20,
+        "fused": 24,
+        "parents": 5
+      },
+      "lexical_candidates": 5,
+      "vector_candidates": 20,
+      "fused": 24,
+      "accepted": 5,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 5
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "long",
+        "must",
+        "person",
+        "go",
+        "without",
+        "food",
+        "before",
+        "blood",
+        "draw"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8387,
+        "threshold": 0.8887,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "0dd6b6eb563918e6": 4,
+          "c864c9d4dbfcc069": 3,
+          "200d27863b9c9aec": 3,
+          "82971648630cd090": 5,
+          "6c0329fccc8e6c56": 1,
+          "ac289e59769a5625": 1,
+          "df88719b851b68ec": 1,
+          "4e5c2710c8d9c3c7": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8887,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.7974,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8387,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_bridge.md",
+        "en_clinic.md",
+        "en_warehouse.md",
+        "en_subway.md",
+        "en_bridge.md"
+      ],
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 2,
+      "rr": 0.5
+    },
+    {
+      "id": "pe_en_clinic_reagent",
+      "query": "Which department buys the chemicals used for testing?",
+      "gold_doc": "en_clinic.md",
+      "answer_hint": "Responsibility Division: reagent procurement handled by the Equipment Department",
+      "avoid_terms": [
+        "Reagent procurement",
+        "Equipment Department"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 7,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 7,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 7,
+      "rejected": 13,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 13
+      },
+      "grounded_reasons": {
+        "lexical": 7
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "department",
+        "buys",
+        "chemicals",
+        "used",
+        "testing"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8011,
+        "threshold": 0.8511,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "0dd6b6eb563918e6": 4,
+          "c864c9d4dbfcc069": 4,
+          "6c0329fccc8e6c56": 5,
+          "200d27863b9c9aec": 2,
+          "82971648630cd090": 2,
+          "df88719b851b68ec": 1,
+          "4e5c2710c8d9c3c7": 1,
+          "ac289e59769a5625": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8511,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.7745,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.7993,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_lab.md",
+        "en_lab.md",
+        "en_lab.md",
+        "en_lab.md",
+        "en_clinic.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "first_hit_rank": 5,
+      "rr": 0.2
+    },
+    {
+      "id": "pe_en_clinic_flow",
+      "query": "How many stages does a sample pass through from intake to result?",
+      "gold_doc": "en_clinic.md",
+      "answer_hint": "Sample Workflow: registration, sampling, centrifugation, testing, review, issuing = six steps",
+      "avoid_terms": [
+        "six steps"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "many",
+        "stages",
+        "sample",
+        "pass",
+        "through",
+        "intake",
+        "result"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8357,
+        "threshold": 0.8857,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "0dd6b6eb563918e6": 2,
+          "c864c9d4dbfcc069": 4,
+          "6c0329fccc8e6c56": 3,
+          "82971648630cd090": 1,
+          "200d27863b9c9aec": 2,
+          "ac289e59769a5625": 3,
+          "df88719b851b68ec": 4,
+          "4e5c2710c8d9c3c7": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8857,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.7941,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8357,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_clinic.md",
+        "en_clinic.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_lab_owner",
+      "query": "Who is responsible for the 300-series tensile machine?",
+      "gold_doc": "en_lab.md",
+      "answer_hint": "Instrument Ledger: universal testing machine WDW-300 managed by Ma Li",
+      "avoid_terms": [
+        "universal testing machine",
+        "Ma Li"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "responsible",
+        "300",
+        "series",
+        "tensile",
+        "machine"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8057,
+        "threshold": 0.8557,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "c864c9d4dbfcc069": 4,
+          "df88719b851b68ec": 5,
+          "200d27863b9c9aec": 3,
+          "4e5c2710c8d9c3c7": 3,
+          "6c0329fccc8e6c56": 2,
+          "0dd6b6eb563918e6": 1,
+          "82971648630cd090": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8557,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.7756,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8057,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_lab.md",
+        "en_lab.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_lab_cycle",
+      "query": "How often must these devices be recalibrated?",
+      "gold_doc": "en_lab.md",
+      "answer_hint": "Instrument Ledger: share a calibration cycle of 12 months",
+      "avoid_terms": [
+        "calibration cycle",
+        "12 months"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "often",
+        "must",
+        "devices",
+        "recalibrated"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.7837,
+        "threshold": 0.8337,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "0dd6b6eb563918e6": 2,
+          "df88719b851b68ec": 5,
+          "200d27863b9c9aec": 3,
+          "c864c9d4dbfcc069": 4,
+          "ac289e59769a5625": 2,
+          "82971648630cd090": 2,
+          "6c0329fccc8e6c56": 1,
+          "4e5c2710c8d9c3c7": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8337,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.8046,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.7927,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_substation.md",
+        "en_clinic.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pe_en_lab_org",
+      "query": "Which body verifies the force-measuring equipment?",
+      "gold_doc": "en_lab.md",
+      "answer_hint": "Calibration Bodies: calibrated by the Provincial Institute of Metrology",
+      "avoid_terms": [
+        "Provincial Institute of Metrology"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 12,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 12,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 12,
+      "rejected": 8,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 8
+      },
+      "grounded_reasons": {
+        "lexical": 12
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "body",
+        "verifies",
+        "force",
+        "measuring",
+        "equipment"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8181,
+        "threshold": 0.8681,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "ac289e59769a5625": 3,
+          "df88719b851b68ec": 5,
+          "c864c9d4dbfcc069": 4,
+          "200d27863b9c9aec": 3,
+          "0dd6b6eb563918e6": 1,
+          "82971648630cd090": 2,
+          "6c0329fccc8e6c56": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8681,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.7683,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8181,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_substation.md",
+        "en_bridge.md",
+        "en_lab.md",
+        "en_substation.md",
+        "en_lab.md"
+      ],
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 3,
+      "rr": 0.3333333333333333
+    },
+    {
+      "id": "pe_en_sw_position",
+      "query": "Can this tool be hosted on our own servers?",
+      "gold_doc": "en_software.md",
+      "answer_hint": "Positioning: supports private deployment",
+      "avoid_terms": [
+        "private deployment"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 8,
+        "vec_candidates": 20,
+        "fused": 22,
+        "parents": 5
+      },
+      "lexical_candidates": 8,
+      "vector_candidates": 20,
+      "fused": 22,
+      "accepted": 8,
+      "rejected": 14,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 14
+      },
+      "grounded_reasons": {
+        "lexical": 8
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "tool",
+        "hosted",
+        "our",
+        "own",
+        "servers"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8065,
+        "threshold": 0.8565,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "4e5c2710c8d9c3c7": 5,
+          "0dd6b6eb563918e6": 3,
+          "df88719b851b68ec": 2,
+          "c864c9d4dbfcc069": 2,
+          "82971648630cd090": 1,
+          "200d27863b9c9aec": 3,
+          "6c0329fccc8e6c56": 3,
+          "ac289e59769a5625": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8565,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.8098,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8098,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_software.md",
+        "en_substation.md",
+        "en_clinic.md",
+        "en_clinic.md",
+        "en_clinic.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_sw_size",
+      "query": "What is the largest file the service accepts?",
+      "gold_doc": "en_software.md",
+      "answer_hint": "Performance Parameters: maximum size for a single file is 2GB",
+      "avoid_terms": [
+        "single file",
+        "2GB"
+      ],
+      "n_refs": 4,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 4,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 4
+      },
+      "lexical_candidates": 4,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 4,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 4
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "largest",
+        "file",
+        "service",
+        "accepts"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8091,
+        "threshold": 0.8591,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "4e5c2710c8d9c3c7": 3,
+          "200d27863b9c9aec": 4,
+          "82971648630cd090": 4,
+          "6c0329fccc8e6c56": 1,
+          "ac289e59769a5625": 2,
+          "df88719b851b68ec": 4,
+          "0dd6b6eb563918e6": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8591,
+      "ref_match_modes": {
+        "lexical": 4
+      },
+      "best_rejected_similarity": 0.7635,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8091,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_software.md",
+        "en_software.md",
+        "en_bridge.md",
+        "en_lab.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_sw_known",
+      "query": "What problems are currently acknowledged?",
+      "gold_doc": "en_software.md",
+      "answer_hint": "Known Issues: large files sync slowly on first download; offline conflict merging lacks spreadsheet support",
+      "avoid_terms": [
+        "Known Issues"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 17,
+      "rejected": 3,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 3
+      },
+      "grounded_reasons": {
+        "semantic-only": 17
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "problems",
+        "currently",
+        "acknowledged"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "200d27863b9c9aec": 5,
+          "4e5c2710c8d9c3c7": 3,
+          "c864c9d4dbfcc069": 1,
+          "df88719b851b68ec": 1,
+          "ac289e59769a5625": 5,
+          "0dd6b6eb563918e6": 2,
+          "6c0329fccc8e6c56": 2,
+          "82971648630cd090": 1
+        },
+        "released": [
+          {
+            "chunk_id": "200d27863b9c9aec:c4",
+            "similarity": 0.7954
+          },
+          {
+            "chunk_id": "4e5c2710c8d9c3c7:c4",
+            "similarity": 0.7942
+          },
+          {
+            "chunk_id": "4e5c2710c8d9c3c7:c2",
+            "similarity": 0.7838
+          },
+          {
+            "chunk_id": "200d27863b9c9aec:c5",
+            "similarity": 0.7717
+          },
+          {
+            "chunk_id": "4e5c2710c8d9c3c7:c0",
+            "similarity": 0.7673
+          },
+          {
+            "chunk_id": "ac289e59769a5625:c2",
+            "similarity": 0.7669
+          },
+          {
+            "chunk_id": "0dd6b6eb563918e6:c0",
+            "similarity": 0.7666
+          },
+          {
+            "chunk_id": "ac289e59769a5625:c0",
+            "similarity": 0.7644
+          },
+          {
+            "chunk_id": "0dd6b6eb563918e6:c1",
+            "similarity": 0.7641
+          },
+          {
+            "chunk_id": "6c0329fccc8e6c56:c3",
+            "similarity": 0.7636
+          },
+          {
+            "chunk_id": "ac289e59769a5625:c1",
+            "similarity": 0.763
+          },
+          {
+            "chunk_id": "ac289e59769a5625:c3",
+            "similarity": 0.7617
+          },
+          {
+            "chunk_id": "ac289e59769a5625:c4",
+            "similarity": 0.7607
+          },
+          {
+            "chunk_id": "6c0329fccc8e6c56:c4",
+            "similarity": 0.7588
+          },
+          {
+            "chunk_id": "200d27863b9c9aec:c3",
+            "similarity": 0.7573
+          },
+          {
+            "chunk_id": "200d27863b9c9aec:c1",
+            "similarity": 0.756
+          },
+          {
+            "chunk_id": "200d27863b9c9aec:c0",
+            "similarity": 0.7548
+          }
+        ]
+      },
+      "semantic_released_count": 17,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": 0.7723,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.7942,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_bridge.md",
+        "en_software.md",
+        "en_software.md",
+        "en_bridge.md",
+        "en_software.md"
+      ],
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 2,
+      "rr": 0.5
+    },
+    {
+      "id": "pe_en_sub_cap",
+      "query": "How much load can each of the two transformers carry?",
+      "gold_doc": "en_substation.md",
+      "answer_hint": "Main Transformers: Transformer 1 = 50 MVA, Transformer 2 = 63 MVA",
+      "avoid_terms": [
+        "MVA"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 5,
+        "vec_candidates": 20,
+        "fused": 22,
+        "parents": 5
+      },
+      "lexical_candidates": 5,
+      "vector_candidates": 20,
+      "fused": 22,
+      "accepted": 5,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 5
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "much",
+        "load",
+        "each",
+        "two",
+        "transformers",
+        "carry"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8582,
+        "threshold": 0.9082,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "200d27863b9c9aec": 3,
+          "df88719b851b68ec": 5,
+          "c864c9d4dbfcc069": 4,
+          "ac289e59769a5625": 3,
+          "4e5c2710c8d9c3c7": 2,
+          "6c0329fccc8e6c56": 1,
+          "82971648630cd090": 1,
+          "0dd6b6eb563918e6": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9082,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.8024,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8582,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_substation.md",
+        "en_bridge.md",
+        "en_software.md",
+        "en_bridge.md",
+        "en_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_sub_brk",
+      "query": "How many devices are fitted that can interrupt fault current?",
+      "gold_doc": "en_substation.md",
+      "answer_hint": "Switchgear: eight units of circuit breaker LW36-126",
+      "avoid_terms": [
+        "circuit breaker"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "many",
+        "devices",
+        "fitted",
+        "interrupt",
+        "fault",
+        "current"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.7901,
+        "threshold": 0.8401,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "df88719b851b68ec": 5,
+          "4e5c2710c8d9c3c7": 2,
+          "200d27863b9c9aec": 6,
+          "c864c9d4dbfcc069": 3,
+          "6c0329fccc8e6c56": 2,
+          "ac289e59769a5625": 1,
+          "82971648630cd090": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8401,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.8031,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8031,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_substation.md",
+        "en_software.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_sub_overhaul",
+      "query": "How often are the transformers completely stripped down and repaired?",
+      "gold_doc": "en_substation.md",
+      "answer_hint": "Maintenance Cycle: major overhaul interval is 10 years",
+      "avoid_terms": [
+        "major overhaul"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 3,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "often",
+        "transformers",
+        "completely",
+        "stripped",
+        "down",
+        "repaired"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8313,
+        "threshold": 0.8813,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "df88719b851b68ec": 5,
+          "200d27863b9c9aec": 3,
+          "ac289e59769a5625": 5,
+          "c864c9d4dbfcc069": 4,
+          "82971648630cd090": 2,
+          "6c0329fccc8e6c56": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8813,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.7816,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8313,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_substation.md",
+        "en_software.md",
+        "en_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_subway_depth",
+      "query": "How deep is the pit?",
+      "gold_doc": "en_subway.md",
+      "answer_hint": "Project Overview: excavation depth about 17.6 metres",
+      "avoid_terms": [
+        "excavation depth"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "deep",
+        "pit"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.861,
+        "threshold": 0.911,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "ac289e59769a5625": 3,
+          "82971648630cd090": 5,
+          "200d27863b9c9aec": 4,
+          "6c0329fccc8e6c56": 1,
+          "4e5c2710c8d9c3c7": 2,
+          "0dd6b6eb563918e6": 3,
+          "df88719b851b68ec": 1,
+          "c864c9d4dbfcc069": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.911,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.7934,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.861,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_subway.md",
+        "en_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_subway_freq",
+      "query": "How often are measurements taken while digging?",
+      "gold_doc": "en_subway.md",
+      "answer_hint": "Monitoring Frequency: readings taken once per day",
+      "avoid_terms": [
+        "once per day"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "often",
+        "measurements",
+        "taken",
+        "while",
+        "digging"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8209,
+        "threshold": 0.8709,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "ac289e59769a5625": 4,
+          "c864c9d4dbfcc069": 4,
+          "200d27863b9c9aec": 3,
+          "82971648630cd090": 3,
+          "6c0329fccc8e6c56": 2,
+          "0dd6b6eb563918e6": 2,
+          "4e5c2710c8d9c3c7": 1,
+          "df88719b851b68ec": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8709,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.821,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8209,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_subway.md",
+        "en_lab.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pe_en_subway_alarm",
+      "query": "At what movement does the wall top trigger a warning?",
+      "gold_doc": "en_subway.md",
+      "answer_hint": "Alarm Values: cumulative alarm value for wall top horizontal displacement is 24mm",
+      "avoid_terms": [
+        "horizontal displacement",
+        "alarm value"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 3,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "movement",
+        "wall",
+        "top",
+        "trigger",
+        "warning"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8109,
+        "threshold": 0.8609,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "200d27863b9c9aec": 7,
+          "ac289e59769a5625": 3,
+          "c864c9d4dbfcc069": 2,
+          "6c0329fccc8e6c56": 3,
+          "df88719b851b68ec": 2,
+          "82971648630cd090": 1,
+          "4e5c2710c8d9c3c7": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8609,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.7735,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8109,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "en_subway.md",
+        "en_subway.md",
+        "en_bridge.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    }
+  ],
+  "vector_ceiling": {
+    "local_onnx": {
+      "cases": 24,
+      "gold_in_vec_candidates": 24,
+      "gold_vec_sim_ge_floor": 24,
+      "max_gold_vec_similarity": 0.8871,
+      "SEM_FLOOR": 0.6
+    },
+    "local_hash": {
+      "cases": 24,
+      "gold_in_vec_candidates": 24,
+      "gold_vec_sim_ge_floor": 24,
+      "max_gold_vec_similarity": 0.9018,
+      "SEM_FLOOR": 0.6
+    }
+  },
+  "hash_control": {
+    "embedder": {
+      "tier": "local_hash",
+      "model_id": "char-ngram-hash-v1",
+      "dimension": 384,
+      "signature": "local_hash:char-ngram-hash-v1:384",
+      "resource_id": "",
+      "base_model": "",
+      "precision": "",
+      "fallback_reason": ""
+    },
+    "vector_route": {
+      "vec_table_ready": true,
+      "signature_mismatch": "",
+      "vec_rows": 40
+    },
+    "metrics": {
+      "cases": 24,
+      "failure_rate@5": 0.0417,
+      "recall@1": 0.6667,
+      "recall@3": 0.8333,
+      "recall@5": 0.9583,
+      "mrr": 0.7792,
+      "empty_result_rate": 0.0,
+      "no_lexical_hit_rate": 0.0,
+      "accepted_zero_rate": 0.0,
+      "zero_lexical_overlap_rate": 0.0417,
+      "avg_lexical_candidates": 5.08,
+      "avg_vector_candidates": 20.0,
+      "semantic_released_total": 20,
+      "queries_with_release": 2,
+      "queries_with_release_rate": 0.0833,
+      "semantic_only_references": 6
+    },
+    "rejection_histogram": {
+      "vector-only(no-lexical-overlap)": 366
+    },
+    "per_query": [
+      {
+        "id": "pe_en_bridge_year",
+        "query": "When did the Riverside Viaduct start carrying traffic?",
+        "gold_doc": "en_bridge.md",
+        "answer_hint": "Overview: opened to traffic in 2011",
+        "avoid_terms": [
+          "opened to traffic"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 7,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 5
+        },
+        "lexical_candidates": 7,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 7,
+        "rejected": 13,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 13
+        },
+        "grounded_reasons": {
+          "lexical": 7
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "Riverside",
+          "Viaduct",
+          "start",
+          "carrying",
+          "traffic"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.9003,
+          "threshold": 0.9503,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "200d27863b9c9aec": 7,
+            "df88719b851b68ec": 2,
+            "c864c9d4dbfcc069": 3,
+            "82971648630cd090": 2,
+            "0dd6b6eb563918e6": 2,
+            "6c0329fccc8e6c56": 2,
+            "4e5c2710c8d9c3c7": 1,
+            "ac289e59769a5625": 1
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.9503,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.7995,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.9003,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_bridge.md",
+          "en_bridge.md",
+          "en_bridge.md",
+          "en_bridge.md",
+          "en_bridge.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_bridge_joints",
+        "query": "How many gaps are laid out across the road surface of the viaduct?",
+        "gold_doc": "en_bridge.md",
+        "answer_hint": "Expansion Joints: four joints SS-01 to SS-04",
+        "avoid_terms": [
+          "expansion joints"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 12,
+          "vec_candidates": 20,
+          "fused": 24,
+          "parents": 5
+        },
+        "lexical_candidates": 12,
+        "vector_candidates": 20,
+        "fused": 24,
+        "accepted": 12,
+        "rejected": 12,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 12
+        },
+        "grounded_reasons": {
+          "lexical": 12
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "many",
+          "gaps",
+          "laid",
+          "out",
+          "across",
+          "road",
+          "surface",
+          "viaduct"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.843,
+          "threshold": 0.893,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "ac289e59769a5625": 2,
+            "6c0329fccc8e6c56": 4,
+            "c864c9d4dbfcc069": 2,
+            "200d27863b9c9aec": 4,
+            "0dd6b6eb563918e6": 2,
+            "df88719b851b68ec": 3,
+            "82971648630cd090": 2,
+            "4e5c2710c8d9c3c7": 1
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.893,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.8849,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.843,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_bridge.md",
+          "en_bridge.md",
+          "en_bridge.md",
+          "en_bridge.md",
+          "en_bridge.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_bridge_device",
+        "query": "Until what date is the certificate for the instrument that gauges concrete cracking valid?",
+        "gold_doc": "en_bridge.md",
+        "answer_hint": "Inspection Equipment: crack width gauge ZBL-F120 valid until 2026-12-05",
+        "avoid_terms": [
+          "crack width gauge",
+          "calibration certificate"
+        ],
+        "n_refs": 3,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 3,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 3
+        },
+        "lexical_candidates": 3,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 3,
+        "rejected": 17,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 17
+        },
+        "grounded_reasons": {
+          "lexical": 3
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "Until",
+          "date",
+          "certificate",
+          "instrument",
+          "gauges",
+          "concrete",
+          "cracking",
+          "valid"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.9004,
+          "threshold": 0.9504,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "200d27863b9c9aec": 6,
+            "c864c9d4dbfcc069": 4,
+            "ac289e59769a5625": 2,
+            "df88719b851b68ec": 3,
+            "0dd6b6eb563918e6": 1,
+            "82971648630cd090": 2,
+            "6c0329fccc8e6c56": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.9504,
+        "ref_match_modes": {
+          "lexical": 3
+        },
+        "best_rejected_similarity": 0.8947,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8955,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_lab.md",
+          "en_bridge.md",
+          "en_lab.md"
+        ],
+        "hit@1": false,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 2,
+        "rr": 0.5
+      },
+      {
+        "id": "pe_en_wh_scope",
+        "query": "How many different kinds of goods were checked during the audit?",
+        "gold_doc": "en_warehouse.md",
+        "answer_hint": "Audit Scope: 128 items counted",
+        "avoid_terms": [
+          "stock items"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 7,
+          "vec_candidates": 20,
+          "fused": 22,
+          "parents": 5
+        },
+        "lexical_candidates": 7,
+        "vector_candidates": 20,
+        "fused": 22,
+        "accepted": 7,
+        "rejected": 15,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 15
+        },
+        "grounded_reasons": {
+          "lexical": 7
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "many",
+          "different",
+          "kinds",
+          "goods",
+          "checked",
+          "during",
+          "audit"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8817,
+          "threshold": 0.9317,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "ac289e59769a5625": 3,
+            "200d27863b9c9aec": 5,
+            "6c0329fccc8e6c56": 3,
+            "82971648630cd090": 3,
+            "0dd6b6eb563918e6": 1,
+            "c864c9d4dbfcc069": 2,
+            "4e5c2710c8d9c3c7": 1,
+            "df88719b851b68ec": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.9317,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.861,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8632,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_warehouse.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_wh_short",
+        "query": "For the M12 fasteners in warehouse A, how many pieces went missing?",
+        "gold_doc": "en_warehouse.md",
+        "answer_hint": "Warehouse A: A-1001 hexagonal bolt M12, book 2400 / counted 2396, shortage of 4",
+        "avoid_terms": [
+          "hexagonal bolt",
+          "shortage"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 5,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 5
+        },
+        "lexical_candidates": 5,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 5,
+        "rejected": 16,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 16
+        },
+        "grounded_reasons": {
+          "lexical": 5
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "M12",
+          "fasteners",
+          "warehouse",
+          "many",
+          "pieces",
+          "went",
+          "missing"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8801,
+          "threshold": 0.9301,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "6c0329fccc8e6c56": 4,
+            "df88719b851b68ec": 2,
+            "200d27863b9c9aec": 3,
+            "4e5c2710c8d9c3c7": 3,
+            "c864c9d4dbfcc069": 2,
+            "82971648630cd090": 2,
+            "0dd6b6eb563918e6": 2,
+            "ac289e59769a5625": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.9301,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.8675,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8801,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_warehouse.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_wh_review",
+        "query": "Who performed the final sign-off on the audit result?",
+        "gold_doc": "en_warehouse.md",
+        "answer_hint": "Sign-off: final review carried out by Zhou Tao",
+        "avoid_terms": [
+          "warehouse supervisor"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 8,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 5
+        },
+        "lexical_candidates": 8,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 8,
+        "rejected": 13,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 13
+        },
+        "grounded_reasons": {
+          "lexical": 8
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "performed",
+          "final",
+          "sign",
+          "off",
+          "audit",
+          "result"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8871,
+          "threshold": 0.9371,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "6c0329fccc8e6c56": 4,
+            "82971648630cd090": 4,
+            "200d27863b9c9aec": 4,
+            "4e5c2710c8d9c3c7": 2,
+            "0dd6b6eb563918e6": 1,
+            "ac289e59769a5625": 2,
+            "c864c9d4dbfcc069": 2,
+            "df88719b851b68ec": 1
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.9371,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.857,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8871,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_warehouse.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_flood_rain",
+        "query": "How much rain fell during the June storm?",
+        "gold_doc": "en_flood.md",
+        "answer_hint": "Rainfall Event: cumulative rainfall of 210 millimetres",
+        "avoid_terms": [
+          "cumulative rainfall"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 6,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 5
+        },
+        "lexical_candidates": 6,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 6,
+        "rejected": 15,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 15
+        },
+        "grounded_reasons": {
+          "lexical": 6
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "much",
+          "rain",
+          "fell",
+          "during",
+          "June",
+          "storm"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8151,
+          "threshold": 0.8651,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "82971648630cd090": 3,
+            "ac289e59769a5625": 3,
+            "200d27863b9c9aec": 5,
+            "0dd6b6eb563918e6": 2,
+            "c864c9d4dbfcc069": 2,
+            "6c0329fccc8e6c56": 3,
+            "df88719b851b68ec": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8651,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.8545,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8151,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_flood.md",
+          "en_flood.md",
+          "en_bridge.md",
+          "en_subway.md",
+          "en_flood.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_flood_gate",
+        "query": "How many openings did the reservoir use to release water?",
+        "gold_doc": "en_flood.md",
+        "answer_hint": "Spillway Operation: reservoir opened three gates on 12 June",
+        "avoid_terms": [
+          "three gates"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 13,
+          "vec_candidates": 20,
+          "fused": 24,
+          "parents": 5
+        },
+        "lexical_candidates": 13,
+        "vector_candidates": 20,
+        "fused": 24,
+        "accepted": 13,
+        "rejected": 11,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 11
+        },
+        "grounded_reasons": {
+          "lexical": 13
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "many",
+          "openings",
+          "reservoir",
+          "use",
+          "release",
+          "water"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.9018,
+          "threshold": 0.9518,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "82971648630cd090": 4,
+            "6c0329fccc8e6c56": 3,
+            "200d27863b9c9aec": 5,
+            "4e5c2710c8d9c3c7": 3,
+            "c864c9d4dbfcc069": 1,
+            "df88719b851b68ec": 2,
+            "0dd6b6eb563918e6": 1,
+            "ac289e59769a5625": 1
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.9518,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.8778,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.9018,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_flood.md",
+          "en_warehouse.md",
+          "en_warehouse.md",
+          "en_flood.md",
+          "en_warehouse.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_flood_drain",
+        "query": "Which office is responsible for draining the city?",
+        "gold_doc": "en_flood.md",
+        "answer_hint": "Emergency Duties: urban drainage assigned to the Drainage Management Office",
+        "avoid_terms": [
+          "Drainage Management Office"
+        ],
+        "n_refs": 3,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 3
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 3,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 2,
+          "semantic-only": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "office",
+          "responsible",
+          "draining",
+          "city"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.7951,
+          "threshold": 0.8451,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "82971648630cd090": 2,
+            "0dd6b6eb563918e6": 3,
+            "200d27863b9c9aec": 5,
+            "c864c9d4dbfcc069": 2,
+            "4e5c2710c8d9c3c7": 3,
+            "6c0329fccc8e6c56": 2,
+            "df88719b851b68ec": 2,
+            "ac289e59769a5625": 1
+          },
+          "released": [
+            {
+              "chunk_id": "0dd6b6eb563918e6:c2",
+              "similarity": 0.8487
+            }
+          ]
+        },
+        "semantic_released_count": 1,
+        "semantic_threshold": 0.8451,
+        "ref_match_modes": {
+          "lexical": 2,
+          "semantic-only": 1
+        },
+        "best_rejected_similarity": 0.8412,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8329,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_substation.md",
+          "en_flood.md",
+          "en_clinic.md"
+        ],
+        "hit@1": false,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 2,
+        "rr": 0.5
+      },
+      {
+        "id": "pe_en_clinic_fast",
+        "query": "How long must a person go without food before a blood draw?",
+        "gold_doc": "en_clinic.md",
+        "answer_hint": "Quality Requirements: fast for more than 8 hours",
+        "avoid_terms": [
+          "Fasting blood collection"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 5,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 5
+        },
+        "lexical_candidates": 5,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 5,
+        "rejected": 16,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 16
+        },
+        "grounded_reasons": {
+          "lexical": 5
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "long",
+          "must",
+          "person",
+          "go",
+          "without",
+          "food",
+          "before",
+          "blood",
+          "draw"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8191,
+          "threshold": 0.8691,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "ac289e59769a5625": 2,
+            "200d27863b9c9aec": 2,
+            "0dd6b6eb563918e6": 2,
+            "6c0329fccc8e6c56": 4,
+            "82971648630cd090": 5,
+            "4e5c2710c8d9c3c7": 3,
+            "c864c9d4dbfcc069": 1,
+            "df88719b851b68ec": 1
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8691,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.8227,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.7992,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_bridge.md",
+          "en_clinic.md",
+          "en_warehouse.md",
+          "en_bridge.md",
+          "en_subway.md"
+        ],
+        "hit@1": false,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 2,
+        "rr": 0.5
+      },
+      {
+        "id": "pe_en_clinic_reagent",
+        "query": "Which department buys the chemicals used for testing?",
+        "gold_doc": "en_clinic.md",
+        "answer_hint": "Responsibility Division: reagent procurement handled by the Equipment Department",
+        "avoid_terms": [
+          "Reagent procurement",
+          "Equipment Department"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 7,
+          "vec_candidates": 20,
+          "fused": 22,
+          "parents": 5
+        },
+        "lexical_candidates": 7,
+        "vector_candidates": 20,
+        "fused": 22,
+        "accepted": 7,
+        "rejected": 15,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 15
+        },
+        "grounded_reasons": {
+          "lexical": 7
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "department",
+          "buys",
+          "chemicals",
+          "used",
+          "testing"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8497,
+          "threshold": 0.8997,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "0dd6b6eb563918e6": 2,
+            "c864c9d4dbfcc069": 3,
+            "200d27863b9c9aec": 6,
+            "df88719b851b68ec": 3,
+            "ac289e59769a5625": 2,
+            "6c0329fccc8e6c56": 2,
+            "82971648630cd090": 1,
+            "4e5c2710c8d9c3c7": 1
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8997,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.8438,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8277,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_lab.md",
+          "en_lab.md",
+          "en_lab.md",
+          "en_lab.md",
+          "en_clinic.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": true,
+        "first_hit_rank": 5,
+        "rr": 0.2
+      },
+      {
+        "id": "pe_en_clinic_flow",
+        "query": "How many stages does a sample pass through from intake to result?",
+        "gold_doc": "en_clinic.md",
+        "answer_hint": "Sample Workflow: registration, sampling, centrifugation, testing, review, issuing = six steps",
+        "avoid_terms": [
+          "six steps"
+        ],
+        "n_refs": 2,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 2
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 2,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 2
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "many",
+          "stages",
+          "sample",
+          "pass",
+          "through",
+          "intake",
+          "result"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.855,
+          "threshold": 0.905,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "0dd6b6eb563918e6": 2,
+            "6c0329fccc8e6c56": 4,
+            "4e5c2710c8d9c3c7": 3,
+            "c864c9d4dbfcc069": 2,
+            "200d27863b9c9aec": 2,
+            "df88719b851b68ec": 3,
+            "ac289e59769a5625": 3,
+            "82971648630cd090": 1
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.905,
+        "ref_match_modes": {
+          "lexical": 2
+        },
+        "best_rejected_similarity": 0.8403,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.855,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_clinic.md",
+          "en_clinic.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_lab_owner",
+        "query": "Who is responsible for the 300-series tensile machine?",
+        "gold_doc": "en_lab.md",
+        "answer_hint": "Instrument Ledger: universal testing machine WDW-300 managed by Ma Li",
+        "avoid_terms": [
+          "universal testing machine",
+          "Ma Li"
+        ],
+        "n_refs": 2,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 2
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 2,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 2
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "responsible",
+          "300",
+          "series",
+          "tensile",
+          "machine"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8073,
+          "threshold": 0.8573,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "c864c9d4dbfcc069": 1,
+            "200d27863b9c9aec": 5,
+            "82971648630cd090": 3,
+            "4e5c2710c8d9c3c7": 4,
+            "0dd6b6eb563918e6": 3,
+            "df88719b851b68ec": 2,
+            "6c0329fccc8e6c56": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8573,
+        "ref_match_modes": {
+          "lexical": 2
+        },
+        "best_rejected_similarity": 0.8498,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8073,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_lab.md",
+          "en_lab.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_lab_cycle",
+        "query": "How often must these devices be recalibrated?",
+        "gold_doc": "en_lab.md",
+        "answer_hint": "Instrument Ledger: share a calibration cycle of 12 months",
+        "avoid_terms": [
+          "calibration cycle",
+          "12 months"
+        ],
+        "n_refs": 2,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 2
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 2,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 2
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "often",
+          "must",
+          "devices",
+          "recalibrated"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8327,
+          "threshold": 0.8827,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "0dd6b6eb563918e6": 1,
+            "df88719b851b68ec": 3,
+            "200d27863b9c9aec": 6,
+            "c864c9d4dbfcc069": 2,
+            "82971648630cd090": 4,
+            "6c0329fccc8e6c56": 2,
+            "ac289e59769a5625": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8827,
+        "ref_match_modes": {
+          "lexical": 2
+        },
+        "best_rejected_similarity": 0.8564,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8199,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_substation.md",
+          "en_clinic.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pe_en_lab_org",
+        "query": "Which body verifies the force-measuring equipment?",
+        "gold_doc": "en_lab.md",
+        "answer_hint": "Calibration Bodies: calibrated by the Provincial Institute of Metrology",
+        "avoid_terms": [
+          "Provincial Institute of Metrology"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 12,
+          "vec_candidates": 20,
+          "fused": 23,
+          "parents": 5
+        },
+        "lexical_candidates": 12,
+        "vector_candidates": 20,
+        "fused": 23,
+        "accepted": 12,
+        "rejected": 11,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 11
+        },
+        "grounded_reasons": {
+          "lexical": 12
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "body",
+          "verifies",
+          "force",
+          "measuring",
+          "equipment"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8309,
+          "threshold": 0.8809,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "ac289e59769a5625": 2,
+            "df88719b851b68ec": 3,
+            "200d27863b9c9aec": 6,
+            "c864c9d4dbfcc069": 3,
+            "0dd6b6eb563918e6": 2,
+            "82971648630cd090": 2,
+            "4e5c2710c8d9c3c7": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8809,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.8127,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.7799,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_substation.md",
+          "en_bridge.md",
+          "en_substation.md",
+          "en_lab.md",
+          "en_lab.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": true,
+        "first_hit_rank": 4,
+        "rr": 0.25
+      },
+      {
+        "id": "pe_en_sw_position",
+        "query": "Can this tool be hosted on our own servers?",
+        "gold_doc": "en_software.md",
+        "answer_hint": "Positioning: supports private deployment",
+        "avoid_terms": [
+          "private deployment"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 8,
+          "vec_candidates": 20,
+          "fused": 22,
+          "parents": 5
+        },
+        "lexical_candidates": 8,
+        "vector_candidates": 20,
+        "fused": 22,
+        "accepted": 8,
+        "rejected": 14,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 14
+        },
+        "grounded_reasons": {
+          "lexical": 8
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "tool",
+          "hosted",
+          "our",
+          "own",
+          "servers"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8586,
+          "threshold": 0.9086,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "4e5c2710c8d9c3c7": 3,
+            "0dd6b6eb563918e6": 2,
+            "200d27863b9c9aec": 4,
+            "df88719b851b68ec": 2,
+            "82971648630cd090": 3,
+            "6c0329fccc8e6c56": 4,
+            "ac289e59769a5625": 1,
+            "c864c9d4dbfcc069": 1
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.9086,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.849,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8462,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_software.md",
+          "en_substation.md",
+          "en_clinic.md",
+          "en_clinic.md",
+          "en_clinic.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_sw_size",
+        "query": "What is the largest file the service accepts?",
+        "gold_doc": "en_software.md",
+        "answer_hint": "Performance Parameters: maximum size for a single file is 2GB",
+        "avoid_terms": [
+          "single file",
+          "2GB"
+        ],
+        "n_refs": 4,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 4,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 4
+        },
+        "lexical_candidates": 4,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 4,
+        "rejected": 16,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 16
+        },
+        "grounded_reasons": {
+          "lexical": 4
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "largest",
+          "file",
+          "service",
+          "accepts"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8281,
+          "threshold": 0.8781,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "4e5c2710c8d9c3c7": 2,
+            "200d27863b9c9aec": 5,
+            "c864c9d4dbfcc069": 3,
+            "df88719b851b68ec": 3,
+            "0dd6b6eb563918e6": 2,
+            "ac289e59769a5625": 2,
+            "82971648630cd090": 2,
+            "6c0329fccc8e6c56": 1
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8781,
+        "ref_match_modes": {
+          "lexical": 4
+        },
+        "best_rejected_similarity": 0.8219,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.7737,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_software.md",
+          "en_bridge.md",
+          "en_software.md",
+          "en_lab.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_sw_known",
+        "query": "What problems are currently acknowledged?",
+        "gold_doc": "en_software.md",
+        "answer_hint": "Known Issues: large files sync slowly on first download; offline conflict merging lacks spreadsheet support",
+        "avoid_terms": [
+          "Known Issues"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 5
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 19,
+        "rejected": 1,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 1
+        },
+        "grounded_reasons": {
+          "semantic-only": 19
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "problems",
+          "currently",
+          "acknowledged"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "c864c9d4dbfcc069": 3,
+            "200d27863b9c9aec": 1,
+            "6c0329fccc8e6c56": 2,
+            "82971648630cd090": 4,
+            "4e5c2710c8d9c3c7": 2,
+            "0dd6b6eb563918e6": 2,
+            "df88719b851b68ec": 3,
+            "ac289e59769a5625": 3
+          },
+          "released": [
+            {
+              "chunk_id": "c864c9d4dbfcc069:c1",
+              "similarity": 0.7917
+            },
+            {
+              "chunk_id": "6c0329fccc8e6c56:c3",
+              "similarity": 0.7653
+            },
+            {
+              "chunk_id": "82971648630cd090:c4",
+              "similarity": 0.7594
+            },
+            {
+              "chunk_id": "4e5c2710c8d9c3c7:c4",
+              "similarity": 0.7521
+            },
+            {
+              "chunk_id": "0dd6b6eb563918e6:c1",
+              "similarity": 0.7499
+            },
+            {
+              "chunk_id": "4e5c2710c8d9c3c7:c3",
+              "similarity": 0.749
+            },
+            {
+              "chunk_id": "df88719b851b68ec:c2",
+              "similarity": 0.7465
+            },
+            {
+              "chunk_id": "c864c9d4dbfcc069:c2",
+              "similarity": 0.7454
+            },
+            {
+              "chunk_id": "df88719b851b68ec:c3",
+              "similarity": 0.7427
+            },
+            {
+              "chunk_id": "6c0329fccc8e6c56:c1",
+              "similarity": 0.7404
+            },
+            {
+              "chunk_id": "df88719b851b68ec:c4",
+              "similarity": 0.7388
+            },
+            {
+              "chunk_id": "82971648630cd090:c1",
+              "similarity": 0.7376
+            },
+            {
+              "chunk_id": "ac289e59769a5625:c4",
+              "similarity": 0.7369
+            },
+            {
+              "chunk_id": "ac289e59769a5625:c2",
+              "similarity": 0.7363
+            },
+            {
+              "chunk_id": "ac289e59769a5625:c1",
+              "similarity": 0.7346
+            },
+            {
+              "chunk_id": "0dd6b6eb563918e6:c2",
+              "similarity": 0.7328
+            },
+            {
+              "chunk_id": "82971648630cd090:c2",
+              "similarity": 0.7321
+            },
+            {
+              "chunk_id": "82971648630cd090:c3",
+              "similarity": 0.7317
+            },
+            {
+              "chunk_id": "c864c9d4dbfcc069:c0",
+              "similarity": 0.7313
+            }
+          ]
+        },
+        "semantic_released_count": 19,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "semantic-only": 5
+        },
+        "best_rejected_similarity": 0.7776,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.7521,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_lab.md",
+          "en_warehouse.md",
+          "en_flood.md",
+          "en_software.md",
+          "en_clinic.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": true,
+        "first_hit_rank": 4,
+        "rr": 0.25
+      },
+      {
+        "id": "pe_en_sub_cap",
+        "query": "How much load can each of the two transformers carry?",
+        "gold_doc": "en_substation.md",
+        "answer_hint": "Main Transformers: Transformer 1 = 50 MVA, Transformer 2 = 63 MVA",
+        "avoid_terms": [
+          "MVA"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 5,
+          "vec_candidates": 20,
+          "fused": 22,
+          "parents": 5
+        },
+        "lexical_candidates": 5,
+        "vector_candidates": 20,
+        "fused": 22,
+        "accepted": 5,
+        "rejected": 17,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 17
+        },
+        "grounded_reasons": {
+          "lexical": 5
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "much",
+          "load",
+          "each",
+          "two",
+          "transformers",
+          "carry"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8706,
+          "threshold": 0.9206,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "200d27863b9c9aec": 3,
+            "df88719b851b68ec": 2,
+            "6c0329fccc8e6c56": 4,
+            "0dd6b6eb563918e6": 2,
+            "4e5c2710c8d9c3c7": 1,
+            "c864c9d4dbfcc069": 2,
+            "ac289e59769a5625": 2,
+            "82971648630cd090": 4
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.9206,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.837,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8706,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_substation.md",
+          "en_bridge.md",
+          "en_software.md",
+          "en_bridge.md",
+          "en_substation.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_sub_brk",
+        "query": "How many devices are fitted that can interrupt fault current?",
+        "gold_doc": "en_substation.md",
+        "answer_hint": "Switchgear: eight units of circuit breaker LW36-126",
+        "avoid_terms": [
+          "circuit breaker"
+        ],
+        "n_refs": 2,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 2
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 2,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 2
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "many",
+          "devices",
+          "fitted",
+          "interrupt",
+          "fault",
+          "current"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8037,
+          "threshold": 0.8537,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "df88719b851b68ec": 3,
+            "c864c9d4dbfcc069": 3,
+            "200d27863b9c9aec": 6,
+            "ac289e59769a5625": 2,
+            "0dd6b6eb563918e6": 1,
+            "6c0329fccc8e6c56": 3,
+            "82971648630cd090": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8537,
+        "ref_match_modes": {
+          "lexical": 2
+        },
+        "best_rejected_similarity": 0.8479,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8479,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_substation.md",
+          "en_software.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_sub_overhaul",
+        "query": "How often are the transformers completely stripped down and repaired?",
+        "gold_doc": "en_substation.md",
+        "answer_hint": "Maintenance Cycle: major overhaul interval is 10 years",
+        "avoid_terms": [
+          "major overhaul"
+        ],
+        "n_refs": 3,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 3,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 3
+        },
+        "lexical_candidates": 3,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 3,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 3
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "often",
+          "transformers",
+          "completely",
+          "stripped",
+          "down",
+          "repaired"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8376,
+          "threshold": 0.8876,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "df88719b851b68ec": 2,
+            "4e5c2710c8d9c3c7": 3,
+            "200d27863b9c9aec": 5,
+            "82971648630cd090": 4,
+            "0dd6b6eb563918e6": 1,
+            "6c0329fccc8e6c56": 3,
+            "ac289e59769a5625": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8876,
+        "ref_match_modes": {
+          "lexical": 3
+        },
+        "best_rejected_similarity": 0.8815,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8295,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_substation.md",
+          "en_software.md",
+          "en_substation.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_subway_depth",
+        "query": "How deep is the pit?",
+        "gold_doc": "en_subway.md",
+        "answer_hint": "Project Overview: excavation depth about 17.6 metres",
+        "avoid_terms": [
+          "excavation depth"
+        ],
+        "n_refs": 2,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 2
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 2,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 2
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "deep",
+          "pit"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.7201,
+          "threshold": 0.7701,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "ac289e59769a5625": 2,
+            "200d27863b9c9aec": 6,
+            "6c0329fccc8e6c56": 4,
+            "df88719b851b68ec": 2,
+            "82971648630cd090": 2,
+            "0dd6b6eb563918e6": 2,
+            "4e5c2710c8d9c3c7": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.7701,
+        "ref_match_modes": {
+          "lexical": 2
+        },
+        "best_rejected_similarity": 0.7515,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.7201,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_subway.md",
+          "en_subway.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pe_en_subway_freq",
+        "query": "How often are measurements taken while digging?",
+        "gold_doc": "en_subway.md",
+        "answer_hint": "Monitoring Frequency: readings taken once per day",
+        "avoid_terms": [
+          "once per day"
+        ],
+        "n_refs": 2,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 2
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 2,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 2
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "often",
+          "measurements",
+          "taken",
+          "while",
+          "digging"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8208,
+          "threshold": 0.8708,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "ac289e59769a5625": 3,
+            "c864c9d4dbfcc069": 3,
+            "82971648630cd090": 1,
+            "6c0329fccc8e6c56": 2,
+            "200d27863b9c9aec": 5,
+            "df88719b851b68ec": 3,
+            "0dd6b6eb563918e6": 3
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.8708,
+        "ref_match_modes": {
+          "lexical": 2
+        },
+        "best_rejected_similarity": 0.8604,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8206,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_lab.md",
+          "en_subway.md"
+        ],
+        "hit@1": false,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 2,
+        "rr": 0.5
+      },
+      {
+        "id": "pe_en_subway_alarm",
+        "query": "At what movement does the wall top trigger a warning?",
+        "gold_doc": "en_subway.md",
+        "answer_hint": "Alarm Values: cumulative alarm value for wall top horizontal displacement is 24mm",
+        "avoid_terms": [
+          "horizontal displacement",
+          "alarm value"
+        ],
+        "n_refs": 3,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 3,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 3
+        },
+        "lexical_candidates": 3,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 3,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 3
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "movement",
+          "wall",
+          "top",
+          "trigger",
+          "warning"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.8506,
+          "threshold": 0.9006,
+          "min_corroboration": 2,
+          "doc_floor_n": {
+            "ac289e59769a5625": 3,
+            "c864c9d4dbfcc069": 4,
+            "6c0329fccc8e6c56": 4,
+            "82971648630cd090": 2,
+            "200d27863b9c9aec": 3,
+            "0dd6b6eb563918e6": 2,
+            "df88719b851b68ec": 2
+          },
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.9006,
+        "ref_match_modes": {
+          "lexical": 3
+        },
+        "best_rejected_similarity": 0.8714,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.8506,
+        "gold_vec_ge_floor": true,
+        "top5_docs": [
+          "en_subway.md",
+          "en_subway.md",
+          "en_bridge.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      }
+    ]
+  }
+}

@@ -1,19 +1,30 @@
 #!/usr/bin/env python3
-"""Release Builder —— 把源码仓库组装成发布产物 dist/Kavira-vX.Y.Z-win-x64/。
+"""Release Builder —— 把源码仓库组装成发布产物 dist/Kavira-vX.Y.Z-<platform>-<lang>/。
 
-产物是**构建产物**，不进 Git（dist/ 已在 .gitignore）。
+一次构建产出**两个发布根**（`--lang both`，默认）：
 
-布局：
-    dist/Kavira-v1.3.0-win-x64/
+    dist/Kavira-v1.3.0-win-x64-zh/     ← 中文包：安装器界面中文 + 中文文档
+    dist/Kavira-v1.3.0-win-x64-en/     ← 英文包：安装器界面英文 + 英文文档
+
+两包**差异只在 (a) 安装器界面语言 (b) 随包文档语言**，其余（payload / LICENSES /
+清单 / 校验）完全同源同版本。产物是**构建产物**，不进 Git（dist/ 已在 .gitignore）。
+
+布局（`<lang>` ∈ {zh, en}）：
+    dist/Kavira-v1.3.0-win-x64-<lang>/
     ├─ installer/
     │  ├─ install.py            (SSD 安装骨架，拷贝自 scripts/install_windows.py)
-    │  ├─ install.bat           (Windows：用自带嵌入式 Python 跑 install.py)
+    │  ├─ install.bat           (Windows：自带嵌入式 Python 跑 install.py <子命令> --lang <lang>)
     │  └─ release_integrity.py  (介质校验唯一实现，随安装器同目录分发)
     ├─ payload/
     │  ├─ app/                  (拷贝自仓库 app/)
-    │  └─ python-runtime/       (拷贝自仓库 runtime/python-3.11-embed/)
+    │  ├─ python-runtime/       (拷贝自仓库 runtime/python-3.11-embed/)
+    │  └─ embedding/            (随包嵌入资源，来自 vendor/cache/embedding/)
+    ├─ docs/                    (开发者文档 + 中文技术参考)
+    ├─ START_HERE.txt           (zh) / START_HERE_EN.txt (en)
+    ├─ User-Manual-ZH.txt              (zh) / User-Manual.txt  (en)
+    ├─ CHANGELOG.md / LICENSE   (两包都放)
     ├─ LICENSES/                (第三方分发许可清单，collect_licenses.py 生成)
-    ├─ BUILD_INFO.json          (版本可追溯性)
+    ├─ BUILD_INFO.json          (版本可追溯性，含 lang)
     ├─ RELEASE_MANIFEST.json    (机器可读清单：相对路径 / 固定排序 / 含 sha256)
     └─ SHA256SUMS               (传统校验和，由清单派生)
 
@@ -38,29 +49,33 @@ REPO = HERE.parent                                 # 仓库根
 #: 放在发布包**根目录**的文档 —— 用户解压后第一眼看到的，只放他真正要用的。
 #: 判据很简单：**这是给用户的，还是给开发者的？** 根目录只放前者。
 #:
-#: 语言约定：中文为主交付语言，英文版放在同一目录、文件名带 _EN 后缀。
-#: 中英文**同时随包** —— 便于把两种语言的版本当作同一份产品资产维护，
-#: 也避免"先发中文、后补英文"时漏掉某个文件（两者永远成对出现）。
-RELEASE_DOC_FILES = (
-    "START_HERE.txt",     # 中文·快速上手（默认入口，原名保持不变）
-    "START_HERE_EN.txt",  # 英文·Quick Start
-    "使用手册.txt",        # 中文·完整使用手册
-    "User-Manual.txt",    # 英文·完整使用手册
-    "CHANGELOG.md",       # 用户会关心「这一版改了什么」
-    "LICENSE",            # 合规必需
-)
+#: 双语发布：`dist/Kavira-v<ver>-<platform>-zh/` 与 `...-en/` 两个发布根，
+#: **差异只在「安装器界面语言」与「随包文档语言」**。因此：
+#:   · 语言档文档（上手说明 / 使用手册 / README / CONTRIBUTING）按 --lang 二选一；
+#:   · 公共文档（CHANGELOG / LICENSE / SECURITY / 行为准则）与中文技术参考两包都放。
+DOCS_ROOT_BY_LANG = {
+    "zh": ("START_HERE.txt", "User-Manual-ZH.txt"),
+    "en": ("START_HERE_EN.txt", "User-Manual.txt"),
+}
+#: 根目录·两包都放 —— 用户会关心「这一版改了什么」，许可证是合规必需
+DOCS_ROOT_SHARED = ("CHANGELOG.md", "LICENSE")
 
 #: 面向开发者 / 技术评审的仓库文档 —— **收进 docs/ 子目录**。
 #: 为什么不放根目录：用户解压后看到 README / CONTRIBUTING / SECURITY / 行为准则
 #: 一整套开源仓库文档，会误以为「这是要我读的说明书」，与「装完就能用」的目标相反；
 #: 而且 README 讲的是从源码构建、跑测试、发版流程，对用户是纯噪音。
 #: 它们对仓库协作和技术评审仍然必要，所以**只换位置、不删**。
-RELEASE_DEV_DOCS_DIR_FILES = (
-    "README.md", "SECURITY.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md",
-)
+DOCS_DEV_BY_LANG = {
+    "zh": ("README.md", "CONTRIBUTING.md"),
+    "en": ("README_EN.md", "CONTRIBUTING_EN.md"),
+}
+#: docs/ 开发者档·两包都放（语言中立的行为契约）
+DOCS_DEV_SHARED = ("SECURITY.md", "CODE_OF_CONDUCT.md")
+
+#: docs/ 技术参考（中文）—— 与界面语言无关，两包都放，保留中文原文
 RELEASE_DOCS_DIR_FILES = (
-    "DATA_CONTRACT_V1.md", "DEPENDENCY_LOCK.md", "设计与实现.md",
-    "项目架构说明.md", "测试报告.md", "V1.3工程收口基线.md",
+    "DATA_CONTRACT_V1.md", "DEPENDENCY_LOCK.md", "design-and-implementation.md",
+    "architecture.md", "test-report.md", "v1.3-baseline.md",
 )
 
 
@@ -209,7 +224,7 @@ def _stage_embedding(dist_root: Path) -> dict:
     return report
 
 
-def _installer_bat(subcmd: str) -> str:
+def _installer_bat(subcmd: str, lang: str = "zh") -> str:
     """生成 installer/*.bat 的内容（**纯 ASCII**）。
 
     硬性约束（否则 cp936 宿主机上 .bat 内嵌中文会乱码）：
@@ -218,13 +233,16 @@ def _installer_bat(subcmd: str) -> str:
     关键 UX（2026-09-20 修）：双击 .bat 时 Windows 给了它一个新控制台，**进程一退出窗口即关闭**；
     此前没有 `pause`，导致用户「输入路径回车后窗口就没了」，成功/报错全都看不见。
     现在无论成功失败都 `pause` 等待按键，用户能看到完整输出。
+
+    ``lang`` 只决定传给 install.py 的 ``--lang``，从而选择**界面文案语言**；
+    ``--lang`` 放在 ``%*`` 之前，用户仍可用 ``install.bat --lang en`` 覆盖。
     """
     return (
         "@echo off\r\n"
         "setlocal\r\n"
         "cd /d \"%~dp0\"\r\n"
         "if not exist \"..\\payload\\python-runtime\\python.exe\" goto media_missing\r\n"
-        f"..\\payload\\python-runtime\\python.exe install.py {subcmd} %*\r\n"
+        f"..\\payload\\python-runtime\\python.exe install.py {subcmd} --lang {lang} %*\r\n"
         "set RC=%ERRORLEVEL%\r\n"
         "if not \"%RC%\"==\"0\" goto failed\r\n"
         "echo.\r\n"
@@ -247,7 +265,7 @@ def _installer_bat(subcmd: str) -> str:
     )
 
 
-def _stage_installer(dist_root: Path) -> None:
+def _stage_installer(dist_root: Path, lang: str = "zh") -> None:
     installer_dir = dist_root / "installer"
     installer_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(HERE / "install_windows.py", installer_dir / "install.py")
@@ -256,33 +274,45 @@ def _stage_installer(dist_root: Path) -> None:
     # ⚠ 两个 .bat 都必须带上**子命令**：install.py 是 subparsers 结构，
     #   `install.py --app-target X` 会被 argparse 当成「X 是子命令」而报 invalid choice
     #   （旧版 install.bat 写的是 `install.py %*`，缺 `install` 子命令 → 带参数的 CLI 用法一直是坏的）。
-    (installer_dir / "install.bat").write_text(_installer_bat("install"), encoding="ascii")
-    (installer_dir / "uninstall.bat").write_text(_installer_bat("uninstall"), encoding="ascii")
+    #   同时固定 `--lang <lang>`：双击即得对应语言界面，无需用户记参数。
+    (installer_dir / "install.bat").write_text(
+        _installer_bat("install", lang), encoding="ascii")
+    (installer_dir / "uninstall.bat").write_text(
+        _installer_bat("uninstall", lang), encoding="ascii")
     if not (installer_dir / "install.py").is_file():
         _fail_build("installer/install.py 生成失败")
     if not (installer_dir / "release_integrity.py").is_file():
         _fail_build("installer/release_integrity.py 生成失败")
 
 
-def _stage_docs(dist_root: Path) -> int:
-    """随包文档（白名单）。
+def _stage_docs(dist_root: Path, lang: str = "zh") -> int:
+    """随包文档（白名单）—— **按语言包**决定放哪些。
 
     分三层，**按读者**归位而不是一股脑堆在根目录：
-      1. 根目录 → 用户要用的（上手说明 / 更新日志 / 许可证）
+      1. 根目录 → 用户要用的（上手说明 / 使用手册 / 更新日志 / 许可证）
       2. docs/   → 开发者与评审要用的（README / 贡献指南 / 安全策略 / 行为准则）
       3. docs/   → 技术参考资料（架构、依赖锁、测试报告…）
 
-    MANIFEST 是**枚举实际文件**生成的，所以换位置不破坏完整性校验。
+    ``lang`` 是 ``"zh"`` / ``"en"``：语言档文档二选一（zh 包不带英文文档，反之亦然），
+    公共文档与中文技术参考两包都放。文件不存在就跳过（仓库可能没写全），返回落盘数。
+
+    MANIFEST 是**枚举实际文件**生成的，所以换位置/换语言不破坏完整性校验。
     """
     count = 0
-    for name in RELEASE_DOC_FILES:
+    for name in DOCS_ROOT_BY_LANG[lang] + DOCS_ROOT_SHARED:
         src = REPO / name
         if src.is_file():
             shutil.copy2(src, dist_root / name)
             count += 1
     docs_dst = dist_root / "docs"
-    for name in RELEASE_DEV_DOCS_DIR_FILES + RELEASE_DOCS_DIR_FILES:
-        src = REPO / name if name in RELEASE_DEV_DOCS_DIR_FILES else (REPO / "docs" / name)
+    for name in DOCS_DEV_BY_LANG[lang] + DOCS_DEV_SHARED:
+        src = REPO / name
+        if src.is_file():
+            docs_dst.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, docs_dst / name)
+            count += 1
+    for name in RELEASE_DOCS_DIR_FILES:
+        src = REPO / "docs" / name
         if src.is_file():
             docs_dst.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, docs_dst / name)
@@ -299,7 +329,7 @@ def _version_sources() -> dict:
 
 
 def _build_info(root: Path, platform: str, rt_ok: bool,
-                embedding: dict | None = None) -> dict:
+                embedding: dict | None = None, lang: str = "zh") -> dict:
     import release_integrity as ri                              # noqa: PLC0415
 
     lock = REPO / "requirements-release.lock"
@@ -316,14 +346,33 @@ def _build_info(root: Path, platform: str, rt_ok: bool,
     )
     # §18：随包嵌入资源身份。只记「是什么字节」，**不记任何绝对路径**。
     info["embedding"] = embedding
+    # 语言包身份：同一版本会产出 -zh / -en 两个发布根，BUILD_INFO 必须能区分
+    info["lang"] = lang
     return info
 
 
-def build(platform: str, output: Path, strict: bool = False) -> Path:
+def build(platform: str, output: Path, strict: bool = False,
+          lang: str = "both") -> Path:
+    """构建发布包。
+
+    ``lang == "both"``（默认）→ 先 zh 后 en 各建一次，返回**最后一个**（en）的发布根；
+    ``lang`` 为 ``"zh"`` / ``"en"`` → 只建该语言一个包。
+    两个包同源同版本，差异只在安装器界面语言与随包文档语言。
+    """
+    langs = ("zh", "en") if lang == "both" else (lang,)
+    dist_root: Path | None = None
+    for one in langs:
+        dist_root = _build_one(platform, output, strict=strict, lang=one)
+    assert dist_root is not None          # langs 恒非空
+    return dist_root
+
+
+def _build_one(platform: str, output: Path, strict: bool = False,
+               lang: str = "zh") -> Path:
     _ensure_repo_on_path()
     from app.version import APP_VERSION            # 唯一版本源  # noqa: PLC0415
 
-    name = f"Kavira-v{APP_VERSION}-{platform}"
+    name = f"Kavira-v{APP_VERSION}-{platform}-{lang}"
     dist_root = output / name
     if dist_root.exists():
         shutil.rmtree(dist_root)
@@ -337,8 +386,8 @@ def build(platform: str, output: Path, strict: bool = False) -> Path:
         print(f"[build] 警告：未找到嵌入式 Python，跳过 python-runtime 拷贝。"
               " 正式发布前请先 `python setup_runtime_windows.py`。", file=sys.stderr)
 
-    _stage_installer(dist_root)
-    doc_count = _stage_docs(dist_root)
+    _stage_installer(dist_root, lang)
+    doc_count = _stage_docs(dist_root, lang)
     dist_root.mkdir(parents=True, exist_ok=True)
 
     import collect_licenses as cl                               # noqa: PLC0415
@@ -356,9 +405,9 @@ def build(platform: str, output: Path, strict: bool = False) -> Path:
     emb = _stage_embedding(dist_root)
     if emb["staged"]:
         # 2) BUILD_INFO 带上 embedding 块（§18）
-        info = _build_info(dist_root, platform, rt_ok, emb["build_info"])
+        info = _build_info(dist_root, platform, rt_ok, emb["build_info"], lang=lang)
     elif emb.get("applicable"):
-        info = _build_info(dist_root, platform, rt_ok, None)
+        info = _build_info(dist_root, platform, rt_ok, None, lang=lang)
         msg = (f"[build] 嵌入资源未随包：{emb['code']} —— {emb['reason']}")
         if strict:
             print(msg, file=sys.stderr)
@@ -366,7 +415,7 @@ def build(platform: str, output: Path, strict: bool = False) -> Path:
             print(msg + "（非 strict：允许不带嵌入资源）", file=sys.stderr)
     else:
         # 仓库未声明嵌入能力：不打印「未随包」告警（那是契约缺失导致的误报）
-        info = _build_info(dist_root, platform, rt_ok, None)
+        info = _build_info(dist_root, platform, rt_ok, None, lang=lang)
     ri.write_build_info(dist_root, info)
 
     # 3) RELEASE_MANIFEST → 4) SHA256SUMS（同一套枚举，单一出口）
@@ -381,6 +430,7 @@ def build(platform: str, output: Path, strict: bool = False) -> Path:
 
     print(f"{'BUILD OK' if strict else 'DEV BUILD OK（非正式发布）'} -> {dist_root}")
     print(f"  发布格式版本           {ri.FORMAT_VERSION}")
+    print(f"  语言包                 {lang}")
     print(f"  文件数（清单）         {len(manifest['files'])}")
     print(f"  payload/app/           {(dist_root / 'payload' / 'app').is_dir()}")
     print(f"  payload/python-runtime/ {rt_ok}")
@@ -522,8 +572,11 @@ def main() -> int:
                     help="严格模式（正式发布）：app/runtime/installer/BUILD_INFO/"
                          "LICENSES/MANIFEST/SHA256SUMS/自校验 全通过才退出 0；"
                          "开发模式缺 runtime 仍可构建")
+    ap.add_argument("--lang", choices=["zh", "en", "both"], default="both",
+                    help="发布包语言：zh / en 各出一个发布根，both（默认）两个都出")
     args = ap.parse_args()
-    build(args.platform, Path(args.output).resolve(), strict=args.strict)
+    build(args.platform, Path(args.output).resolve(),
+          strict=args.strict, lang=args.lang)
     return 0
 
 

@@ -17,6 +17,7 @@ import sqlite3
 from dataclasses import dataclass, field
 
 from . import chunker
+from . import config
 from .db import Database
 from .log_util import get_logger
 
@@ -57,6 +58,10 @@ class Reference:
     #: 前端据此把引用定位到「源位置 → DOM 位置」，不再全文搜相似文字（目录/正文同文会跳错）。
     source_start_line: int = 0
     source_end_line: int = 0
+    #: B/A: 这条引用的匹配来源。"lexical" = 词法命中（原文出现查询实词）；
+    #: "semantic-only" = 经语义专用通道放行（原文**未**出现查询实词，仅语义足够近）。
+    #: 前端据此显示 semantic-only 徽标 + 人话解释（P0-4）；归因守卫据此过滤证据（T3.5）。
+    match_mode: str = "lexical"
 
 
 @dataclass
@@ -621,7 +626,8 @@ def _vec_search(db: Database, embedder, query: str, limit: int) -> list[tuple[st
     if embedder is None or not db.vec_table_ready or db.signature_mismatch:
         return []
     try:
-        qvec = embedder.embed([query])[0]
+        # 查询路径：按 artifact 声明的 query 前缀向量化（默认空前缀 = 与之前完全一致）
+        qvec = embedder.embed_query(query)
     except Exception as exc:  # noqa: BLE001
         log.warning("查询向量化失败: %s", exc)
         return []
@@ -673,6 +679,66 @@ def _snippet(text: str, query: str, width: int = 140) -> str:
                 "…" if start + width < len(t) else ""
             )
     return t[:width] + ("…" if len(t) > width else "")
+
+
+#: §7「时间」类通用词（design §2 边界）：这类词在语料里到处出现、不指向任何具体主题。
+#: B 词法桥从真实文本回灌锚点词时必须剔除它们 —— 确保「时间」泛词**绝不**进入 grounding，
+#: 守住 N6（不借语义通道放行掩盖 §7 的查询词拆分问题）。
+_TIME_GENERIC_TERMS = frozenset({
+    "时间", "时长", "多久", "多长", "周期", "日期", "年限", "频率", "间隔",
+    "时段", "时候", "何时", "几天", "几个月", "多少天", "多少年", "时长", "次数",
+})
+
+
+def _real_anchor_terms(text: str) -> list[str]:
+    """从父块真实文本里取「可作引用锚点」的实词（Core B，design §2）。
+
+    三重过滤：``_TERM_RE`` 切词 → 剔除 :data:`_STOPWORDS`（虚词/语气词）、
+    :data:`_GENRE_TERMS`（体裁/载体词）、:data:`_TIME_GENERIC_TERMS`（§7「时间」类通用词）。
+    只保留长度 ≥ 2 的词，按原文出现顺序去重返回。
+
+    ⚠ 返回的每个词都**逐字出现在 *text* 里** —— 因此据此定位的引用区间与原文逐字可匹配
+    （P0-2 结构性成立），且绝不会把查询里的「时间」泛词带进 grounding。
+    """
+    seen: set[str] = set()
+    out: list[str] = []
+    for m in _TERM_RE.finditer(text or ""):
+        t = m.group(0)
+        if len(t) < 2 or t in seen:
+            continue
+        if t in _STOPWORDS or t in _GENRE_TERMS or t in _TIME_GENERIC_TERMS:
+            continue
+        seen.add(t)
+        out.append(t)
+    return out
+
+
+def _semantic_snippet(content: str, real_terms: list[str], width: int = 140,
+                      max_sent: int = 60) -> str:
+    """语义-only 引用的锚点片段：取含**最多真实锚点词**的真实句子（design §2 加强项）。
+
+    与 :func:`_snippet` 不同 —— 语义-only 场景下查询实词在原文中**一个都不出现**，
+    ``_snippet`` 只会退回前缀；这里改挑「最相关的那句真实文本」，让锚点既逐字可匹配、
+    又尽量贴题。零额外 I/O、只做一次句切分（R4）。无 ``real_terms`` 命中时退回前缀。
+    """
+    t = re.sub(r"\s+", " ", (content or "").strip())
+    if not t:
+        return ""
+    if not real_terms:
+        return t[:width] + ("…" if len(t) > width else "")
+    sentences = [s for s in re.split(r"(?<=[。！？；!?;])", t) if s.strip()][:max_sent]
+    best: str | None = None
+    best_pos, best_hits = 0, 0
+    for s in sentences:
+        hits = sum(1 for w in real_terms if w in s)
+        if hits > best_hits:
+            best, best_hits = s, hits
+            best_pos = t.find(s)
+    if best is None:
+        return t[:width] + ("…" if len(t) > width else "")
+    start = max(0, best_pos - width // 4)
+    return ("…" if start > 0 else "") + t[start:start + width] + (
+        "…" if start + width < len(t) else "")
 
 
 def _doc_row(db: Database, doc_id: str) -> tuple[str, str, str]:
@@ -1152,6 +1218,50 @@ def _load_chunk_info(db: Database, chunk_ids: list[str]) -> dict[str, dict]:
 #: 规则 A（命中 target 词）才是主路径；宁可少引用，也不放行「毫无字面依据」的来源。
 SEM_FLOOR = 0.6
 
+# --------------------------------------------------------------------------
+# A. 语义专用通道（N3：在 _is_grounded 之上开一条**有约束**的出口，不删/不改 rule A/B/C）
+# 固定参数见 design §6（Q1 阈值 / Q3 作用域 / Q4 排序权益）。
+# --------------------------------------------------------------------------
+
+#: 相对阈值余量：放行阈值 = ``max(SEMANTIC_FLOOR, 词法候选池最高 sim + SEMANTIC_MARGIN)``。
+#: 「相对 + 固定」双条件（design §6-Q1）：零字面重合时词法池为空 → 落到固定 floor；
+#: 词法池本就高 sim 时则要求语义**更高**，防「postgrey 型近邻」压过真文档。
+SEMANTIC_MARGIN = 0.05
+
+#: 语义专用通道的**固定 floor**（design §6-Q1 的「固定」项）的**兜底默认值**。
+#: ⚠ 与闸门 rule B/C 的 :data:`SEM_FLOOR` **完全解耦**：本值只影响「语义专用通道」，
+#: 改动**不触碰** `_is_grounded()`（P0-3「闸门未动」）。
+#: 运行时以配置项 ``[SEARCH] semantic_floor`` 为准（与 ``semantic_min_corroboration``
+#: 同模式：可配、默认 0.84、常量兜底）——见 :func:`semantic_floor`。
+#: 取值依据（T06 扫点）：换 multilingual-e5-small 后 0.6/0.65 已无法阻止「孤立语义近邻」
+#: 被放行（负例 hb_neg_design_life 泄漏，其放行候选 sim 达 0.82–0.89）；抬到 0.84 使该
+#: 文档达 floor 的候选数降到 ≤1、旁证不足 → 泄漏 0，且中文三项仍达标（详见 channel_sweep.md）。
+SEMANTIC_FLOOR = 0.84
+
+
+def semantic_floor() -> float:
+    """语义通道 floor 的**有效值**：config ``[SEARCH] semantic_floor``，缺省回落常量。
+
+    与 ``semantic_min_corroboration`` 同模式（可配 + 常量兜底）。**只影响语义专用通道**，
+    绝不触碰 `_is_grounded()` 的 :data:`SEM_FLOOR`（闸门 rule B/C）。
+    """
+    try:
+        return float(config.get_float("SEARCH", "semantic_floor", SEMANTIC_FLOOR))
+    except Exception:  # noqa: BLE001 - 配置异常绝不拖垮检索主流程
+        return SEMANTIC_FLOOR
+
+#: 语义-only 父块的固定排序惩罚（design §4-Q4）。取值依据：> 典型 RRF 单 rank 差
+#: （~3e-4）、> 词法/向量命中微调分差（~4e-3 ~ 1.6e-2）→ **只要存在字面命中，
+#: 语义-only 永不在其之前**；唯一例外：全部候选皆语义-only（零字面重合子集、原本
+#: 空结果）→ 自然排到第 1，正是「空结果 → 有结果」的救援场景。
+SEMANTIC_PENALTY = 0.04
+
+#: 不走语义通道的运行时 ``question_type``（design §6-Q3）。``coverage`` 走整节聚合
+#: （见 hybrid_search 的 B2/B3），注入外部语义文档会污染「X 的功能有哪些」；且其
+#: 词法路本就稳。其余 ``general/quantity/person/datetime/model/location`` 全放行。
+#: 注意：``negative_no_answer`` / ``attribution`` 是 eval 用例标签，**不是**运行时类型。
+SEMANTIC_EXCLUDE_QTYPES = frozenset({"coverage"})
+
 
 def _sim_from_distance(distance) -> float | None:
     if distance is None:
@@ -1422,6 +1532,15 @@ def hybrid_search(
     if not fused:
         return result
 
+    # A：词法候选池的语义上限 —— 语义专用通道相对阈值的基准（design §1/§6-Q1）。
+    # 只读内存里的 fused/lex_ids，无额外 DB / embedder 调用（R4）。纯向量命中的 lex 词
+    # 没有 distance → _sim_from_distance 返回 None → 跳过；零字面重合时结果为 None。
+    lex_pool_max_sim: float | None = None
+    for _cid in lex_ids:
+        _s = _sim_from_distance(fused.get(_cid, {}).get("distance"))
+        if _s is not None and (lex_pool_max_sim is None or _s > lex_pool_max_sim):
+            lex_pool_max_sim = _s
+
     info = _load_chunk_info(db, list(fused))
     lex_set = set(lex_ids)
     doc_cache: dict[str, str] = {}
@@ -1445,6 +1564,76 @@ def hybrid_search(
         else:
             rejected.append({"chunk_id": cid, "tier": entry["_tier"], "reason": reason,
                              "similarity": sim})
+
+    # ---- A. 语义专用通道：在 _is_grounded 之上开一条**有约束**的出口（N3）----
+    # 只放行「零字面重合被拒（vector-only）且 sim ≥ max(SEM_FLOOR, 词法池最高分+margin)
+    # 且**同文档有 ≥N 旁证**（M2 安全加固）」的纯向量候选；**不触碰** _is_grounded 的
+    # rule A/B/C（该函数字节级不变，P0-3「闸门未动」）。
+    # 整段 try/except 包裹：任何异常 → 记 warning、保持原 accepted/rejected（🔒3 降级优先）。
+    semantic_released: list[str] = []
+    # M2 旁证闸门的状态量：定义在 try 之外，保证即便语义通道关闭或走异常分支，
+    # 下方 debug["semantic"] 也能**无条件**报告放行口径（N=1 即等价旧行为）。
+    _min_corrob = config.get_int("SEARCH", "semantic_min_corroboration", 2)
+    # 语义通道 floor 的**有效值**（config [SEARCH] semantic_floor，缺省回落常量）。
+    # 定义在 try 之外，保证即便通道关闭/异常，debug 也能报告放行口径。
+    _sem_floor = semantic_floor()
+    _doc_floor_n: dict[str, int] = {}
+    try:
+        if (config.get_bool("SEARCH", "allow_semantic_only", False)
+                and ana.question_type not in SEMANTIC_EXCLUDE_QTYPES):
+            _thr = max(_sem_floor, (lex_pool_max_sim or 0.0) + SEMANTIC_MARGIN)
+            # M2 旁证闸门（安全加固）：统计「同一文档内自身 sim ≥ _sem_floor 的候选数」。
+            # 语义-only 放行必须自带**同文档 ≥N 旁证** —— 孤立的单个语义近邻（典型负例
+            # hb_neg_design_life）不足以单独充当来源。N 可配
+            # （semantic_min_corroboration；N=1 即放开=旧行为）。纯内存遍历 fused（_sim
+            # 已在上面回填），无额外 DB / embedder 调用（R4）。
+            for _c in fused:
+                _did = (info.get(_c) or {}).get("doc_id") or ""
+                _s = fused[_c].get("_sim")
+                if _did and _s is not None and _s >= _sem_floor:
+                    _doc_floor_n[_did] = _doc_floor_n.get(_did, 0) + 1
+            # ① 只读检测：挑出可放行的零字面重合候选（不在此处改任何状态）
+            _to_release = [
+                it for it in rejected
+                if it.get("reason") == "vector-only(no-lexical-overlap)"
+                and it.get("similarity") is not None
+                and it["similarity"] >= _thr
+                and it["chunk_id"] in fused
+                and _doc_floor_n.get((info.get(it["chunk_id"]) or {}).get("doc_id") or "",
+                                     0) >= _min_corrob
+            ]
+            # ② 原子应用：打标 → 进 accepted → 从 rejected 移除
+            if _to_release:
+                _rel_ids = {it["chunk_id"] for it in _to_release}
+                for _it in _to_release:
+                    _ent = fused[_it["chunk_id"]]
+                    _ent["_reason"] = "semantic-only"
+                    _ent["_match_mode"] = "semantic-only"
+                    accepted.append((_it["chunk_id"], _ent))
+                    semantic_released.append(_it["chunk_id"])
+                rejected[:] = [it for it in rejected if it["chunk_id"] not in _rel_ids]
+    except Exception as _exc:  # noqa: BLE001 - 语义通道异常绝不拖垮检索主流程
+        log.warning("语义通道异常，按现状降级: %s", _exc)
+        semantic_released = []
+
+    if debug is not None:
+        _sem_on = bool(config.get_bool("SEARCH", "allow_semantic_only", False))
+        _sem_excluded = ana.question_type in SEMANTIC_EXCLUDE_QTYPES
+        debug["semantic"] = {
+            "enabled": _sem_on,
+            "excluded_qtype": _sem_excluded,
+            "question_type": ana.question_type,
+            "lex_pool_max_sim": lex_pool_max_sim,
+            "semantic_floor": round(_sem_floor, 4),
+            "threshold": (None if _sem_excluded else
+                          round(max(_sem_floor, (lex_pool_max_sim or 0.0) + SEMANTIC_MARGIN), 4)),
+            # M2：放行所需的「同文档 ≥N 旁证」门限，以及每文档达 floor 的候选数快照。
+            "min_corroboration": _min_corrob,
+            "doc_floor_n": dict(_doc_floor_n),
+            "released": [{"chunk_id": c, "similarity": fused.get(c, {}).get("_sim")}
+                         for c in semantic_released],
+        }
+        debug["semantic_released_count"] = len(semantic_released)
 
     if debug is not None:
         debug["lexical_tier"] = dict(tier_of)
@@ -1473,11 +1662,15 @@ def hybrid_search(
         pid = ci.get("parent_id") or ""
         if not pid:
             continue
-        acc = parent_acc.setdefault(pid, {"n": 0, "max": 0.0, "sim": None})
+        acc = parent_acc.setdefault(pid, {"n": 0, "max": 0.0, "sim": None, "semantic": True})
         acc["n"] += 1
         acc["max"] = max(acc["max"], float(entry.get("score", 0.0)))
         if acc["sim"] is None and entry.get("_sim") is not None:
             acc["sim"] = entry["_sim"]
+        # B: 父块只要有**任意一条词法命中**，就不是语义-only（默认 True 被逐条词法命中翻掉）；
+        # 只有其全部命中都来自语义通道时，acc["semantic"] 才保持 True。
+        if entry.get("_match_mode") != "semantic-only":
+            acc["semantic"] = False
 
     if not parent_acc:
         return result
@@ -1506,7 +1699,11 @@ def hybrid_search(
         # 这里以 rrf_max 为骨架、lex/ans/multi 作为**有界微调**，仅用于打破近邻平局，
         # 既保住 A4.2b 的向量排序，又让 P0 的「答案词紧邻数字 +8」「多块一致命中」
         # 能把真正答案块顶上来。
-        final = round(float(acc["max"]) + lex + ans + multi, 6)
+        # B/Q4：语义-only 父块减固定惩罚 —— 只要存在字面命中就永远排其后（沉到第 6 被
+        # ranked[:top_k] 截掉，「仅作补充引用」）；仅当全部候选皆语义-only（零字面重合、
+        # 原本空结果）时才自然排第 1，正是「空结果 → 有结果」的救援场景（P0-1）。
+        _sem_pen = SEMANTIC_PENALTY if acc.get("semantic") else 0.0
+        final = round(float(acc["max"]) + lex + ans + multi - _sem_pen, 6)
         ranked.append((pid, acc, pr, final))
     ranked.sort(key=lambda x: x[3], reverse=True)
 
@@ -1580,12 +1777,20 @@ def hybrid_search(
         # 解析不到（只有 1..top_k 存在）→ 正文角标成片「点不过去」。
         # 覆盖型问句的 context 本就会扩展到 >top_k 个父块，故这里**逐个建引用**：
         # 编号空间 ≡ 引用空间。底部「来源」列表由前端按文档去重，不会因此变长。
+        _mm = "semantic-only" if acc.get("semantic") else "lexical"
+        if _mm == "semantic-only":
+            # B 词法桥：语义-only 场景查询实词不在原文，改取「含最多真实锚点词」的真实句子，
+            # 保证引用锚点逐字可匹配（P0-2）且尽量贴题。
+            _snip = _semantic_snippet(pr["content"], _real_anchor_terms(pr["content"]))
+        else:
+            _snip = _snippet(pr["content"], query)
         references.append(Reference(
-            id=idx, title=title, path=rel_path, snippet=_snippet(pr["content"], query),
+            id=idx, title=title, path=rel_path, snippet=_snip,
             parent_id=pid, doc_id=did, score=round(acc["max"], 6), similarity=acc["sim"],
             display_source=display_source or title,
             source_start_line=int(pr.get("source_start_line") or 0),
             source_end_line=int(pr.get("source_end_line") or 0),
+            match_mode=_mm,
         ))
         parents.append({
             "parent_id": pid,
@@ -1599,6 +1804,7 @@ def hybrid_search(
             "source_end_line": int(pr.get("source_end_line") or 0),
             "score": round(acc["max"], 6),
             "similarity": acc["sim"],
+            "match_mode": _mm,
         })
 
     result.references = references

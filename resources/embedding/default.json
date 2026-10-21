@@ -1,24 +1,27 @@
 {
   "format_version": 1,
-  "id": "bge-small-zh-v1.5-int8",
-  "base_model": "BAAI/bge-small-zh-v1.5",
-  "base_model_revision": "7999e1d3359715c523056ef9478215996d62a620",
-  "artifact_source": "Xenova/bge-small-zh-v1.5",
-  "artifact_revision": "75c43b069aac4d136ba6bc1122f995fedcfd2781",
-  "artifact_file": "onnx/model_int8.onnx",
-  "artifact_sha256": "b9837c19ce154ff0726d398ee77abbc03a7faf0476c6f93016c84e531be7ebb5",
-  "artifact_size": 23903394,
+  "id": "multilingual-e5-small-int8",
+  "base_model": "intfloat/multilingual-e5-small",
+  "base_model_revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+  "artifact_source": "Xenova/multilingual-e5-small",
+  "artifact_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+  "artifact_file": "onnx/model_quantized.onnx",
+  "artifact_sha256": "f80102d3f2a1229f387d3c81909990d8945513e347b0eab049f7de3c6f98c193",
+  "artifact_size": 118308185,
   "precision": "int8",
-  "dimension": 512,
-  "pooling": "cls",
+  "dimension": 384,
+  "pooling": "mean",
   "normalize": true,
   "max_length": 512,
-  "_comment_pooling": "取 last_hidden_state 的 CLS（token 0）再 L2 归一化；依据 base model 官方 1_Pooling/config.json 的 pooling_mode_cls_token=true",
+  "query_prefix": "query: ",
+  "document_prefix": "passage: ",
+  "_comment_pooling": "e5 系列用 mean pooling（依据 base model intfloat/multilingual-e5-small 的 1_Pooling/config.json：pooling_mode_mean_tokens=true）；维度 384。384≠512 → 换此 artifact 会触发库内 vec0 表自动重建。",
+  "_comment_prefix": "e5 官方要求检索时 query 加 'query: '、document 加 'passage: ' 前缀；已纳入 artifact manifest 协议（EmbeddingResource.query_prefix/document_prefix，默认空=不加前缀）。",
   "license": {
     "basis": "derived_from_base_model",
     "base_model_license": "MIT",
     "conversion_repository_license": "unspecified",
-    "_comment": "转换仓库 Xenova/bge-small-zh-v1.5 自身未声明 license；权重来自 MIT 的 base model，故按 MIT 记录并保留完整链路。不得把转换仓库硬标为 MIT。"
+    "_comment": "base model intfloat/multilingual-e5-small 显式 license:mit；ONNX 转换仓库 Xenova/multilingual-e5-small 自身未声明 license，权重来自 MIT base model，故按 MIT 记录并保留完整链路。不得把转换仓库硬标为 MIT。"
   },
   "local_files": {
     "model": "model.onnx",
@@ -26,32 +29,25 @@
   },
   "tokenizer_files": {
     "tokenizer.json": {
-      "source": "Xenova/bge-small-zh-v1.5",
-      "revision": "75c43b069aac4d136ba6bc1122f995fedcfd2781",
+      "source": "Xenova/multilingual-e5-small",
+      "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
       "repo_path": "tokenizer.json",
-      "sha256": "48cea5d44424912a6fd1ea647bf4fe50b55ab8b1e5879c3275f80e339e8fae26",
-      "size": 439125
+      "sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+      "size": 17082730
     },
     "tokenizer_config.json": {
-      "source": "Xenova/bge-small-zh-v1.5",
-      "revision": "75c43b069aac4d136ba6bc1122f995fedcfd2781",
+      "source": "Xenova/multilingual-e5-small",
+      "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
       "repo_path": "tokenizer_config.json",
-      "sha256": "e6f3b96db926a37d4039995fbf5ad17de158dfb8f6343d607e4dbaad18d75f5a",
-      "size": 367
+      "sha256": "a1d6bc8734a6f635dc158508bef000f8e2e5a759c7d92f984b2c86e5ff53425b",
+      "size": 443
     },
     "special_tokens_map.json": {
-      "source": "Xenova/bge-small-zh-v1.5",
-      "revision": "75c43b069aac4d136ba6bc1122f995fedcfd2781",
+      "source": "Xenova/multilingual-e5-small",
+      "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
       "repo_path": "special_tokens_map.json",
-      "sha256": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3",
-      "size": 125
-    },
-    "vocab.txt": {
-      "source": "Xenova/bge-small-zh-v1.5",
-      "revision": "75c43b069aac4d136ba6bc1122f995fedcfd2781",
-      "repo_path": "vocab.txt",
-      "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
-      "size": 109540
+      "sha256": "d05497f1da52c5e09554c0cd874037a083e1dc1b9cfd48034d1c717f1afc07a7",
+      "size": 167
     }
   }
 }

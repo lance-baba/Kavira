@@ -1,5 +1,7 @@
 """构建 eval/datasets/core_gold.jsonl（维护者工具，非产品代码）。
 
+⚠ 本脚本未含 T3.5 过滤（不过滤 match_mode=="semantic-only" 证据），**不得作为归因判据**。
+
 **Gold 的唯一来源是 eval/fixtures/ 下的 fixture 原文**，本脚本只做两件事：
   1. 把人工编写的问题与期望**机械地**写成 JSONL；
   2. **完整性校验**：`must_contain` 的每一项必须逐字出现在对应 fixture 中；

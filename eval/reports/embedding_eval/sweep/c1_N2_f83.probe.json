@@ -1,0 +1,3222 @@
+{
+  "meta": {
+    "generated_at": "2026-10-16 21:04:58",
+    "app_version": "1.3.0",
+    "top_k": 5,
+    "corpus_dir": "<repo>/eval/fixtures_holdout_b",
+    "corpus_docs": [
+      "hb_bridge2.md",
+      "hb_clinic.md",
+      "hb_flood.md",
+      "hb_lab.md",
+      "hb_software.md",
+      "hb_substation.md",
+      "hb_subway.md",
+      "hb_warehouse.md"
+    ],
+    "queries_file": "<repo>/eval/paraphrase/queries.json",
+    "embedding_dir": "<repo>/vendor/cache/embedding_candidates/c1_e5_small",
+    "library": "C:\\Users\\huqih\\AppData\\Local\\Temp\\kavira-paraphrase-yxrf9zmu",
+    "embedder": {
+      "tier": "local_onnx",
+      "model_id": "multilingual-e5-small-int8",
+      "dimension": 384,
+      "signature": "local_onnx:multilingual-e5-small-int8:384",
+      "resource_id": "multilingual-e5-small-int8",
+      "base_model": "intfloat/multilingual-e5-small",
+      "precision": "int8",
+      "fallback_reason": "",
+      "resolve_notes": [
+        "内置模型已启动：multilingual-e5-small-int8（384 维）"
+      ],
+      "resolve_warnings": []
+    },
+    "vector_route": {
+      "vec_table_ready": true,
+      "signature_mismatch": "",
+      "vec_rows": 52
+    },
+    "semantic_channel": {
+      "allow_semantic_only": true,
+      "semantic_floor": 0.83,
+      "semantic_margin": 0.05,
+      "semantic_penalty": 0.04,
+      "exclude_qtypes": [
+        "coverage"
+      ]
+    },
+    "elapsed_s": 1.72
+  },
+  "metrics": {
+    "cases": 32,
+    "failure_rate@5": 0.1562,
+    "recall@1": 0.7188,
+    "recall@3": 0.7812,
+    "recall@5": 0.8438,
+    "mrr": 0.7625,
+    "empty_result_rate": 0.0312,
+    "no_lexical_hit_rate": 0.0312,
+    "accepted_zero_rate": 0.0312,
+    "zero_lexical_overlap_rate": 0.3125,
+    "avg_lexical_candidates": 1.69,
+    "avg_vector_candidates": 20.0,
+    "semantic_released_total": 184,
+    "queries_with_release": 12,
+    "queries_with_release_rate": 0.375,
+    "semantic_only_references": 51
+  },
+  "zero_lexical_subset": {
+    "cases": 10,
+    "failure_rate@5": 0.2,
+    "recall@1": 0.8,
+    "recall@3": 0.8,
+    "recall@5": 0.8,
+    "mrr": 0.8,
+    "empty_result_rate": 0.1,
+    "no_lexical_hit_rate": 0.1,
+    "accepted_zero_rate": 0.1,
+    "zero_lexical_overlap_rate": 1.0,
+    "avg_lexical_candidates": 0.0,
+    "avg_vector_candidates": 20.0,
+    "semantic_released_total": 163,
+    "queries_with_release": 9,
+    "queries_with_release_rate": 0.9,
+    "semantic_only_references": 45
+  },
+  "sem_floor_note": {
+    "SEM_FLOOR": 0.6,
+    "queries_best_rejected_sim_ge_floor": 31,
+    "of_which_empty": 1,
+    "example_ids": [
+      "pp_bridge_device_expiry",
+      "pp_bridge_joint",
+      "pp_bridge_mid_cause",
+      "pp_bridge_year",
+      "pp_clinic_fasting",
+      "pp_clinic_flow",
+      "pp_clinic_reagent",
+      "pp_clinic_urine"
+    ]
+  },
+  "rejection_histogram": {
+    "vector-only(no-lexical-overlap)": 409
+  },
+  "failure_cases": [
+    {
+      "id": "pp_bridge_year",
+      "query": "这座桥是哪一年落成的？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「桥梁概况」一节末尾：建成于 2011 年",
+      "empty": true,
+      "n_refs": 0,
+      "route": "like+no-lexical-hit",
+      "system_warning": "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）",
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "top_rejected_reason": "vector-only(no-lexical-overlap)",
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "best_rejected_similarity": 0.8808,
+      "top5_docs": []
+    },
+    {
+      "id": "pp_lab_cycle",
+      "query": "这些机器多长时间要重新校对一次？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「仪器台账」表校准周期列：三台机器均为 12 个月",
+      "empty": false,
+      "n_refs": 1,
+      "route": "like",
+      "system_warning": "",
+      "warnings": [],
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "top_rejected_reason": "vector-only(no-lexical-overlap)",
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "best_rejected_similarity": 0.8858,
+      "top5_docs": [
+        "hb_software.md"
+      ]
+    },
+    {
+      "id": "pp_lab_owner",
+      "query": "做材料拉伸的大机器里，三百型的那台平时归谁管？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「仪器台账」表第二行：万能材料试验机 WDW-300，责任人马丽",
+      "empty": false,
+      "n_refs": 5,
+      "route": "like",
+      "system_warning": "",
+      "warnings": [],
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "accepted": 20,
+      "rejected": 0,
+      "top_rejected_reason": "—",
+      "rejected_reasons": {},
+      "best_rejected_similarity": null,
+      "top5_docs": [
+        "hb_substation.md",
+        "hb_bridge2.md",
+        "hb_subway.md",
+        "hb_bridge2.md",
+        "hb_warehouse.md"
+      ]
+    }
+  ],
+  "per_query": [
+    {
+      "id": "pp_bridge_year",
+      "query": "这座桥是哪一年落成的？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「桥梁概况」一节末尾：建成于 2011 年",
+      "avoid_terms": [
+        "建成于"
+      ],
+      "n_refs": 0,
+      "empty": true,
+      "route": "like+no-lexical-hit",
+      "no_lexical_hit": true,
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 0
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {},
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "9e747c395db4ec99": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {},
+      "best_rejected_similarity": 0.8808,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8808,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_bridge_joint",
+      "query": "桥面上留的那几道接缝一共设了多少处？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「构件编号」一节：伸缩缝自北向南 SS-01 至 SS-04（共 4 处）",
+      "avoid_terms": [
+        "伸缩缝"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 17,
+      "rejected": 3,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 3
+      },
+      "grounded_reasons": {
+        "semantic-only": 17
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "9e747c395db4ec99": 4,
+          "e868044447b6f4dc": 9,
+          "944b849d96a1455b": 4,
+          "70f3a359008422c4": 1,
+          "a27b1164b927988c": 1,
+          "1030f61fa7e3212c": 1
+        },
+        "released": [
+          {
+            "chunk_id": "9e747c395db4ec99:c1",
+            "similarity": 0.8692
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c0",
+            "similarity": 0.8639
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c3",
+            "similarity": 0.8633
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c7",
+            "similarity": 0.8586
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c6",
+            "similarity": 0.8584
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c5",
+            "similarity": 0.8528
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c2",
+            "similarity": 0.8487
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c10",
+            "similarity": 0.8479
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c0",
+            "similarity": 0.8476
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c1",
+            "similarity": 0.8472
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c0",
+            "similarity": 0.8458
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c4",
+            "similarity": 0.8445
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c2",
+            "similarity": 0.8442
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c3",
+            "similarity": 0.8431
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c2",
+            "similarity": 0.8418
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c4",
+            "similarity": 0.8405
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c1",
+            "similarity": 0.8339
+          }
+        ]
+      },
+      "semantic_released_count": 17,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": 0.841,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8692,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_bridge2.md",
+        "hb_bridge2.md",
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_bridge_mid_cause",
+      "query": "中间那跨的垫块被剪歪了，根子在什么地方？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「病害成因」一节第二条：ZZ-07 的病害由温度变化引起（位置为中跨）",
+      "avoid_terms": [
+        "剪切变形",
+        "温度变化"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 19,
+      "rejected": 1,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 1
+      },
+      "grounded_reasons": {
+        "semantic-only": 19
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "什"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "9e747c395db4ec99": 6,
+          "944b849d96a1455b": 4,
+          "e868044447b6f4dc": 7,
+          "a27b1164b927988c": 1,
+          "2dc421c706e84186": 2
+        },
+        "released": [
+          {
+            "chunk_id": "9e747c395db4ec99:c2",
+            "similarity": 0.8842
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c3",
+            "similarity": 0.868
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c1",
+            "similarity": 0.8528
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c2",
+            "similarity": 0.8528
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c4",
+            "similarity": 0.8507
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c0",
+            "similarity": 0.8506
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c6",
+            "similarity": 0.8495
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c7",
+            "similarity": 0.8486
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c1",
+            "similarity": 0.8431
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c5",
+            "similarity": 0.8402
+          },
+          {
+            "chunk_id": "2dc421c706e84186:c1",
+            "similarity": 0.8374
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c4",
+            "similarity": 0.8371
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c5",
+            "similarity": 0.8368
+          },
+          {
+            "chunk_id": "2dc421c706e84186:c5",
+            "similarity": 0.8367
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c9",
+            "similarity": 0.8366
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c1",
+            "similarity": 0.8364
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c4",
+            "similarity": 0.8361
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c0",
+            "similarity": 0.8355
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c2",
+            "similarity": 0.8354
+          }
+        ]
+      },
+      "semantic_released_count": 19,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": 0.8456,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8842,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_bridge2.md",
+        "hb_bridge2.md",
+        "hb_warehouse.md",
+        "hb_subway.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_bridge_device_expiry",
+      "query": "测混凝土开裂大小的那台仪器，标定证书哪天到期？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「检测设备」表第一行：裂缝宽度观测仪 ZBL-F120，检定有效期 2026-12-05",
+      "avoid_terms": [
+        "检定有效期",
+        "裂缝宽度观测仪"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 6,
+        "vec_candidates": 20,
+        "fused": 22,
+        "parents": 5
+      },
+      "lexical_candidates": 6,
+      "vector_candidates": 20,
+      "fused": 22,
+      "accepted": 6,
+      "rejected": 16,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 16
+      },
+      "grounded_reasons": {
+        "lexical": 6
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "混凝土",
+        "仪器"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8835,
+        "threshold": 0.9335,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "1030f61fa7e3212c": 4,
+          "e868044447b6f4dc": 8,
+          "9e747c395db4ec99": 2,
+          "a27b1164b927988c": 1,
+          "70f3a359008422c4": 2,
+          "3a7db010fb6ea1ed": 2,
+          "944b849d96a1455b": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9335,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.9051,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.9051,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_lab.md",
+        "hb_subway.md",
+        "hb_lab.md",
+        "hb_lab.md",
+        "hb_bridge2.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "first_hit_rank": 5,
+      "rr": 0.2
+    },
+    {
+      "id": "pp_clinic_fasting",
+      "query": "抽血化验之前得饿多长时间？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「质量要求」第一条：空腹采血要求禁食 8 小时以上",
+      "avoid_terms": [
+        "禁食 8 小时",
+        "空腹采血"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 1,
+        "semantic-only": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "时间"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.8333,
+        "threshold": 0.8833,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "2dc421c706e84186": 2,
+          "3a7db010fb6ea1ed": 4,
+          "1030f61fa7e3212c": 2,
+          "a27b1164b927988c": 1
+        },
+        "released": [
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c5",
+            "similarity": 0.8891
+          }
+        ]
+      },
+      "semantic_released_count": 1,
+      "semantic_threshold": 0.8833,
+      "ref_match_modes": {
+        "lexical": 1,
+        "semantic-only": 1
+      },
+      "best_rejected_similarity": 0.846,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8891,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_software.md",
+        "hb_clinic.md"
+      ],
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 2,
+      "rr": 0.5
+    },
+    {
+      "id": "pp_clinic_urine",
+      "query": "尿的标本取好以后，多久之内必须拿去化验？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「质量要求」第二条：尿常规样本需在 2 小时内送检",
+      "avoid_terms": [
+        "尿常规",
+        "送检"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "尿"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "datetime",
+        "lex_pool_max_sim": 0.8941,
+        "threshold": 0.9441,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "3a7db010fb6ea1ed": 6,
+          "a27b1164b927988c": 1,
+          "1030f61fa7e3212c": 4,
+          "9e747c395db4ec99": 3,
+          "e868044447b6f4dc": 2,
+          "70f3a359008422c4": 3,
+          "2dc421c706e84186": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9441,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.8594,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8941,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_clinic.md",
+        "hb_clinic.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_clinic_reagent",
+      "query": "做化验用的那些药水归谁管进货？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「责任划分」第一条：试剂采购由器械科负责",
+      "avoid_terms": [
+        "试剂采购",
+        "器械科"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 18,
+      "rejected": 2,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 2
+      },
+      "grounded_reasons": {
+        "semantic-only": 18
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "person",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "3a7db010fb6ea1ed": 3,
+          "1030f61fa7e3212c": 3,
+          "944b849d96a1455b": 4,
+          "e868044447b6f4dc": 2,
+          "9e747c395db4ec99": 3,
+          "70f3a359008422c4": 1,
+          "a27b1164b927988c": 3,
+          "2dc421c706e84186": 1
+        },
+        "released": [
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c2",
+            "similarity": 0.8644
+          },
+          {
+            "chunk_id": "1030f61fa7e3212c:c3",
+            "similarity": 0.8623
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c4",
+            "similarity": 0.8621
+          },
+          {
+            "chunk_id": "1030f61fa7e3212c:c0",
+            "similarity": 0.8593
+          },
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c4",
+            "similarity": 0.8575
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c8",
+            "similarity": 0.8563
+          },
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c1",
+            "similarity": 0.856
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c2",
+            "similarity": 0.8531
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c1",
+            "similarity": 0.8523
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c3",
+            "similarity": 0.8523
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c0",
+            "similarity": 0.8512
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c2",
+            "similarity": 0.8509
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c0",
+            "similarity": 0.8504
+          },
+          {
+            "chunk_id": "1030f61fa7e3212c:c2",
+            "similarity": 0.8473
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c3",
+            "similarity": 0.8463
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c1",
+            "similarity": 0.8461
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c4",
+            "similarity": 0.8457
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c5",
+            "similarity": 0.8455
+          }
+        ]
+      },
+      "semantic_released_count": 18,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": 0.8519,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8644,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_clinic.md",
+        "hb_lab.md",
+        "hb_warehouse.md",
+        "hb_clinic.md",
+        "hb_clinic.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_clinic_flow",
+      "query": "一份标本从接进来到最后发出结果，中间要走几步？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「样本流程」一节：登记 → 采样 → 离心 → 检测 → 复核 → 签发（共 6 步）",
+      "avoid_terms": [
+        "离心",
+        "复核"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "结果"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8464,
+        "threshold": 0.8964,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "3a7db010fb6ea1ed": 4,
+          "2dc421c706e84186": 2,
+          "e868044447b6f4dc": 7,
+          "1030f61fa7e3212c": 2,
+          "944b849d96a1455b": 3
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8964,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.8575,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8575,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_clinic.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_flood_rainfall",
+      "query": "六月初那场大雨一共下了多少毫米？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「强降雨过程」一节：6 月 8 日至 10 日，累计雨量 210 毫米",
+      "avoid_terms": [
+        "强降雨",
+        "累计雨量"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "毫米"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.9057,
+        "threshold": 0.9557,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "70f3a359008422c4": 7,
+          "e868044447b6f4dc": 6,
+          "944b849d96a1455b": 2,
+          "9e747c395db4ec99": 3
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9557,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.8686,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.9057,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_flood.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_flood_inflow",
+      "query": "上游下来的水最多的时候每秒到了多少方？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「上游来水过程」一节：6 月 11 日入库流量达到 3200 立方米每秒",
+      "avoid_terms": [
+        "入库流量",
+        "立方米每秒"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "上游",
+        "每秒"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.9081,
+        "threshold": 0.9581,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "70f3a359008422c4": 7,
+          "e868044447b6f4dc": 6,
+          "944b849d96a1455b": 1,
+          "9e747c395db4ec99": 2,
+          "1030f61fa7e3212c": 1,
+          "2dc421c706e84186": 1,
+          "a27b1164b927988c": 1,
+          "3a7db010fb6ea1ed": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9581,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.8881,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.9081,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_flood.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_flood_gate",
+      "query": "水库那天把几个口子打开放水了？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「泄洪调度过程」一节：6 月 12 日水库开启三孔闸门泄洪",
+      "avoid_terms": [
+        "泄洪",
+        "三孔闸门"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 2,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "水库"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.8738,
+        "threshold": 0.9238,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "70f3a359008422c4": 7,
+          "e868044447b6f4dc": 6,
+          "944b849d96a1455b": 3,
+          "9e747c395db4ec99": 2,
+          "1030f61fa7e3212c": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9238,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.876,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8738,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_flood.md",
+        "hb_flood.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_flood_drain",
+      "query": "城里淹了以后往外抽水这事儿由哪个单位牵头？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「应急处置分工」第一条：城市排涝由排水管理处负责",
+      "avoid_terms": [
+        "城市排涝",
+        "排水管理处"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 16,
+      "rejected": 4,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 4
+      },
+      "grounded_reasons": {
+        "semantic-only": 16
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "70f3a359008422c4": 8,
+          "e868044447b6f4dc": 6,
+          "9e747c395db4ec99": 1,
+          "944b849d96a1455b": 1,
+          "3a7db010fb6ea1ed": 2,
+          "1030f61fa7e3212c": 1,
+          "a27b1164b927988c": 1
+        },
+        "released": [
+          {
+            "chunk_id": "70f3a359008422c4:c6",
+            "similarity": 0.884
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c5",
+            "similarity": 0.8697
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c7",
+            "similarity": 0.8651
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c1",
+            "similarity": 0.8617
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c5",
+            "similarity": 0.8603
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c9",
+            "similarity": 0.8597
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c4",
+            "similarity": 0.859
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c3",
+            "similarity": 0.8584
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c2",
+            "similarity": 0.8543
+          },
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c2",
+            "similarity": 0.8532
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c8",
+            "similarity": 0.8472
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c0",
+            "similarity": 0.8466
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c10",
+            "similarity": 0.8466
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c2",
+            "similarity": 0.8462
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c1",
+            "similarity": 0.8459
+          },
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c1",
+            "similarity": 0.844
+          }
+        ]
+      },
+      "semantic_released_count": 16,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": 0.8609,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.884,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_flood.md",
+        "hb_subway.md",
+        "hb_flood.md",
+        "hb_flood.md",
+        "hb_flood.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_lab_owner",
+      "query": "做材料拉伸的大机器里，三百型的那台平时归谁管？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「仪器台账」表第二行：万能材料试验机 WDW-300，责任人马丽",
+      "avoid_terms": [
+        "万能材料试验机",
+        "WDW-300",
+        "责任人"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 20,
+      "rejected": 0,
+      "rejected_reasons": {},
+      "grounded_reasons": {
+        "semantic-only": 20
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "person",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "1030f61fa7e3212c": 2,
+          "a27b1164b927988c": 3,
+          "9e747c395db4ec99": 5,
+          "944b849d96a1455b": 5,
+          "e868044447b6f4dc": 5
+        },
+        "released": [
+          {
+            "chunk_id": "1030f61fa7e3212c:c0",
+            "similarity": 0.8623
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c3",
+            "similarity": 0.8584
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c2",
+            "similarity": 0.8545
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c1",
+            "similarity": 0.8505
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c7",
+            "similarity": 0.8483
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c3",
+            "similarity": 0.8462
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c0",
+            "similarity": 0.8454
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c3",
+            "similarity": 0.8453
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c2",
+            "similarity": 0.8434
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c4",
+            "similarity": 0.8429
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c1",
+            "similarity": 0.8419
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c4",
+            "similarity": 0.8413
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c8",
+            "similarity": 0.84
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c3",
+            "similarity": 0.8395
+          },
+          {
+            "chunk_id": "1030f61fa7e3212c:c3",
+            "similarity": 0.839
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c0",
+            "similarity": 0.838
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c5",
+            "similarity": 0.8377
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c6",
+            "similarity": 0.8376
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c1",
+            "similarity": 0.8367
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c2",
+            "similarity": 0.8363
+          }
+        ]
+      },
+      "semantic_released_count": 20,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": null,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8623,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_substation.md",
+        "hb_bridge2.md",
+        "hb_subway.md",
+        "hb_bridge2.md",
+        "hb_warehouse.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_lab_cycle",
+      "query": "这些机器多长时间要重新校对一次？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「仪器台账」表校准周期列：三台机器均为 12 个月",
+      "avoid_terms": [
+        "校准周期",
+        "12个月"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "时间"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.838,
+        "threshold": 0.888,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "2dc421c706e84186": 2,
+          "1030f61fa7e3212c": 4,
+          "9e747c395db4ec99": 1,
+          "a27b1164b927988c": 4,
+          "e868044447b6f4dc": 5,
+          "944b849d96a1455b": 3,
+          "3a7db010fb6ea1ed": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.888,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.8858,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8858,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_software.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_lab_org",
+      "query": "测力之类的设备是送到外面哪家单位去标定的？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「校准机构」第一条：力学类仪器由省计量院校准",
+      "avoid_terms": [
+        "力学类仪器",
+        "省计量院"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 5,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 5,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 5,
+      "rejected": 15,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 15
+      },
+      "grounded_reasons": {
+        "lexical": 5
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "设备"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8806,
+        "threshold": 0.9306,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "9e747c395db4ec99": 2,
+          "a27b1164b927988c": 3,
+          "1030f61fa7e3212c": 3,
+          "e868044447b6f4dc": 8,
+          "3a7db010fb6ea1ed": 3,
+          "944b849d96a1455b": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9306,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.8853,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8853,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_substation.md",
+        "hb_bridge2.md",
+        "hb_substation.md",
+        "hb_substation.md",
+        "hb_lab.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "first_hit_rank": 5,
+      "rr": 0.2
+    },
+    {
+      "id": "pp_lab_fail",
+      "query": "要是校下来不合格，这台设备该怎么处理？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「不合格处置」一节：立即停用并张贴停用标识，停用仪器由设备管理员封存",
+      "avoid_terms": [
+        "校准不合格",
+        "停用"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 7,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 7,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 7,
+      "rejected": 13,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 13
+      },
+      "grounded_reasons": {
+        "lexical": 7
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "不合格",
+        "设备",
+        "处理"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.9032,
+        "threshold": 0.9532,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "1030f61fa7e3212c": 4,
+          "9e747c395db4ec99": 4,
+          "a27b1164b927988c": 4,
+          "944b849d96a1455b": 1,
+          "e868044447b6f4dc": 4,
+          "3a7db010fb6ea1ed": 3
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9532,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.884,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.9032,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_lab.md",
+        "hb_warehouse.md",
+        "hb_substation.md",
+        "hb_bridge2.md",
+        "hb_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sw_position",
+      "query": "这个软件是给谁用的，能自己架服务器吗？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「产品定位」一节：面向团队的文档同步与协作工具，支持私有部署",
+      "avoid_terms": [
+        "私有部署",
+        "面向团队"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "服务"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "person",
+        "lex_pool_max_sim": 0.8708,
+        "threshold": 0.9208,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "2dc421c706e84186": 6,
+          "944b849d96a1455b": 4,
+          "a27b1164b927988c": 3,
+          "1030f61fa7e3212c": 2,
+          "9e747c395db4ec99": 2,
+          "e868044447b6f4dc": 2,
+          "3a7db010fb6ea1ed": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9208,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.8667,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8708,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_software.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sw_current",
+      "query": "现在线上跑的是哪一版，什么时候发的？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「版本信息」表第三行：3.2，2026-04-22，当前版本",
+      "avoid_terms": [
+        "当前版本",
+        "发布时间"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 3,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "现"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "datetime",
+        "lex_pool_max_sim": 0.8243,
+        "threshold": 0.8743,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "2dc421c706e84186": 3,
+          "944b849d96a1455b": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.8743,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.8501,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8501,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_flood.md",
+        "hb_flood.md",
+        "hb_subway.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_sw_size",
+      "query": "单个文件最大能放多大？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「性能参数」表第二行：单文件上限 2GB",
+      "avoid_terms": [
+        "单文件上限",
+        "2GB"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 3,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "文件"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.8599,
+        "threshold": 0.9099,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "2dc421c706e84186": 3,
+          "944b849d96a1455b": 4,
+          "e868044447b6f4dc": 3
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9099,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.849,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8599,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_software.md",
+        "hb_software.md",
+        "hb_software.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sw_known",
+      "query": "现在还有哪些地方做得不太好用？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「已知问题」一节：大文件首次同步较慢；离线冲突合并暂不支持表格文件",
+      "avoid_terms": [
+        "已知问题"
+      ],
+      "n_refs": 6,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 22,
+        "parents": 6
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 22,
+      "accepted": 3,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "现",
+        "还"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": true,
+        "question_type": "coverage",
+        "lex_pool_max_sim": 0.8366,
+        "threshold": null,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": null,
+      "ref_match_modes": {
+        "lexical": 6
+      },
+      "best_rejected_similarity": 0.8481,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8481,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_flood.md",
+        "hb_flood.md",
+        "hb_flood.md",
+        "hb_flood.md",
+        "hb_flood.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_sub_capacity",
+      "query": "站里那两台变压器各自能带多少负荷？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「主变设备」表：1号主变 50MVA，2号主变 63MVA",
+      "avoid_terms": [
+        "容量",
+        "MVA"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "变压器"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.8507,
+        "threshold": 0.9007,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "a27b1164b927988c": 6,
+          "944b849d96a1455b": 5,
+          "1030f61fa7e3212c": 1,
+          "e868044447b6f4dc": 6,
+          "2dc421c706e84186": 1,
+          "9e747c395db4ec99": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9007,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.8632,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8632,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sub_breaker",
+      "query": "那种能切断故障电流的设备一共装了几台？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「开关设备」表第一行：断路器 LW36-126，8台",
+      "avoid_terms": [
+        "断路器",
+        "8台"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 5,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 5,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 5,
+      "rejected": 15,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 15
+      },
+      "grounded_reasons": {
+        "lexical": 5
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "设备"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.8897,
+        "threshold": 0.9397,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "9e747c395db4ec99": 4,
+          "a27b1164b927988c": 6,
+          "1030f61fa7e3212c": 2,
+          "944b849d96a1455b": 5,
+          "70f3a359008422c4": 1,
+          "e868044447b6f4dc": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9397,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.8707,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8897,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_substation.md",
+        "hb_substation.md",
+        "hb_bridge2.md",
+        "hb_substation.md",
+        "hb_lab.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sub_relay_owner",
+      "query": "站里那些保护类的设备归到哪个人头上？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「设备责任人」第三条：保护装置责任人为吴迪",
+      "avoid_terms": [
+        "保护装置责任人",
+        "吴迪"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "保护",
+        "设备"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8969,
+        "threshold": 0.9469,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "a27b1164b927988c": 4,
+          "9e747c395db4ec99": 4,
+          "1030f61fa7e3212c": 2,
+          "944b849d96a1455b": 5,
+          "e868044447b6f4dc": 4,
+          "70f3a359008422c4": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9469,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.8728,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8969,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sub_overhaul",
+      "query": "变压器多久要彻底拆开修一次？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「检修周期」第一条：主变大修周期为 10 年",
+      "avoid_terms": [
+        "大修",
+        "主变"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 1,
+        "semantic-only": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "变压器"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "datetime",
+        "lex_pool_max_sim": 0.8497,
+        "threshold": 0.8997,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "a27b1164b927988c": 6,
+          "944b849d96a1455b": 1,
+          "1030f61fa7e3212c": 3,
+          "9e747c395db4ec99": 2,
+          "e868044447b6f4dc": 4,
+          "70f3a359008422c4": 3,
+          "2dc421c706e84186": 1
+        },
+        "released": [
+          {
+            "chunk_id": "a27b1164b927988c:c4",
+            "similarity": 0.9005
+          }
+        ]
+      },
+      "semantic_released_count": 1,
+      "semantic_threshold": 0.8997,
+      "ref_match_modes": {
+        "lexical": 1,
+        "semantic-only": 1
+      },
+      "best_rejected_similarity": 0.8694,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.9005,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_substation.md",
+        "hb_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_subway_depth",
+      "query": "这个坑挖了多深？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「工程概况」一节：基坑长约 186 米……开挖深度约 17.6 米",
+      "avoid_terms": [
+        "开挖深度"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 19,
+      "rejected": 1,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 1
+      },
+      "grounded_reasons": {
+        "semantic-only": 19
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "e868044447b6f4dc": 7,
+          "70f3a359008422c4": 7,
+          "9e747c395db4ec99": 3,
+          "944b849d96a1455b": 2,
+          "2dc421c706e84186": 1
+        },
+        "released": [
+          {
+            "chunk_id": "e868044447b6f4dc:c0",
+            "similarity": 0.8826
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c6",
+            "similarity": 0.8694
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c3",
+            "similarity": 0.8614
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c5",
+            "similarity": 0.8562
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c10",
+            "similarity": 0.8558
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c1",
+            "similarity": 0.8557
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c3",
+            "similarity": 0.8541
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c7",
+            "similarity": 0.8531
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c2",
+            "similarity": 0.8514
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c0",
+            "similarity": 0.8502
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c5",
+            "similarity": 0.849
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c4",
+            "similarity": 0.8483
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c0",
+            "similarity": 0.8474
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c7",
+            "similarity": 0.8459
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c0",
+            "similarity": 0.8448
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c2",
+            "similarity": 0.8441
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c1",
+            "similarity": 0.8441
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c1",
+            "similarity": 0.843
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c3",
+            "similarity": 0.8418
+          }
+        ]
+      },
+      "semantic_released_count": 19,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": 0.8429,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8826,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_subway_items",
+      "query": "这个工程都盯着哪些方面的数据？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「监测项目」一节：地连墙顶水平位移、墙顶竖向位移、墙体测斜、支撑轴力、坑外地表沉降、坑外地下水位",
+      "avoid_terms": [
+        "监测项目"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 3,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "工程",
+        "数据"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8749,
+        "threshold": 0.9249,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "e868044447b6f4dc": 10,
+          "944b849d96a1455b": 3,
+          "9e747c395db4ec99": 4,
+          "1030f61fa7e3212c": 1,
+          "3a7db010fb6ea1ed": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9249,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.8684,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8749,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_subway_freq",
+      "query": "挖土的时候多久测一次？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「监测频率」表第一行：开挖阶段 1次/1d",
+      "avoid_terms": [
+        "监测频率",
+        "开挖阶段"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 18,
+      "rejected": 2,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 2
+      },
+      "grounded_reasons": {
+        "semantic-only": 18
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "datetime",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "e868044447b6f4dc": 9,
+          "9e747c395db4ec99": 1,
+          "70f3a359008422c4": 5,
+          "a27b1164b927988c": 2,
+          "1030f61fa7e3212c": 2,
+          "3a7db010fb6ea1ed": 1
+        },
+        "released": [
+          {
+            "chunk_id": "e868044447b6f4dc:c7",
+            "similarity": 0.8703
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c3",
+            "similarity": 0.8701
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c8",
+            "similarity": 0.866
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c6",
+            "similarity": 0.8646
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c4",
+            "similarity": 0.8633
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c2",
+            "similarity": 0.8621
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c4",
+            "similarity": 0.8546
+          },
+          {
+            "chunk_id": "1030f61fa7e3212c:c0",
+            "similarity": 0.8534
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c4",
+            "similarity": 0.8531
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c0",
+            "similarity": 0.8519
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c5",
+            "similarity": 0.8507
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c1",
+            "similarity": 0.8495
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c5",
+            "similarity": 0.847
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c10",
+            "similarity": 0.8458
+          },
+          {
+            "chunk_id": "1030f61fa7e3212c:c1",
+            "similarity": 0.8456
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c3",
+            "similarity": 0.8455
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c2",
+            "similarity": 0.8415
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c5",
+            "similarity": 0.8395
+          }
+        ]
+      },
+      "semantic_released_count": 18,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": 0.866,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8703,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_flood.md",
+        "hb_flood.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_subway_alarm",
+      "query": "墙顶往旁边挪到多少就要报警了？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「预警值」一节：地连墙顶水平位移累计预警值 24mm，变化速率预警值 2mm/d",
+      "avoid_terms": [
+        "预警值",
+        "水平位移"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 3,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "墙顶"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.8887,
+        "threshold": 0.9387,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "e868044447b6f4dc": 10,
+          "9e747c395db4ec99": 3,
+          "1030f61fa7e3212c": 1,
+          "70f3a359008422c4": 3,
+          "944b849d96a1455b": 1,
+          "a27b1164b927988c": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9387,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.8677,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8887,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_wh_scope",
+      "query": "这次清点一共查了多少种东西？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘点概况」一节：覆盖 A、B 两个库房，共盘点物料 128 项",
+      "avoid_terms": [
+        "盘点",
+        "128 项"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 18,
+      "rejected": 2,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 2
+      },
+      "grounded_reasons": {
+        "semantic-only": 18
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "944b849d96a1455b": 5,
+          "1030f61fa7e3212c": 1,
+          "3a7db010fb6ea1ed": 2,
+          "e868044447b6f4dc": 4,
+          "9e747c395db4ec99": 3,
+          "70f3a359008422c4": 2,
+          "2dc421c706e84186": 2,
+          "a27b1164b927988c": 1
+        },
+        "released": [
+          {
+            "chunk_id": "944b849d96a1455b:c0",
+            "similarity": 0.879
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c3",
+            "similarity": 0.855
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c1",
+            "similarity": 0.852
+          },
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c3",
+            "similarity": 0.8498
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c2",
+            "similarity": 0.8495
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c2",
+            "similarity": 0.8485
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c3",
+            "similarity": 0.8481
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c4",
+            "similarity": 0.847
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c7",
+            "similarity": 0.8465
+          },
+          {
+            "chunk_id": "2dc421c706e84186:c2",
+            "similarity": 0.8452
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c8",
+            "similarity": 0.8429
+          },
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c0",
+            "similarity": 0.8424
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c6",
+            "similarity": 0.8422
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c4",
+            "similarity": 0.8412
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c5",
+            "similarity": 0.8397
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c2",
+            "similarity": 0.8395
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c2",
+            "similarity": 0.8389
+          },
+          {
+            "chunk_id": "2dc421c706e84186:c5",
+            "similarity": 0.8373
+          }
+        ]
+      },
+      "semantic_released_count": 18,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": 0.85,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.879,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_warehouse.md",
+        "hb_warehouse.md",
+        "hb_clinic.md",
+        "hb_warehouse.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_wh_short_a",
+      "query": "A 库那批十二口径的螺丝少了几个？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「A 库物料」表第一行 + 「盘亏处理」第一条：A-1001 六角螺栓 M12，账面 2400 / 实盘 2396，盘亏 4 个",
+      "avoid_terms": [
+        "六角螺栓",
+        "盘亏",
+        "A-1001"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 18,
+      "rejected": 2,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 2
+      },
+      "grounded_reasons": {
+        "semantic-only": 18
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "944b849d96a1455b": 5,
+          "a27b1164b927988c": 2,
+          "e868044447b6f4dc": 7,
+          "1030f61fa7e3212c": 1,
+          "9e747c395db4ec99": 4,
+          "2dc421c706e84186": 1
+        },
+        "released": [
+          {
+            "chunk_id": "944b849d96a1455b:c1",
+            "similarity": 0.9062
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c2",
+            "similarity": 0.8958
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c0",
+            "similarity": 0.8568
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c1",
+            "similarity": 0.8565
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c3",
+            "similarity": 0.8544
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c2",
+            "similarity": 0.8543
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c4",
+            "similarity": 0.8542
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c5",
+            "similarity": 0.8527
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c6",
+            "similarity": 0.8513
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c2",
+            "similarity": 0.8505
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c3",
+            "similarity": 0.8472
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c4",
+            "similarity": 0.8466
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c3",
+            "similarity": 0.8458
+          },
+          {
+            "chunk_id": "a27b1164b927988c:c5",
+            "similarity": 0.8443
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c7",
+            "similarity": 0.843
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c1",
+            "similarity": 0.8426
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c8",
+            "similarity": 0.8415
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c4",
+            "similarity": 0.8413
+          }
+        ]
+      },
+      "semantic_released_count": 18,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "semantic-only": 5
+      },
+      "best_rejected_similarity": 0.8527,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.9062,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_warehouse.md",
+        "hb_warehouse.md",
+        "hb_substation.md",
+        "hb_warehouse.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_wh_handle",
+      "query": "查出来少的东西后来是怎么处理的？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘亏处理」一节：A-1001 已按损耗处理；A-2103、B-3302 已登记复查",
+      "avoid_terms": [
+        "盘亏处理",
+        "损耗处理",
+        "登记复查"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "处理"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.8581,
+        "threshold": 0.9081,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "944b849d96a1455b": 4,
+          "e868044447b6f4dc": 4,
+          "1030f61fa7e3212c": 1,
+          "3a7db010fb6ea1ed": 5,
+          "9e747c395db4ec99": 4,
+          "a27b1164b927988c": 1,
+          "2dc421c706e84186": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.9081,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.8455,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.8581,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_warehouse.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_wh_recheck",
+      "query": "最后谁来对这次清点的结果把关？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘点复核由仓储主管周涛负责」——复核环节由仓储主管周涛把关（全库唯一片段）",
+      "avoid_terms": [
+        "盘点复核",
+        "仓储主管"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 5
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 20,
+      "rejected": 1,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 1
+      },
+      "grounded_reasons": {
+        "lexical": 1,
+        "semantic-only": 19
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "结果"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "person",
+        "lex_pool_max_sim": null,
+        "threshold": 0.83,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "944b849d96a1455b": 2,
+          "e868044447b6f4dc": 7,
+          "9e747c395db4ec99": 4,
+          "70f3a359008422c4": 2,
+          "2dc421c706e84186": 1,
+          "1030f61fa7e3212c": 2,
+          "3a7db010fb6ea1ed": 2
+        },
+        "released": [
+          {
+            "chunk_id": "944b849d96a1455b:c4",
+            "similarity": 0.862
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c9",
+            "similarity": 0.8551
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c2",
+            "similarity": 0.853
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c5",
+            "similarity": 0.8517
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c0",
+            "similarity": 0.8499
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c7",
+            "similarity": 0.8468
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c3",
+            "similarity": 0.8451
+          },
+          {
+            "chunk_id": "1030f61fa7e3212c:c0",
+            "similarity": 0.8418
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c8",
+            "similarity": 0.8416
+          },
+          {
+            "chunk_id": "70f3a359008422c4:c3",
+            "similarity": 0.8415
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c6",
+            "similarity": 0.8412
+          },
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c0",
+            "similarity": 0.8405
+          },
+          {
+            "chunk_id": "3a7db010fb6ea1ed:c2",
+            "similarity": 0.8404
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c1",
+            "similarity": 0.839
+          },
+          {
+            "chunk_id": "1030f61fa7e3212c:c3",
+            "similarity": 0.8382
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c4",
+            "similarity": 0.8372
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c3",
+            "similarity": 0.8366
+          },
+          {
+            "chunk_id": "9e747c395db4ec99:c2",
+            "similarity": 0.8362
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c5",
+            "similarity": 0.8362
+          }
+        ]
+      },
+      "semantic_released_count": 19,
+      "semantic_threshold": 0.83,
+      "ref_match_modes": {
+        "lexical": 1,
+        "semantic-only": 4
+      },
+      "best_rejected_similarity": 0.8443,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.862,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_clinic.md",
+        "hb_warehouse.md",
+        "hb_subway.md",
+        "hb_bridge2.md",
+        "hb_lab.md"
+      ],
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 2,
+      "rr": 0.5
+    }
+  ],
+  "vector_ceiling": {
+    "local_onnx": {
+      "cases": 32,
+      "gold_in_vec_candidates": 32,
+      "gold_vec_sim_ge_floor": 32,
+      "max_gold_vec_similarity": 0.9081,
+      "SEM_FLOOR": 0.6
+    }
+  },
+  "hash_control": null
+}

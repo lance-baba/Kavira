@@ -9,24 +9,28 @@
 <body>
 <div id="app">
   <header>
-    <div class="brand"><b>Kavira</b><small>随身知识库</small></div>
+    <div class="brand"><b>Kavira</b><small data-i18n="随身知识库">随身知识库</small></div>
     <div class="chips" id="chips">
-      <span class="chip off" id="chipReady">初始化中…</span>
-      <span class="chip off" id="chipEmbed">本地智能搜索 —</span>
-      <span class="chip off" id="chipAI">AI 对话 —</span>
-      <span class="chip off" id="chipLicense">授权 —</span>
-      <span class="chip off" id="chipSync">同步 —</span>
+      <span class="chip off" id="chipReady" data-i18n="初始化中…">初始化中…</span>
+      <span class="chip off" id="chipEmbed" data-i18n="本地智能搜索 —">本地智能搜索 —</span>
+      <span class="chip off" id="chipAI" data-i18n="AI 对话 —">AI 对话 —</span>
+      <span class="chip off" id="chipLicense" data-i18n="授权 —">授权 —</span>
+      <span class="chip off" id="chipSync" data-i18n="同步 —">同步 —</span>
     </div>
     <div class="spacer"></div>
-    <button class="btn ghost" id="btnRefresh" title="重新拉取状态">刷新</button>
-    <button class="btn danger" id="btnShutdown">安全退出</button>
+    <div class="lang-switch" id="langSwitch" role="group" data-i18n-aria="语言">
+      <button type="button" class="btn ghost lang-btn" data-lang="zh" title="中文">中</button>
+      <button type="button" class="btn ghost lang-btn" data-lang="en" title="English">EN</button>
+    </div>
+    <button class="btn ghost" id="btnRefresh" title="重新拉取状态" data-i18n-title="重新拉取状态" data-i18n="刷新">刷新</button>
+    <button class="btn danger" id="btnShutdown" data-i18n="安全退出">安全退出</button>
   </header>
 
   <nav>
-    <button class="tab active" data-tab="chat">问答</button>
-    <button class="tab" data-tab="capture">剪藏</button>
-    <button class="tab" data-tab="notes">笔记</button>
-    <button class="tab" data-tab="settings">设置</button>
+    <button class="tab active" data-tab="chat" data-i18n="问答">问答</button>
+    <button class="tab" data-tab="capture" data-i18n="剪藏">剪藏</button>
+    <button class="tab" data-tab="notes" data-i18n="笔记">笔记</button>
+    <button class="tab" data-tab="settings" data-i18n="设置">设置</button>
   </nav>
 
   <div id="alerts"></div>
@@ -39,16 +43,16 @@
           <div class="msg assistant">
             <div class="who">W</div>
             <div class="bubble">
-              <p><b>欢迎使用 Kavira。</b> 我会在你的本地资料里搜索最相关的内容，组织成回答，并标注每一处引用的出处。资料默认保存在本机：使用本地搜索和本地 AI 时无需上传；若你主动配置云端 AI，回答所需的问题和相关资料片段会发送给你选择的服务商。</p>
+              <p data-i18n-html="<b>欢迎使用 Kavira。</b> 我会在你的本地资料里搜索最相关的内容，组织成回答，并标注每一处引用的出处。资料默认保存在本机：使用本地搜索和本地 AI 时无需上传；若你主动配置云端 AI，回答所需的问题和相关资料片段会发送给你选择的服务商。"><b>欢迎使用 Kavira。</b> 我会在你的本地资料里搜索最相关的内容，组织成回答，并标注每一处引用的出处。资料默认保存在本机：使用本地搜索和本地 AI 时无需上传；若你主动配置云端 AI，回答所需的问题和相关资料片段会发送给你选择的服务商。</p>
               <div id="emptyGuide"></div>
             </div>
           </div>
         </div>
         <div class="composer">
-          <textarea id="chatInput" class="grow" placeholder="向你的知识库提问…  (Enter 发送 / Shift+Enter 换行)"></textarea>
-          <button class="btn primary" id="btnSend">发送</button>
+          <textarea id="chatInput" class="grow" placeholder="向你的知识库提问…  (Enter 发送 / Shift+Enter 换行)" data-i18n-placeholder="向你的知识库提问…  (Enter 发送 / Shift+Enter 换行)"></textarea>
+          <button class="btn primary" id="btnSend" data-i18n="发送">发送</button>
         </div>
-        <div class="hint" id="chatGate" hidden style="margin-top:8px;color:#b45309">
+        <div class="hint" id="chatGate" hidden style="margin-top:8px;color:#b45309" data-i18n="问答需激活后使用 —— 到「设置 → 产品授权」激活；笔记浏览与本地搜索不受限制。">
           问答需激活后使用 —— 到「设置 → 产品授权」激活；笔记浏览与本地搜索不受限制。
         </div>
       </div>
@@ -57,52 +61,52 @@
     <!-- ============ 剪藏 ============ -->
     <section class="panel" id="panel-capture">
       <div class="card">
-        <h3>往知识库添加内容 —— 三种方式任选</h3>
+        <h3 data-i18n="往知识库添加内容 —— 三种方式任选">往知识库添加内容 —— 三种方式任选</h3>
         <div class="howto">
-          <div><b><span class="n">1</span>拖文件进来</b>把 .md / .txt 拖进下面的虚线框（或点它选文件）。最快，支持一次拖多个。</div>
-          <div><b><span class="n">2</span>抓网页</b>粘贴文章网址，自动提取正文入库。</div>
-          <div><b><span class="n">3</span>粘贴文字</b>微信公众号、PDF 里复制的文字，贴进最下面文本框保存。</div>
+          <div data-i18n-html="<b><span class=&quot;n&quot;>1</span>拖文件进来</b>把 .md / .txt 拖进下面的虚线框（或点它选文件）。最快，支持一次拖多个。"><b><span class="n">1</span>拖文件进来</b>把 .md / .txt 拖进下面的虚线框（或点它选文件）。最快，支持一次拖多个。</div>
+          <div data-i18n-html="<b><span class=&quot;n&quot;>2</span>抓网页</b>粘贴文章网址，自动提取正文入库。"><b><span class="n">2</span>抓网页</b>粘贴文章网址，自动提取正文入库。</div>
+          <div data-i18n-html="<b><span class=&quot;n&quot;>3</span>粘贴文字</b>微信公众号、PDF 里复制的文字，贴进最下面文本框保存。"><b><span class="n">3</span>粘贴文字</b>微信公众号、PDF 里复制的文字，贴进最下面文本框保存。</div>
         </div>
         <div class="dropzone" id="dropZone">
-          <span class="dz-main">把文件拖到这里</span>
+          <span class="dz-main" data-i18n="把文件拖到这里">把文件拖到这里</span>
           <span class="dz-sub">
-            Word / PPT / Excel / PDF / EPUB / HTML / 邮件 / CSV / 代码 / 字幕 / 纯文本 等 —— 自动转成 Markdown 入库<br>
-或 <label class="link">点击选择文件<input type="file" id="fileInput" multiple hidden></label>
-　·　也可以把 .md / .txt 文件直接放进资料库的 <code>notes</code> 文件夹<span id="ddNotesHint">（位置见「设置 → 资料目录」）</span>，15 秒内自动入库
+            <span data-i18n="Word / PPT / Excel / PDF / EPUB / HTML / 邮件 / CSV / 代码 / 字幕 / 纯文本 等 —— 自动转成 Markdown 入库">Word / PPT / Excel / PDF / EPUB / HTML / 邮件 / CSV / 代码 / 字幕 / 纯文本 等 —— 自动转成 Markdown 入库</span><br>
+            <span data-i18n="或">或</span> <label class="link"><span data-i18n="点击选择文件">点击选择文件</span><input type="file" id="fileInput" multiple hidden></label>
+            <span data-i18n-html="　·　也可以把 .md / .txt 文件直接放进资料库的 <code>notes</code> 文件夹<span id=&quot;ddNotesHint&quot;>（位置见「设置 → 资料目录」）</span>，15 秒内自动入库">　·　也可以把 .md / .txt 文件直接放进资料库的 <code>notes</code> 文件夹<span id="ddNotesHint">（位置见「设置 → 资料目录」）</span>，15 秒内自动入库</span>
           </span>
           <div class="dz-result" id="dzResult"></div>
         </div>
         <details class="adv-wrap" style="margin-top:10px">
-          <summary>支持哪些格式？<span class="hint">点开看完整清单</span></summary>
-          <div class="hint" id="formatHint" style="line-height:2;padding:6px 2px 2px">正在读取…</div>
+          <summary data-i18n-html="支持哪些格式？<span class=&quot;hint&quot;>点开看完整清单</span>">支持哪些格式？<span class="hint">点开看完整清单</span></summary>
+          <div class="hint" id="formatHint" style="line-height:2;padding:6px 2px 2px" data-i18n="正在读取…">正在读取…</div>
         </details>
       </div>
       <div class="card">
-        <h3>抓网页入库</h3>
+        <h3 data-i18n="抓网页入库">抓网页入库</h3>
         <div class="row">
           <input type="text" id="capUrl" class="grow" placeholder="https://example.com/posts/transformer-guide">
-          <button class="btn primary" id="btnCapture">抓取入库</button>
+          <button class="btn primary" id="btnCapture" data-i18n="抓取入库">抓取入库</button>
         </div>
-        <div class="hint" id="capGate" hidden style="margin-top:8px;color:#b45309">
+        <div class="hint" id="capGate" hidden style="margin-top:8px;color:#b45309" data-i18n="抓取网页需激活后使用 —— 到「设置 → 产品授权」激活；拖入文件与粘贴文字不受限制。">
           抓取网页需激活后使用 —— 到「设置 → 产品授权」激活；拖入文件与粘贴文字不受限制。
         </div>
-        <div class="hint" style="margin-top:8px">
+        <div class="hint" style="margin-top:8px" data-i18n="动态 SPA / 强反爬页面会自动降级为「保留快照 + 引导粘贴」。">
           动态 SPA / 强反爬页面会自动降级为「保留快照 + 引导粘贴」。
         </div>
         <div id="capResult" style="margin-top:12px"></div>
       </div>
       <div class="card grow">
-        <h3>粘贴文字入库</h3>
+        <h3 data-i18n="粘贴文字入库">粘贴文字入库</h3>
         <div class="field" style="margin-bottom:9px">
-          <label>标题</label>
-          <input type="text" id="noteTitle" placeholder="例如：某篇论文的要点摘录">
+          <label data-i18n="标题">标题</label>
+          <input type="text" id="noteTitle" placeholder="例如：某篇论文的要点摘录" data-i18n-placeholder="例如：某篇论文的要点摘录">
         </div>
         <div class="field">
-          <label>正文（支持 Markdown 与 [[双向链接]]）</label>
-          <textarea id="noteBody" placeholder="粘贴内容…"></textarea>
+          <label data-i18n="正文（支持 Markdown 与 [[双向链接]]）">正文（支持 Markdown 与 [[双向链接]]）</label>
+          <textarea id="noteBody" placeholder="粘贴内容…" data-i18n-placeholder="粘贴内容…"></textarea>
         </div>
         <div class="row" style="margin-top:4px">
-          <button class="btn primary" id="btnSaveNote">保存并索引</button>
+          <button class="btn primary" id="btnSaveNote" data-i18n="保存并索引">保存并索引</button>
           <span class="hint" id="saveHint"></span>
         </div>
       </div>
@@ -112,24 +116,24 @@
     <section class="panel" id="panel-notes">
       <div class="split">
         <div class="card">
-          <h3>已索引文档 <span class="pill" id="docCount">0</span></h3>
-          <input type="text" id="noteFilter" placeholder="过滤标题 / 路径…" style="margin-bottom:9px">
-          <select id="noteCollectionFilter" title="按分类筛选（只筛选列表，不影响搜索 / 问答）" style="margin-bottom:9px">
-            <option value="">全部分类</option>
+          <h3><span data-i18n="已索引文档">已索引文档</span> <span class="pill" id="docCount">0</span></h3>
+          <input type="text" id="noteFilter" placeholder="过滤标题 / 路径…" data-i18n-placeholder="过滤标题 / 路径…" style="margin-bottom:9px">
+          <select id="noteCollectionFilter" title="按分类筛选（只筛选列表，不影响搜索 / 问答）" data-i18n-title="按分类筛选（只筛选列表，不影响搜索 / 问答）" style="margin-bottom:9px">
+            <option value="" data-i18n="全部分类">全部分类</option>
           </select>
           <div class="list" id="noteList"></div>
         </div>
         <div class="card">
           <div class="row" style="justify-content:space-between;gap:10px;margin-bottom:9px">
-            <h3 id="noteTitleBar" style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">正文</h3>
+            <h3 id="noteTitleBar" style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-i18n="正文">正文</h3>
             <div class="seg" id="noteSeg" hidden>
-              <button type="button" data-view="rendered" class="on">阅读</button>
-              <button type="button" data-view="original" id="segOriginal">原件</button>
+              <button type="button" data-view="rendered" class="on" data-i18n="阅读">阅读</button>
+              <button type="button" data-view="original" id="segOriginal" data-i18n="原件">原件</button>
               <button type="button" data-view="raw">Markdown</button>
             </div>
           </div>
           <div class="doc-wrap" id="noteWrap">
-            <div class="doc-md" id="noteView">从左侧选择一篇文档查看。</div>
+            <div class="doc-md" id="noteView" data-i18n="从左侧选择一篇文档查看。">从左侧选择一篇文档查看。</div>
           </div>
         </div>
       </div>
@@ -139,41 +143,41 @@
     <section class="panel" id="panel-settings">
       <div class="split" style="grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr)">
         <div class="card scroll">
-          <h3>配置</h3>
-          <div class="hint" style="margin:-4px 0 13px;line-height:1.6">
+          <h3 data-i18n="配置">配置</h3>
+          <div class="hint" style="margin:-4px 0 13px;line-height:1.6" data-i18n-html="默认只显示<b>常用项</b>（一共 7 个），其余全部收在下方「高级设置」里 —— <b>不改它们完全不影响使用</b>。">
             默认只显示<b>常用项</b>（一共 7 个），其余全部收在下方「高级设置」里 ——
             <b>不改它们完全不影响使用</b>。
           </div>
           <div id="cfgForm"></div>
           <details class="adv-wrap" id="advWrap">
-            <summary>高级设置 <span class="hint">向量检索 / 网页抓取 / 系统端口 —— 看不懂就别动</span></summary>
+            <summary data-i18n-html="高级设置 <span class=&quot;hint&quot;>向量检索 / 网页抓取 / 系统端口 —— 看不懂就别动</span>">高级设置 <span class="hint">向量检索 / 网页抓取 / 系统端口 —— 看不懂就别动</span></summary>
             <div class="adv-inner" id="cfgAdvanced"></div>
           </details>
           <div class="row" style="margin-top:16px">
-            <button class="btn primary" id="btnCfgSave">保存配置</button>
-            <button class="btn" id="btnCfgReload">放弃修改</button>
-            <button class="btn" id="btnCfgDefaults" title="把表单填回出厂默认值（不会立即保存）">恢复默认设置</button>
-            <span class="hint" style="margin-left:4px">保存后重启程序才完全生效</span>
+            <button class="btn primary" id="btnCfgSave" data-i18n="保存配置">保存配置</button>
+            <button class="btn" id="btnCfgReload" data-i18n="放弃修改">放弃修改</button>
+            <button class="btn" id="btnCfgDefaults" title="把表单填回出厂默认值（不会立即保存）" data-i18n-title="把表单填回出厂默认值（不会立即保存）" data-i18n="恢复默认设置">恢复默认设置</button>
+            <span class="hint" style="margin-left:4px" data-i18n="保存后重启程序才完全生效">保存后重启程序才完全生效</span>
           </div>
         </div>
         <div class="card scroll">
-          <h3>资料目录</h3>
-          <div class="kv" id="datadirKV"><span class="hint">正在读取…</span></div>
-          <div class="hint" style="margin:9px 0 0;line-height:1.6">
+          <h3 data-i18n="资料目录">资料目录</h3>
+          <div class="kv" id="datadirKV"><span class="hint" data-i18n="正在读取…">正在读取…</span></div>
+          <div class="hint" style="margin:9px 0 0;line-height:1.6" data-i18n="你的资料现在保存在上面这个位置。想换到一个更大 / 更快的盘，或搬到 U 盘随身携带，都可以在这里完成。">
             你的资料现在保存在上面这个位置。想换到一个更大 / 更快的盘，或搬到 U 盘随身携带，
             都可以在这里完成。
           </div>
           <div class="field" style="margin-top:10px">
-            <label>换到新目录</label>
+            <label data-i18n="换到新目录">换到新目录</label>
             <div class="row">
-              <input type="text" id="ddTarget" class="grow" placeholder="例如：E:\Kavira-Data">
-              <button type="button" class="btn" id="btnDdCheck">检查一下</button>
+              <input type="text" id="ddTarget" class="grow" placeholder="例如：E:\Kavira-Data" data-i18n-placeholder="例如：E:\Kavira-Data">
+              <button type="button" class="btn" id="btnDdCheck" data-i18n="检查一下">检查一下</button>
             </div>
-            <span class="tip">填一个<b>空文件夹</b>的完整路径。已有资料的目录会被拒绝 —— 不会为了腾地方删里面的东西。</span>
+            <span class="tip" data-i18n-html="填一个<b>空文件夹</b>的完整路径。已有资料的目录会被拒绝 —— 不会为了腾地方删里面的东西。">填一个<b>空文件夹</b>的完整路径。已有资料的目录会被拒绝 —— 不会为了腾地方删里面的东西。</span>
           </div>
           <div id="ddResult" class="hint" style="margin-top:-2px;line-height:1.6"></div>
           <div class="row" style="margin-top:8px">
-            <button type="button" class="btn primary" id="btnDdMigrate" disabled>开始迁移</button>
+            <button type="button" class="btn primary" id="btnDdMigrate" disabled data-i18n="开始迁移">开始迁移</button>
           </div>
           <div id="ddProgress" hidden style="margin-top:10px">
             <div style="height:6px;background:var(--line);border-radius:99px;overflow:hidden">
@@ -182,50 +186,50 @@
             <div class="hint" id="ddStage" style="margin-top:6px"></div>
           </div>
 
-          <h3 style="margin-top:18px">数据管理</h3>
+          <h3 style="margin-top:18px" data-i18n="数据管理">数据管理</h3>
           <div class="row" style="flex-wrap:wrap">
-            <button type="button" class="btn primary" id="btnDdExport">导出知识库备份</button>
-            <span class="hint">打包成 zip 下载保存</span>
+            <button type="button" class="btn primary" id="btnDdExport" data-i18n="导出知识库备份">导出知识库备份</button>
+            <span class="hint" data-i18n="打包成 zip 下载保存">打包成 zip 下载保存</span>
           </div>
-          <div class="hint" style="margin-top:8px;line-height:1.6">
+          <div class="hint" style="margin-top:8px;line-height:1.6" data-i18n-html="备份包含<b>笔记正文、导入的原件、图片素材、分类</b>，以及一份恢复说明；<b>不含</b>检索索引与日志（它们随时能自动重建，带上只会让备份大好几倍）。打包时配置里的云端密钥会被清空，不会跟着备份到处跑。">
             备份包含<b>笔记正文、导入的原件、图片素材、分类</b>，以及一份恢复说明；
             <b>不含</b>检索索引与日志（它们随时能自动重建，带上只会让备份大好几倍）。
             打包时配置里的云端密钥会被清空，不会跟着备份到处跑。
           </div>
           <div id="ddExportHint" class="hint" style="margin-top:6px"></div>
 
-          <h3 style="margin-top:18px">产品授权</h3>
-          <div id="licState" class="hint">正在读取…</div>
+          <h3 style="margin-top:18px" data-i18n="产品授权">产品授权</h3>
+          <div id="licState" class="hint" data-i18n="正在读取…">正在读取…</div>
           <div class="field" style="margin-top:10px">
-            <label>本机设备码（发给授权方）</label>
+            <label data-i18n="本机设备码（发给授权方）">本机设备码（发给授权方）</label>
             <div class="row">
-              <input type="text" id="licDeviceCode" class="grow" readonly placeholder="读取中…">
-              <button class="btn" id="btnLicCopy">复制</button>
+              <input type="text" id="licDeviceCode" class="grow" readonly placeholder="读取中…" data-i18n-placeholder="读取中…">
+              <button class="btn" id="btnLicCopy" data-i18n="复制">复制</button>
             </div>
           </div>
           <div class="field" style="margin-top:9px">
-            <label>输入激活码</label>
-            <textarea id="licCode" placeholder="粘贴授权方发来的激活码…"></textarea>
+            <label data-i18n="输入激活码">输入激活码</label>
+            <textarea id="licCode" placeholder="粘贴授权方发来的激活码…" data-i18n-placeholder="粘贴授权方发来的激活码…"></textarea>
           </div>
           <div class="row" style="margin-top:9px">
-            <button class="btn primary" id="btnLicActivate">激活</button>
-            <button class="btn danger" id="btnLicClear">清除本机激活</button>
+            <button class="btn primary" id="btnLicActivate" data-i18n="激活">激活</button>
+            <button class="btn danger" id="btnLicClear" data-i18n="清除本机激活">清除本机激活</button>
           </div>
-          <h3 style="margin-top:18px">运行状态</h3>
+          <h3 style="margin-top:18px" data-i18n="运行状态">运行状态</h3>
           <div class="kv" id="statKV"></div>
-          <h3 style="margin-top:18px">索引维护</h3>
+          <h3 style="margin-top:18px" data-i18n="索引维护">索引维护</h3>
           <div class="row" style="flex-wrap:wrap">
-            <button class="btn" id="btnRebuild">全量重建索引</button>
-            <button class="btn" id="btnRebuildVec">重建向量索引</button>
+            <button class="btn" id="btnRebuild" data-i18n="全量重建索引">全量重建索引</button>
+            <button class="btn" id="btnRebuildVec" data-i18n="重建向量索引">重建向量索引</button>
           </div>
-          <div class="hint" style="margin-top:10px;line-height:1.6">
+          <div class="hint" style="margin-top:10px;line-height:1.6" data-i18n-html="数据真相源始终是 <code>data/notes/</code> 下的 Markdown；<code>cache.db</code> 只是可随时重建的衍生索引。<b>换过嵌入模型后必须点「重建向量索引」</b>，否则向量检索会被自动禁用（界面会黄条提醒）。">
             数据真相源始终是 <code>data/notes/</code> 下的 Markdown；<code>cache.db</code> 只是可随时重建的衍生索引。
             <b>换过嵌入模型后必须点「重建向量索引」</b>，否则向量检索会被自动禁用（界面会黄条提醒）。
           </div>
           <div id="rebuildLog" class="hint" style="margin-top:10px"></div>
 
-          <h3 style="margin-top:18px">运行详情</h3>
-          <div class="hint" style="margin:-4px 0 8px;line-height:1.6">
+          <h3 style="margin-top:18px" data-i18n="运行详情">运行详情</h3>
+          <div class="hint" style="margin:-4px 0 8px;line-height:1.6" data-i18n-html="系统自动降级 / 自动适配的过程记录。<b>功能正常时无需理会</b>。">
             系统自动降级 / 自动适配的过程记录。<b>功能正常时无需理会</b>。
           </div>
           <div id="runNotes" class="notes-box"></div>

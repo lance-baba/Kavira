@@ -1,0 +1,4319 @@
+{
+  "meta": {
+    "generated_at": "2026-10-16 20:54:06",
+    "app_version": "1.3.0",
+    "top_k": 5,
+    "corpus_dir": "<repo>/eval/fixtures_holdout_b",
+    "corpus_docs": [
+      "hb_bridge2.md",
+      "hb_clinic.md",
+      "hb_flood.md",
+      "hb_lab.md",
+      "hb_software.md",
+      "hb_substation.md",
+      "hb_subway.md",
+      "hb_warehouse.md"
+    ],
+    "queries_file": "<repo>/eval/paraphrase/queries.json",
+    "embedding_dir": "<repo>/vendor/cache/embedding",
+    "library": "C:\\Users\\huqih\\AppData\\Local\\Temp\\kavira-paraphrase-iqi8kn48",
+    "embedder": {
+      "tier": "local_onnx",
+      "model_id": "bge-small-zh-v1.5-int8",
+      "dimension": 512,
+      "signature": "local_onnx:bge-small-zh-v1.5-int8:512",
+      "resource_id": "bge-small-zh-v1.5-int8",
+      "base_model": "BAAI/bge-small-zh-v1.5",
+      "precision": "int8",
+      "fallback_reason": "",
+      "resolve_notes": [
+        "内置模型已启动：bge-small-zh-v1.5-int8（512 维）"
+      ],
+      "resolve_warnings": []
+    },
+    "vector_route": {
+      "vec_table_ready": true,
+      "signature_mismatch": "",
+      "vec_rows": 52
+    },
+    "semantic_channel": {
+      "allow_semantic_only": true,
+      "semantic_floor": 0.6,
+      "semantic_margin": 0.05,
+      "semantic_penalty": 0.04,
+      "exclude_qtypes": [
+        "coverage"
+      ]
+    },
+    "elapsed_s": 1.75
+  },
+  "metrics": {
+    "cases": 32,
+    "failure_rate@5": 0.4062,
+    "recall@1": 0.5312,
+    "recall@3": 0.5312,
+    "recall@5": 0.5938,
+    "mrr": 0.5437,
+    "empty_result_rate": 0.25,
+    "no_lexical_hit_rate": 0.25,
+    "accepted_zero_rate": 0.25,
+    "zero_lexical_overlap_rate": 0.3125,
+    "avg_lexical_candidates": 1.69,
+    "avg_vector_candidates": 20.0,
+    "semantic_released_total": 4,
+    "queries_with_release": 2,
+    "queries_with_release_rate": 0.0625,
+    "semantic_only_references": 4
+  },
+  "zero_lexical_subset": {
+    "cases": 10,
+    "failure_rate@5": 0.8,
+    "recall@1": 0.2,
+    "recall@3": 0.2,
+    "recall@5": 0.2,
+    "mrr": 0.2,
+    "empty_result_rate": 0.8,
+    "no_lexical_hit_rate": 0.8,
+    "accepted_zero_rate": 0.8,
+    "zero_lexical_overlap_rate": 1.0,
+    "avg_lexical_candidates": 0.0,
+    "avg_vector_candidates": 20.0,
+    "semantic_released_total": 4,
+    "queries_with_release": 2,
+    "queries_with_release_rate": 0.2,
+    "semantic_only_references": 4
+  },
+  "sem_floor_note": {
+    "SEM_FLOOR": 0.6,
+    "queries_best_rejected_sim_ge_floor": 7,
+    "of_which_empty": 2,
+    "example_ids": [
+      "pp_bridge_device_expiry",
+      "pp_clinic_fasting",
+      "pp_clinic_flow",
+      "pp_flood_drain",
+      "pp_flood_gate",
+      "pp_sub_overhaul",
+      "pp_wh_scope"
+    ]
+  },
+  "rejection_histogram": {
+    "vector-only(no-lexical-overlap)": 593
+  },
+  "failure_cases": [
+    {
+      "id": "pp_wh_scope",
+      "query": "这次清点一共查了多少种东西？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘点概况」一节：覆盖 A、B 两个库房，共盘点物料 128 项",
+      "empty": true,
+      "n_refs": 0,
+      "route": "like+no-lexical-hit",
+      "system_warning": "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）",
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "top_rejected_reason": "vector-only(no-lexical-overlap)",
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "best_rejected_similarity": 0.6225,
+      "top5_docs": []
+    },
+    {
+      "id": "pp_flood_drain",
+      "query": "城里淹了以后往外抽水这事儿由哪个单位牵头？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「应急处置分工」第一条：城市排涝由排水管理处负责",
+      "empty": true,
+      "n_refs": 0,
+      "route": "like+no-lexical-hit",
+      "system_warning": "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）",
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "top_rejected_reason": "vector-only(no-lexical-overlap)",
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "best_rejected_similarity": 0.6144,
+      "top5_docs": []
+    },
+    {
+      "id": "pp_bridge_joint",
+      "query": "桥面上留的那几道接缝一共设了多少处？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「构件编号」一节：伸缩缝自北向南 SS-01 至 SS-04（共 4 处）",
+      "empty": true,
+      "n_refs": 0,
+      "route": "like+no-lexical-hit",
+      "system_warning": "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）",
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "top_rejected_reason": "vector-only(no-lexical-overlap)",
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "best_rejected_similarity": 0.5803,
+      "top5_docs": []
+    },
+    {
+      "id": "pp_clinic_fasting",
+      "query": "抽血化验之前得饿多长时间？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「质量要求」第一条：空腹采血要求禁食 8 小时以上",
+      "empty": false,
+      "n_refs": 1,
+      "route": "like",
+      "system_warning": "",
+      "warnings": [],
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "top_rejected_reason": "vector-only(no-lexical-overlap)",
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "best_rejected_similarity": 0.6737,
+      "top5_docs": [
+        "hb_software.md"
+      ]
+    },
+    {
+      "id": "pp_lab_cycle",
+      "query": "这些机器多长时间要重新校对一次？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「仪器台账」表校准周期列：三台机器均为 12 个月",
+      "empty": false,
+      "n_refs": 1,
+      "route": "like",
+      "system_warning": "",
+      "warnings": [],
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "top_rejected_reason": "vector-only(no-lexical-overlap)",
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "best_rejected_similarity": 0.5743,
+      "top5_docs": [
+        "hb_software.md"
+      ]
+    }
+  ],
+  "per_query": [
+    {
+      "id": "pp_bridge_year",
+      "query": "这座桥是哪一年落成的？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「桥梁概况」一节末尾：建成于 2011 年",
+      "avoid_terms": [
+        "建成于"
+      ],
+      "n_refs": 0,
+      "empty": true,
+      "route": "like+no-lexical-hit",
+      "no_lexical_hit": true,
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 0
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {},
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {},
+      "best_rejected_similarity": 0.5529,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5529,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_bridge_joint",
+      "query": "桥面上留的那几道接缝一共设了多少处？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「构件编号」一节：伸缩缝自北向南 SS-01 至 SS-04（共 4 处）",
+      "avoid_terms": [
+        "伸缩缝"
+      ],
+      "n_refs": 0,
+      "empty": true,
+      "route": "like+no-lexical-hit",
+      "no_lexical_hit": true,
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 0
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {},
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {},
+      "best_rejected_similarity": 0.5803,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5803,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_bridge_mid_cause",
+      "query": "中间那跨的垫块被剪歪了，根子在什么地方？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「病害成因」一节第二条：ZZ-07 的病害由温度变化引起（位置为中跨）",
+      "avoid_terms": [
+        "剪切变形",
+        "温度变化"
+      ],
+      "n_refs": 0,
+      "empty": true,
+      "route": "like+no-lexical-hit",
+      "no_lexical_hit": true,
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 0
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {},
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "什"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {},
+      "best_rejected_similarity": 0.5516,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5516,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_bridge_device_expiry",
+      "query": "测混凝土开裂大小的那台仪器，标定证书哪天到期？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「检测设备」表第一行：裂缝宽度观测仪 ZBL-F120，检定有效期 2026-12-05",
+      "avoid_terms": [
+        "检定有效期",
+        "裂缝宽度观测仪"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 6,
+        "vec_candidates": 20,
+        "fused": 22,
+        "parents": 5
+      },
+      "lexical_candidates": 6,
+      "vector_candidates": 20,
+      "fused": 22,
+      "accepted": 6,
+      "rejected": 16,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 16
+      },
+      "grounded_reasons": {
+        "lexical": 6
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "混凝土",
+        "仪器"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.5746,
+        "threshold": 0.6246,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "9e747c395db4ec99": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6246,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.6419,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.6419,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_lab.md",
+        "hb_subway.md",
+        "hb_lab.md",
+        "hb_lab.md",
+        "hb_bridge2.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "first_hit_rank": 5,
+      "rr": 0.2
+    },
+    {
+      "id": "pp_clinic_fasting",
+      "query": "抽血化验之前得饿多长时间？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「质量要求」第一条：空腹采血要求禁食 8 小时以上",
+      "avoid_terms": [
+        "禁食 8 小时",
+        "空腹采血"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "时间"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.3903,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "3a7db010fb6ea1ed": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.6737,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.6737,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_software.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_clinic_urine",
+      "query": "尿的标本取好以后，多久之内必须拿去化验？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「质量要求」第二条：尿常规样本需在 2 小时内送检",
+      "avoid_terms": [
+        "尿常规",
+        "送检"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "尿"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "datetime",
+        "lex_pool_max_sim": 0.681,
+        "threshold": 0.731,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "3a7db010fb6ea1ed": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.731,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.5411,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.681,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_clinic.md",
+        "hb_clinic.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_clinic_reagent",
+      "query": "做化验用的那些药水归谁管进货？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「责任划分」第一条：试剂采购由器械科负责",
+      "avoid_terms": [
+        "试剂采购",
+        "器械科"
+      ],
+      "n_refs": 0,
+      "empty": true,
+      "route": "like+no-lexical-hit",
+      "no_lexical_hit": true,
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 0
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {},
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "person",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {},
+      "best_rejected_similarity": 0.5248,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5248,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_clinic_flow",
+      "query": "一份标本从接进来到最后发出结果，中间要走几步？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「样本流程」一节：登记 → 采样 → 离心 → 检测 → 复核 → 签发（共 6 步）",
+      "avoid_terms": [
+        "离心",
+        "复核"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 1,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "结果"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "3a7db010fb6ea1ed": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.6123,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.6123,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_clinic.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_flood_rainfall",
+      "query": "六月初那场大雨一共下了多少毫米？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「强降雨过程」一节：6 月 8 日至 10 日，累计雨量 210 毫米",
+      "avoid_terms": [
+        "强降雨",
+        "累计雨量"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "毫米"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.663,
+        "threshold": 0.713,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "70f3a359008422c4": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.713,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.5805,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.663,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_flood.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_flood_inflow",
+      "query": "上游下来的水最多的时候每秒到了多少方？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「上游来水过程」一节：6 月 11 日入库流量达到 3200 立方米每秒",
+      "avoid_terms": [
+        "入库流量",
+        "立方米每秒"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "上游",
+        "每秒"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.7211,
+        "threshold": 0.7711,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "70f3a359008422c4": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.7711,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.5961,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.7211,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_flood.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_flood_gate",
+      "query": "水库那天把几个口子打开放水了？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「泄洪调度过程」一节：6 月 12 日水库开启三孔闸门泄洪",
+      "avoid_terms": [
+        "泄洪",
+        "三孔闸门"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "水库"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.6349,
+        "threshold": 0.6849,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "70f3a359008422c4": 2
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6849,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.6211,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.6349,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_flood.md",
+        "hb_flood.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_flood_drain",
+      "query": "城里淹了以后往外抽水这事儿由哪个单位牵头？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「应急处置分工」第一条：城市排涝由排水管理处负责",
+      "avoid_terms": [
+        "城市排涝",
+        "排水管理处"
+      ],
+      "n_refs": 0,
+      "empty": true,
+      "route": "like+no-lexical-hit",
+      "no_lexical_hit": true,
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 0
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {},
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "70f3a359008422c4": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {},
+      "best_rejected_similarity": 0.6144,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.6144,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_lab_owner",
+      "query": "做材料拉伸的大机器里，三百型的那台平时归谁管？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「仪器台账」表第二行：万能材料试验机 WDW-300，责任人马丽",
+      "avoid_terms": [
+        "万能材料试验机",
+        "WDW-300",
+        "责任人"
+      ],
+      "n_refs": 0,
+      "empty": true,
+      "route": "like+no-lexical-hit",
+      "no_lexical_hit": true,
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 0
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {},
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "person",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {},
+      "best_rejected_similarity": 0.4731,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.4679,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_lab_cycle",
+      "query": "这些机器多长时间要重新校对一次？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「仪器台账」表校准周期列：三台机器均为 12 个月",
+      "avoid_terms": [
+        "校准周期",
+        "12个月"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "时间"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.4586,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.5743,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5435,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_software.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_lab_org",
+      "query": "测力之类的设备是送到外面哪家单位去标定的？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「校准机构」第一条：力学类仪器由省计量院校准",
+      "avoid_terms": [
+        "力学类仪器",
+        "省计量院"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 5,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 5
+      },
+      "lexical_candidates": 5,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 5,
+      "rejected": 16,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 16
+      },
+      "grounded_reasons": {
+        "lexical": 5
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "设备"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.5911,
+        "threshold": 0.6411,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6411,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.5822,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5822,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_substation.md",
+        "hb_bridge2.md",
+        "hb_substation.md",
+        "hb_substation.md",
+        "hb_lab.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "first_hit_rank": 5,
+      "rr": 0.2
+    },
+    {
+      "id": "pp_lab_fail",
+      "query": "要是校下来不合格，这台设备该怎么处理？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「不合格处置」一节：立即停用并张贴停用标识，停用仪器由设备管理员封存",
+      "avoid_terms": [
+        "校准不合格",
+        "停用"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 7,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 5
+      },
+      "lexical_candidates": 7,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 7,
+      "rejected": 14,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 14
+      },
+      "grounded_reasons": {
+        "lexical": 7
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "不合格",
+        "设备",
+        "处理"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.732,
+        "threshold": 0.782,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "1030f61fa7e3212c": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.782,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.5538,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.732,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_lab.md",
+        "hb_warehouse.md",
+        "hb_substation.md",
+        "hb_bridge2.md",
+        "hb_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sw_position",
+      "query": "这个软件是给谁用的，能自己架服务器吗？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「产品定位」一节：面向团队的文档同步与协作工具，支持私有部署",
+      "avoid_terms": [
+        "私有部署",
+        "面向团队"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "服务"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "person",
+        "lex_pool_max_sim": 0.5467,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.5416,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5467,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_software.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sw_current",
+      "query": "现在线上跑的是哪一版，什么时候发的？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「版本信息」表第三行：3.2，2026-04-22，当前版本",
+      "avoid_terms": [
+        "当前版本",
+        "发布时间"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 22,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 22,
+      "accepted": 3,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "现"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "datetime",
+        "lex_pool_max_sim": 0.3941,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.5366,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5366,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_flood.md",
+        "hb_flood.md",
+        "hb_subway.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_sw_size",
+      "query": "单个文件最大能放多大？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「性能参数」表第二行：单文件上限 2GB",
+      "avoid_terms": [
+        "单文件上限",
+        "2GB"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 3,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "文件"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.5204,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.4553,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5204,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_software.md",
+        "hb_software.md",
+        "hb_software.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sw_known",
+      "query": "现在还有哪些地方做得不太好用？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「已知问题」一节：大文件首次同步较慢；离线冲突合并暂不支持表格文件",
+      "avoid_terms": [
+        "已知问题"
+      ],
+      "n_refs": 6,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 22,
+        "parents": 6
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 22,
+      "accepted": 3,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "现",
+        "还"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": true,
+        "question_type": "coverage",
+        "lex_pool_max_sim": 0.4081,
+        "threshold": null,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": null,
+      "ref_match_modes": {
+        "lexical": 6
+      },
+      "best_rejected_similarity": 0.4774,
+      "gold_in_vec_candidates": false,
+      "gold_best_vec_similarity": null,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_flood.md",
+        "hb_flood.md",
+        "hb_flood.md",
+        "hb_flood.md",
+        "hb_flood.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_sub_capacity",
+      "query": "站里那两台变压器各自能带多少负荷？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「主变设备」表：1号主变 50MVA，2号主变 63MVA",
+      "avoid_terms": [
+        "容量",
+        "MVA"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "变压器"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.5692,
+        "threshold": 0.6192,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6192,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.4878,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5692,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sub_breaker",
+      "query": "那种能切断故障电流的设备一共装了几台？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「开关设备」表第一行：断路器 LW36-126，8台",
+      "avoid_terms": [
+        "断路器",
+        "8台"
+      ],
+      "n_refs": 5,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 5,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 5
+      },
+      "lexical_candidates": 5,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 5,
+      "rejected": 15,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 15
+      },
+      "grounded_reasons": {
+        "lexical": 5
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "设备"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.5971,
+        "threshold": 0.6471,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6471,
+      "ref_match_modes": {
+        "lexical": 5
+      },
+      "best_rejected_similarity": 0.5781,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5971,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_substation.md",
+        "hb_substation.md",
+        "hb_bridge2.md",
+        "hb_substation.md",
+        "hb_lab.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sub_relay_owner",
+      "query": "站里那些保护类的设备归到哪个人头上？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「设备责任人」第三条：保护装置责任人为吴迪",
+      "avoid_terms": [
+        "保护装置责任人",
+        "吴迪"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "保护",
+        "设备"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.5399,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.4929,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5399,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_sub_overhaul",
+      "query": "变压器多久要彻底拆开修一次？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「检修周期」第一条：主变大修周期为 10 年",
+      "avoid_terms": [
+        "大修",
+        "主变"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "fts",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 1,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "变压器"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "datetime",
+        "lex_pool_max_sim": 0.589,
+        "threshold": 0.639,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "a27b1164b927988c": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.639,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.6561,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.6561,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_substation.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_subway_depth",
+      "query": "这个坑挖了多深？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「工程概况」一节：基坑长约 186 米……开挖深度约 17.6 米",
+      "avoid_terms": [
+        "开挖深度"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "semantic-only": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "e868044447b6f4dc": 2
+        },
+        "released": [
+          {
+            "chunk_id": "e868044447b6f4dc:c6",
+            "similarity": 0.6293
+          },
+          {
+            "chunk_id": "e868044447b6f4dc:c0",
+            "similarity": 0.6139
+          }
+        ]
+      },
+      "semantic_released_count": 2,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "semantic-only": 2
+      },
+      "best_rejected_similarity": 0.5934,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.6293,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_subway.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_subway_items",
+      "query": "这个工程都盯着哪些方面的数据？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「监测项目」一节：地连墙顶水平位移、墙顶竖向位移、墙体测斜、支撑轴力、坑外地表沉降、坑外地下水位",
+      "avoid_terms": [
+        "监测项目"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 3,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "工程",
+        "数据"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.5552,
+        "threshold": 0.6052,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6052,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.5353,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5552,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_subway_freq",
+      "query": "挖土的时候多久测一次？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「监测频率」表第一行：开挖阶段 1次/1d",
+      "avoid_terms": [
+        "监测频率",
+        "开挖阶段"
+      ],
+      "n_refs": 0,
+      "empty": true,
+      "route": "like+no-lexical-hit",
+      "no_lexical_hit": true,
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 0
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {},
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "datetime",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {},
+      "best_rejected_similarity": 0.5659,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5659,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_subway_alarm",
+      "query": "墙顶往旁边挪到多少就要报警了？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「预警值」一节：地连墙顶水平位移累计预警值 24mm，变化速率预警值 2mm/d",
+      "avoid_terms": [
+        "预警值",
+        "水平位移"
+      ],
+      "n_refs": 3,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 3,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 3
+      },
+      "lexical_candidates": 3,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 3,
+      "rejected": 17,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 17
+      },
+      "grounded_reasons": {
+        "lexical": 3
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "墙顶"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": 0.5873,
+        "threshold": 0.6373,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6373,
+      "ref_match_modes": {
+        "lexical": 3
+      },
+      "best_rejected_similarity": 0.5479,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5873,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_subway.md",
+        "hb_subway.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_wh_scope",
+      "query": "这次清点一共查了多少种东西？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘点概况」一节：覆盖 A、B 两个库房，共盘点物料 128 项",
+      "avoid_terms": [
+        "盘点",
+        "128 项"
+      ],
+      "n_refs": 0,
+      "empty": true,
+      "route": "like+no-lexical-hit",
+      "no_lexical_hit": true,
+      "warnings": [
+        "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+      ],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 0
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 0,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {},
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "944b849d96a1455b": 1
+        },
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {},
+      "best_rejected_similarity": 0.6225,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.6225,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    },
+    {
+      "id": "pp_wh_short_a",
+      "query": "A 库那批十二口径的螺丝少了几个？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「A 库物料」表第一行 + 「盘亏处理」第一条：A-1001 六角螺栓 M12，账面 2400 / 实盘 2396，盘亏 4 个",
+      "avoid_terms": [
+        "六角螺栓",
+        "盘亏",
+        "A-1001"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 0,
+        "vec_candidates": 20,
+        "fused": 20,
+        "parents": 2
+      },
+      "lexical_candidates": 0,
+      "vector_candidates": 20,
+      "fused": 20,
+      "accepted": 2,
+      "rejected": 18,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 18
+      },
+      "grounded_reasons": {
+        "semantic-only": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "quantity",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {
+          "944b849d96a1455b": 2
+        },
+        "released": [
+          {
+            "chunk_id": "944b849d96a1455b:c2",
+            "similarity": 0.6062
+          },
+          {
+            "chunk_id": "944b849d96a1455b:c1",
+            "similarity": 0.6023
+          }
+        ]
+      },
+      "semantic_released_count": 2,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "semantic-only": 2
+      },
+      "best_rejected_similarity": 0.5503,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.6062,
+      "gold_vec_ge_floor": true,
+      "top5_docs": [
+        "hb_warehouse.md",
+        "hb_warehouse.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_wh_handle",
+      "query": "查出来少的东西后来是怎么处理的？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘亏处理」一节：A-1001 已按损耗处理；A-2103、B-3302 已登记复查",
+      "avoid_terms": [
+        "盘亏处理",
+        "损耗处理",
+        "登记复查"
+      ],
+      "n_refs": 2,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 2,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 2
+      },
+      "lexical_candidates": 2,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 2,
+      "rejected": 19,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 19
+      },
+      "grounded_reasons": {
+        "lexical": 2
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "处理"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "general",
+        "lex_pool_max_sim": 0.5463,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "lexical": 2
+      },
+      "best_rejected_similarity": 0.5192,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.5463,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_warehouse.md",
+        "hb_subway.md"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "first_hit_rank": 1,
+      "rr": 1.0
+    },
+    {
+      "id": "pp_wh_recheck",
+      "query": "最后谁来对这次清点的结果把关？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘点复核由仓储主管周涛负责」——复核环节由仓储主管周涛把关（全库唯一片段）",
+      "avoid_terms": [
+        "盘点复核",
+        "仓储主管"
+      ],
+      "n_refs": 1,
+      "empty": false,
+      "route": "like",
+      "no_lexical_hit": false,
+      "warnings": [],
+      "counts": {
+        "fts_candidates": 1,
+        "vec_candidates": 20,
+        "fused": 21,
+        "parents": 1
+      },
+      "lexical_candidates": 1,
+      "vector_candidates": 20,
+      "fused": 21,
+      "accepted": 1,
+      "rejected": 20,
+      "rejected_reasons": {
+        "vector-only(no-lexical-overlap)": 20
+      },
+      "grounded_reasons": {
+        "lexical": 1
+      },
+      "resolved_scope_terms": [],
+      "resolved_target_terms": [
+        "结果"
+      ],
+      "semantic": {
+        "enabled": true,
+        "excluded_qtype": false,
+        "question_type": "person",
+        "lex_pool_max_sim": null,
+        "threshold": 0.6,
+        "min_corroboration": 2,
+        "doc_floor_n": {},
+        "released": []
+      },
+      "semantic_released_count": 0,
+      "semantic_threshold": 0.6,
+      "ref_match_modes": {
+        "lexical": 1
+      },
+      "best_rejected_similarity": 0.4857,
+      "gold_in_vec_candidates": true,
+      "gold_best_vec_similarity": 0.4857,
+      "gold_vec_ge_floor": false,
+      "top5_docs": [
+        "hb_clinic.md"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": false,
+      "first_hit_rank": 0,
+      "rr": 0.0
+    }
+  ],
+  "vector_ceiling": {
+    "local_onnx": {
+      "cases": 32,
+      "gold_in_vec_candidates": 31,
+      "gold_vec_sim_ge_floor": 13,
+      "max_gold_vec_similarity": 0.732,
+      "SEM_FLOOR": 0.6
+    },
+    "local_hash": {
+      "cases": 32,
+      "gold_in_vec_candidates": 31,
+      "gold_vec_sim_ge_floor": 0,
+      "max_gold_vec_similarity": 0.2852,
+      "SEM_FLOOR": 0.6
+    }
+  },
+  "hash_control": {
+    "embedder": {
+      "tier": "local_hash",
+      "model_id": "char-ngram-hash-v1",
+      "dimension": 512,
+      "signature": "local_hash:char-ngram-hash-v1:512",
+      "resource_id": "",
+      "base_model": "",
+      "precision": "",
+      "fallback_reason": ""
+    },
+    "vector_route": {
+      "vec_table_ready": true,
+      "signature_mismatch": "",
+      "vec_rows": 52
+    },
+    "metrics": {
+      "cases": 32,
+      "failure_rate@5": 0.4688,
+      "recall@1": 0.4688,
+      "recall@3": 0.4688,
+      "recall@5": 0.5312,
+      "mrr": 0.4813,
+      "empty_result_rate": 0.3125,
+      "no_lexical_hit_rate": 0.3125,
+      "accepted_zero_rate": 0.3125,
+      "zero_lexical_overlap_rate": 0.3125,
+      "avg_lexical_candidates": 1.69,
+      "avg_vector_candidates": 20.0,
+      "semantic_released_total": 0,
+      "queries_with_release": 0,
+      "queries_with_release_rate": 0.0,
+      "semantic_only_references": 0
+    },
+    "rejection_histogram": {
+      "vector-only(no-lexical-overlap)": 595
+    },
+    "per_query": [
+      {
+        "id": "pp_bridge_year",
+        "query": "这座桥是哪一年落成的？",
+        "gold_doc": "hb_bridge2.md",
+        "answer_hint": "「桥梁概况」一节末尾：建成于 2011 年",
+        "avoid_terms": [
+          "建成于"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.0758,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0721,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_bridge_joint",
+        "query": "桥面上留的那几道接缝一共设了多少处？",
+        "gold_doc": "hb_bridge2.md",
+        "answer_hint": "「构件编号」一节：伸缩缝自北向南 SS-01 至 SS-04（共 4 处）",
+        "avoid_terms": [
+          "伸缩缝"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.1578,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0361,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_bridge_mid_cause",
+        "query": "中间那跨的垫块被剪歪了，根子在什么地方？",
+        "gold_doc": "hb_bridge2.md",
+        "answer_hint": "「病害成因」一节第二条：ZZ-07 的病害由温度变化引起（位置为中跨）",
+        "avoid_terms": [
+          "剪切变形",
+          "温度变化"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "什"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.0862,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0334,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_bridge_device_expiry",
+        "query": "测混凝土开裂大小的那台仪器，标定证书哪天到期？",
+        "gold_doc": "hb_bridge2.md",
+        "answer_hint": "「检测设备」表第一行：裂缝宽度观测仪 ZBL-F120，检定有效期 2026-12-05",
+        "avoid_terms": [
+          "检定有效期",
+          "裂缝宽度观测仪"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 6,
+          "vec_candidates": 20,
+          "fused": 22,
+          "parents": 5
+        },
+        "lexical_candidates": 6,
+        "vector_candidates": 20,
+        "fused": 22,
+        "accepted": 6,
+        "rejected": 16,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 16
+        },
+        "grounded_reasons": {
+          "lexical": 6
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "混凝土",
+          "仪器"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.0511,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.0618,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0511,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_subway.md",
+          "hb_lab.md",
+          "hb_lab.md",
+          "hb_lab.md",
+          "hb_bridge2.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": true,
+        "first_hit_rank": 5,
+        "rr": 0.2
+      },
+      {
+        "id": "pp_clinic_fasting",
+        "query": "抽血化验之前得饿多长时间？",
+        "gold_doc": "hb_clinic.md",
+        "answer_hint": "「质量要求」第一条：空腹采血要求禁食 8 小时以上",
+        "avoid_terms": [
+          "禁食 8 小时",
+          "空腹采血"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 1,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "时间"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": 0.0362,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.0932,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0284,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_software.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_clinic_urine",
+        "query": "尿的标本取好以后，多久之内必须拿去化验？",
+        "gold_doc": "hb_clinic.md",
+        "answer_hint": "「质量要求」第二条：尿常规样本需在 2 小时内送检",
+        "avoid_terms": [
+          "尿常规",
+          "送检"
+        ],
+        "n_refs": 2,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 2
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 2,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 2
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "尿"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "datetime",
+          "lex_pool_max_sim": 0.0735,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 2
+        },
+        "best_rejected_similarity": 0.1132,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0841,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_clinic.md",
+          "hb_clinic.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_clinic_reagent",
+        "query": "做化验用的那些药水归谁管进货？",
+        "gold_doc": "hb_clinic.md",
+        "answer_hint": "「责任划分」第一条：试剂采购由器械科负责",
+        "avoid_terms": [
+          "试剂采购",
+          "器械科"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "person",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.0834,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0512,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_clinic_flow",
+        "query": "一份标本从接进来到最后发出结果，中间要走几步？",
+        "gold_doc": "hb_clinic.md",
+        "answer_hint": "「样本流程」一节：登记 → 采样 → 离心 → 检测 → 复核 → 签发（共 6 步）",
+        "avoid_terms": [
+          "离心",
+          "复核"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 1,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "结果"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.0937,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.0949,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0937,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_clinic.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_flood_rainfall",
+        "query": "六月初那场大雨一共下了多少毫米？",
+        "gold_doc": "hb_flood.md",
+        "answer_hint": "「强降雨过程」一节：6 月 8 日至 10 日，累计雨量 210 毫米",
+        "avoid_terms": [
+          "强降雨",
+          "累计雨量"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 1,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "毫米"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": 0.0762,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.1068,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0762,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_flood.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_flood_inflow",
+        "query": "上游下来的水最多的时候每秒到了多少方？",
+        "gold_doc": "hb_flood.md",
+        "answer_hint": "「上游来水过程」一节：6 月 11 日入库流量达到 3200 立方米每秒",
+        "avoid_terms": [
+          "入库流量",
+          "立方米每秒"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 1,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "上游",
+          "每秒"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": 0.2852,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.2178,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.2852,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_flood.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_flood_gate",
+        "query": "水库那天把几个口子打开放水了？",
+        "gold_doc": "hb_flood.md",
+        "answer_hint": "「泄洪调度过程」一节：6 月 12 日水库开启三孔闸门泄洪",
+        "avoid_terms": [
+          "泄洪",
+          "三孔闸门"
+        ],
+        "n_refs": 2,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 2
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 2,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 2
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "水库"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": 0.0742,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 2
+        },
+        "best_rejected_similarity": 0.1313,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1313,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_flood.md",
+          "hb_flood.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_flood_drain",
+        "query": "城里淹了以后往外抽水这事儿由哪个单位牵头？",
+        "gold_doc": "hb_flood.md",
+        "answer_hint": "「应急处置分工」第一条：城市排涝由排水管理处负责",
+        "avoid_terms": [
+          "城市排涝",
+          "排水管理处"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.2156,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0403,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_lab_owner",
+        "query": "做材料拉伸的大机器里，三百型的那台平时归谁管？",
+        "gold_doc": "hb_lab.md",
+        "answer_hint": "「仪器台账」表第二行：万能材料试验机 WDW-300，责任人马丽",
+        "avoid_terms": [
+          "万能材料试验机",
+          "WDW-300",
+          "责任人"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "person",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.1227,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1227,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_lab_cycle",
+        "query": "这些机器多长时间要重新校对一次？",
+        "gold_doc": "hb_lab.md",
+        "answer_hint": "「仪器台账」表校准周期列：三台机器均为 12 个月",
+        "avoid_terms": [
+          "校准周期",
+          "12个月"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 1,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "时间"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.1619,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1048,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_software.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_lab_org",
+        "query": "测力之类的设备是送到外面哪家单位去标定的？",
+        "gold_doc": "hb_lab.md",
+        "answer_hint": "「校准机构」第一条：力学类仪器由省计量院校准",
+        "avoid_terms": [
+          "力学类仪器",
+          "省计量院"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 5,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 5
+        },
+        "lexical_candidates": 5,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 5,
+        "rejected": 16,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 16
+        },
+        "grounded_reasons": {
+          "lexical": 5
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "设备"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.0777,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.1176,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0058,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_substation.md",
+          "hb_bridge2.md",
+          "hb_substation.md",
+          "hb_substation.md",
+          "hb_lab.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": true,
+        "first_hit_rank": 5,
+        "rr": 0.2
+      },
+      {
+        "id": "pp_lab_fail",
+        "query": "要是校下来不合格，这台设备该怎么处理？",
+        "gold_doc": "hb_lab.md",
+        "answer_hint": "「不合格处置」一节：立即停用并张贴停用标识，停用仪器由设备管理员封存",
+        "avoid_terms": [
+          "校准不合格",
+          "停用"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 7,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 5
+        },
+        "lexical_candidates": 7,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 7,
+        "rejected": 14,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 14
+        },
+        "grounded_reasons": {
+          "lexical": 7
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "不合格",
+          "设备",
+          "处理"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.27,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.0933,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.27,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_lab.md",
+          "hb_warehouse.md",
+          "hb_substation.md",
+          "hb_bridge2.md",
+          "hb_substation.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_sw_position",
+        "query": "这个软件是给谁用的，能自己架服务器吗？",
+        "gold_doc": "hb_software.md",
+        "answer_hint": "「产品定位」一节：面向团队的文档同步与协作工具，支持私有部署",
+        "avoid_terms": [
+          "私有部署",
+          "面向团队"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 1,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "服务"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "person",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.0958,
+        "gold_in_vec_candidates": false,
+        "gold_best_vec_similarity": null,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_software.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_sw_current",
+        "query": "现在线上跑的是哪一版，什么时候发的？",
+        "gold_doc": "hb_software.md",
+        "answer_hint": "「版本信息」表第三行：3.2，2026-04-22，当前版本",
+        "avoid_terms": [
+          "当前版本",
+          "发布时间"
+        ],
+        "n_refs": 3,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 3,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 3
+        },
+        "lexical_candidates": 3,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 3,
+        "rejected": 17,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 17
+        },
+        "grounded_reasons": {
+          "lexical": 3
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "现"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "datetime",
+          "lex_pool_max_sim": 0.0518,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 3
+        },
+        "best_rejected_similarity": 0.1485,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0589,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_flood.md",
+          "hb_subway.md",
+          "hb_flood.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_sw_size",
+        "query": "单个文件最大能放多大？",
+        "gold_doc": "hb_software.md",
+        "answer_hint": "「性能参数」表第二行：单文件上限 2GB",
+        "avoid_terms": [
+          "单文件上限",
+          "2GB"
+        ],
+        "n_refs": 3,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 3,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 3
+        },
+        "lexical_candidates": 3,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 3,
+        "rejected": 17,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 17
+        },
+        "grounded_reasons": {
+          "lexical": 3
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "文件"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": 0.1132,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 3
+        },
+        "best_rejected_similarity": 0.0659,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1132,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_software.md",
+          "hb_software.md",
+          "hb_software.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_sw_known",
+        "query": "现在还有哪些地方做得不太好用？",
+        "gold_doc": "hb_software.md",
+        "answer_hint": "「已知问题」一节：大文件首次同步较慢；离线冲突合并暂不支持表格文件",
+        "avoid_terms": [
+          "已知问题"
+        ],
+        "n_refs": 4,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 3,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 4
+        },
+        "lexical_candidates": 3,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 3,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 3
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "现",
+          "还"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": true,
+          "question_type": "coverage",
+          "lex_pool_max_sim": 0.0617,
+          "threshold": null,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": null,
+        "ref_match_modes": {
+          "lexical": 4
+        },
+        "best_rejected_similarity": 0.0911,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_flood.md",
+          "hb_flood.md",
+          "hb_flood.md",
+          "hb_subway.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_sub_capacity",
+        "query": "站里那两台变压器各自能带多少负荷？",
+        "gold_doc": "hb_substation.md",
+        "answer_hint": "「主变设备」表：1号主变 50MVA，2号主变 63MVA",
+        "avoid_terms": [
+          "容量",
+          "MVA"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 1,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "变压器"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": 0.0275,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.0807,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0333,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_substation.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_sub_breaker",
+        "query": "那种能切断故障电流的设备一共装了几台？",
+        "gold_doc": "hb_substation.md",
+        "answer_hint": "「开关设备」表第一行：断路器 LW36-126，8台",
+        "avoid_terms": [
+          "断路器",
+          "8台"
+        ],
+        "n_refs": 5,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 5,
+          "vec_candidates": 20,
+          "fused": 21,
+          "parents": 5
+        },
+        "lexical_candidates": 5,
+        "vector_candidates": 20,
+        "fused": 21,
+        "accepted": 5,
+        "rejected": 16,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 16
+        },
+        "grounded_reasons": {
+          "lexical": 5
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "设备"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": 0.092,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 5
+        },
+        "best_rejected_similarity": 0.1021,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.092,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_substation.md",
+          "hb_substation.md",
+          "hb_bridge2.md",
+          "hb_substation.md",
+          "hb_lab.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_sub_relay_owner",
+        "query": "站里那些保护类的设备归到哪个人头上？",
+        "gold_doc": "hb_substation.md",
+        "answer_hint": "「设备责任人」第三条：保护装置责任人为吴迪",
+        "avoid_terms": [
+          "保护装置责任人",
+          "吴迪"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 1,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "保护",
+          "设备"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.1152,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.0782,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1152,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_substation.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_sub_overhaul",
+        "query": "变压器多久要彻底拆开修一次？",
+        "gold_doc": "hb_substation.md",
+        "answer_hint": "「检修周期」第一条：主变大修周期为 10 年",
+        "avoid_terms": [
+          "大修",
+          "主变"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "fts",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 1,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "变压器"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "datetime",
+          "lex_pool_max_sim": 0.0313,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.1223,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0644,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_substation.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_subway_depth",
+        "query": "这个坑挖了多深？",
+        "gold_doc": "hb_subway.md",
+        "answer_hint": "「工程概况」一节：基坑长约 186 米……开挖深度约 17.6 米",
+        "avoid_terms": [
+          "开挖深度"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.1576,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1352,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_subway_items",
+        "query": "这个工程都盯着哪些方面的数据？",
+        "gold_doc": "hb_subway.md",
+        "answer_hint": "「监测项目」一节：地连墙顶水平位移、墙顶竖向位移、墙体测斜、支撑轴力、坑外地表沉降、坑外地下水位",
+        "avoid_terms": [
+          "监测项目"
+        ],
+        "n_refs": 3,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 3,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 3
+        },
+        "lexical_candidates": 3,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 3,
+        "rejected": 17,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 17
+        },
+        "grounded_reasons": {
+          "lexical": 3
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "工程",
+          "数据"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.1229,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 3
+        },
+        "best_rejected_similarity": 0.1375,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1229,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_subway.md",
+          "hb_subway.md",
+          "hb_subway.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_subway_freq",
+        "query": "挖土的时候多久测一次？",
+        "gold_doc": "hb_subway.md",
+        "answer_hint": "「监测频率」表第一行：开挖阶段 1次/1d",
+        "avoid_terms": [
+          "监测频率",
+          "开挖阶段"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "datetime",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.1969,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1969,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_subway_alarm",
+        "query": "墙顶往旁边挪到多少就要报警了？",
+        "gold_doc": "hb_subway.md",
+        "answer_hint": "「预警值」一节：地连墙顶水平位移累计预警值 24mm，变化速率预警值 2mm/d",
+        "avoid_terms": [
+          "预警值",
+          "水平位移"
+        ],
+        "n_refs": 3,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 3,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 3
+        },
+        "lexical_candidates": 3,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 3,
+        "rejected": 17,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 17
+        },
+        "grounded_reasons": {
+          "lexical": 3
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "墙顶"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": 0.1376,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 3
+        },
+        "best_rejected_similarity": 0.1016,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1376,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_subway.md",
+          "hb_subway.md",
+          "hb_subway.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_wh_scope",
+        "query": "这次清点一共查了多少种东西？",
+        "gold_doc": "hb_warehouse.md",
+        "answer_hint": "「盘点概况」一节：覆盖 A、B 两个库房，共盘点物料 128 项",
+        "avoid_terms": [
+          "盘点",
+          "128 项"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.2292,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.2238,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_wh_short_a",
+        "query": "A 库那批十二口径的螺丝少了几个？",
+        "gold_doc": "hb_warehouse.md",
+        "answer_hint": "「A 库物料」表第一行 + 「盘亏处理」第一条：A-1001 六角螺栓 M12，账面 2400 / 实盘 2396，盘亏 4 个",
+        "avoid_terms": [
+          "六角螺栓",
+          "盘亏",
+          "A-1001"
+        ],
+        "n_refs": 0,
+        "empty": true,
+        "route": "like+no-lexical-hit",
+        "no_lexical_hit": true,
+        "warnings": [
+          "未找到字面匹配：知识库中没有出现查询实词的内容（已避免用语义相近但无关的文档冒充引用来源）"
+        ],
+        "counts": {
+          "fts_candidates": 0,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 0
+        },
+        "lexical_candidates": 0,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 0,
+        "rejected": 20,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 20
+        },
+        "grounded_reasons": {},
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "quantity",
+          "lex_pool_max_sim": null,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {},
+        "best_rejected_similarity": 0.2063,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.1953,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      },
+      {
+        "id": "pp_wh_handle",
+        "query": "查出来少的东西后来是怎么处理的？",
+        "gold_doc": "hb_warehouse.md",
+        "answer_hint": "「盘亏处理」一节：A-1001 已按损耗处理；A-2103、B-3302 已登记复查",
+        "avoid_terms": [
+          "盘亏处理",
+          "损耗处理",
+          "登记复查"
+        ],
+        "n_refs": 2,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 2,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 2
+        },
+        "lexical_candidates": 2,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 2,
+        "rejected": 18,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 18
+        },
+        "grounded_reasons": {
+          "lexical": 2
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "处理"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "general",
+          "lex_pool_max_sim": 0.0681,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 2
+        },
+        "best_rejected_similarity": 0.0926,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.0681,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_warehouse.md",
+          "hb_subway.md"
+        ],
+        "hit@1": true,
+        "hit@3": true,
+        "hit@5": true,
+        "first_hit_rank": 1,
+        "rr": 1.0
+      },
+      {
+        "id": "pp_wh_recheck",
+        "query": "最后谁来对这次清点的结果把关？",
+        "gold_doc": "hb_warehouse.md",
+        "answer_hint": "「盘点复核由仓储主管周涛负责」——复核环节由仓储主管周涛把关（全库唯一片段）",
+        "avoid_terms": [
+          "盘点复核",
+          "仓储主管"
+        ],
+        "n_refs": 1,
+        "empty": false,
+        "route": "like",
+        "no_lexical_hit": false,
+        "warnings": [],
+        "counts": {
+          "fts_candidates": 1,
+          "vec_candidates": 20,
+          "fused": 20,
+          "parents": 1
+        },
+        "lexical_candidates": 1,
+        "vector_candidates": 20,
+        "fused": 20,
+        "accepted": 1,
+        "rejected": 19,
+        "rejected_reasons": {
+          "vector-only(no-lexical-overlap)": 19
+        },
+        "grounded_reasons": {
+          "lexical": 1
+        },
+        "resolved_scope_terms": [],
+        "resolved_target_terms": [
+          "结果"
+        ],
+        "semantic": {
+          "enabled": true,
+          "excluded_qtype": false,
+          "question_type": "person",
+          "lex_pool_max_sim": 0.0347,
+          "threshold": 0.6,
+          "min_corroboration": 2,
+          "doc_floor_n": {},
+          "released": []
+        },
+        "semantic_released_count": 0,
+        "semantic_threshold": 0.6,
+        "ref_match_modes": {
+          "lexical": 1
+        },
+        "best_rejected_similarity": 0.1201,
+        "gold_in_vec_candidates": true,
+        "gold_best_vec_similarity": 0.118,
+        "gold_vec_ge_floor": false,
+        "top5_docs": [
+          "hb_clinic.md"
+        ],
+        "hit@1": false,
+        "hit@3": false,
+        "hit@5": false,
+        "first_hit_rank": 0,
+        "rr": 0.0
+      }
+    ]
+  }
+}

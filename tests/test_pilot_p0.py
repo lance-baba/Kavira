@@ -111,7 +111,7 @@ def run() -> dict:
         if ps_ok:
             check("T1 快捷方式已生成", lnk.is_file(), str(lnk))
             info = read_lnk(lnk)
-            expect = str(app / "启动-Windows.bat")
+            expect = str(app / "start-windows.bat")
             check("T1 target 指向正式安装目录",
                   info.get("TARGET", "").lower() == expect.lower(),
                   f"{info.get('TARGET')} != {expect}")
@@ -132,7 +132,7 @@ def run() -> dict:
                 info2 = read_lnk(lnks[0])
                 check("T2 重装后 target 仍指向正式 App",
                       info2.get("TARGET", "").lower()
-                      == str(app / "启动-Windows.bat").lower(),
+                      == str(app / "start-windows.bat").lower(),
                       info2.get("TARGET", ""))
         else:
             skip("T2 PowerShell 读回验证", "环境无 PowerShell")
@@ -143,7 +143,7 @@ def run() -> dict:
         rc3 = installer.install(release, app, lib, desktop_dir=blocker)
         check("T3 快捷方式失败时安装仍 rc=0", rc3 == 0, f"rc={rc3}")
         check("T3 App 完好（launcher 存在）",
-              (app / "启动-Windows.bat").is_file())
+              (app / "start-windows.bat").is_file())
 
         # ---- T4：Library 全程不受影响 ----
         check("T4 Library marker SHA256 不变",
@@ -155,7 +155,7 @@ def run() -> dict:
         #   英文版就可能悄悄写进 "never uploads" 这类绝对声明而没人拦。
         targets = [
             REPO / "START_HERE.txt", REPO / "START_HERE_EN.txt",
-            REPO / "使用手册.txt", REPO / "User-Manual.txt",
+            REPO / "User-Manual-ZH.txt", REPO / "User-Manual.txt",
             REPO / "app" / "web" / "index.html", REPO / "app" / "web" / "app.js",
         ]
         bad = []
@@ -181,7 +181,7 @@ def run() -> dict:
         # 产品后续要卖给英语母语用户，英文文档不是可选项；
         # 这里守住「成对 + 同样交代了联网与云端 AI 的前提」两条底线。
         for zh_name, en_name in (("START_HERE.txt", "START_HERE_EN.txt"),
-                                 ("使用手册.txt", "User-Manual.txt")):
+                                 ("User-Manual-ZH.txt", "User-Manual.txt")):
             zh_p, en_p = REPO / zh_name, REPO / en_name
             check(f"T5b {zh_name} 有对应英文版", en_p.is_file(), str(en_p))
             if en_p.is_file():

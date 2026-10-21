@@ -1,7 +1,7 @@
 """A1 —— Release Builder + SSD Installer 骨架验收（临时目录，零真实 LOCALAPPDATA/Documents 写入）。
 
 覆盖：
-  构建     build_release → dist/Kavira-vX-win-x64/{installer,payload/{app,python-runtime}}
+  构建     build_release → dist/Kavira-vX-win-x64-zh/{installer,payload/{app,python-runtime}}
   安装     install 到临时 app-target / library-target（--app-target / --library-target）
   边界     Library 独立；App/Runtime 可覆盖
   负向     缺 app → 明确失败；缺 python-runtime → 明确失败
@@ -190,11 +190,11 @@ def _build(tmp: Path, timeout: int = 900) -> Path:
     dist = tmp / "dist"
     out = _run_bounded(
         [sys.executable, str(REPO / "scripts" / "build_release.py"),
-         "--output", str(dist)],
+         "--lang", "zh", "--output", str(dist)],
         phase="build_release", timeout=timeout, env=env)
     if out.returncode != 0:
         print(out.stdout, out.stderr)
-    return dist / f"Kavira-v{APP_VERSION}-win-x64"
+    return dist / f"Kavira-v{APP_VERSION}-win-x64-zh"
 
 
 def _install(release: Path, app: Path, lib: Path, tmp: Path,

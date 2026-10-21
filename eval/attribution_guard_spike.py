@@ -1,5 +1,7 @@
 """Kavira · Attribution Guard Spike V1
 
+⚠ 本脚本未含 T3.5 过滤（不过滤 match_mode=="semantic-only" 证据），**不得作为归因判据**。
+
 **只在 eval/ 内实现；不修改任何生产代码**（search.py / llm.py / chunker / prompt / UI）。
 **不加载任何 reranker**（不 import onnxruntime、不碰 eval/models/）。
 

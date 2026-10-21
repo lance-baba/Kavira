@@ -222,6 +222,10 @@ def probe_onnxruntime(force: bool = False) -> tuple[bool, str]:
 class BaseEmbedder:
     source = "none"
     model = "none"
+    #: 检索前缀（**向量空间的一部分**）。随包 artifact 可声明；默认空 ⇒ 现役行为不变。
+    #: 由 :meth:`embed_query` / :meth:`embed_documents` 在**调用点按用途**施加。
+    query_prefix = ""
+    document_prefix = ""
 
     def __init__(self, dim: int = 512) -> None:
         self.dim = int(dim)
@@ -240,6 +244,21 @@ class BaseEmbedder:
 
     def embed(self, texts: list[str]) -> list[list[float]]:  # pragma: no cover
         raise NotImplementedError
+
+    def embed_query(self, query: str) -> list[float]:
+        """把**查询**向量化：按 `query_prefix` 加前缀（默认空 = 与直接 embed 完全一致）。
+
+        ⚠ 刻意**不改** ``embed()`` 自身签名：前缀在调用点按用途施加，未知来源的嵌入器
+        （Ollama / API / Hash）默认空前缀，行为不受影响。
+        """
+        p = self.query_prefix
+        vecs = self.embed([f"{p}{query}"] if p else [query])
+        return vecs[0] if vecs else []
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        """把**文档**向量化：按 `document_prefix` 加前缀（默认空 = 与直接 embed 完全一致）。"""
+        p = self.document_prefix
+        return self.embed([f"{p}{t}" for t in texts] if p else list(texts))
 
     def probe_dim(self) -> int | None:
         """探测真实向量维度。
@@ -417,6 +436,10 @@ class EmbeddingResource:
     license: dict
     model_filename: str
     tokenizer_filename: str
+    #: 检索前缀（**向量空间的一部分**；artifact 可选声明，默认空 ⇒ 现役零变化）。
+    #: e5 系列要求 query 加 `query: `、document 加 `passage: `，否则检索质量显著下降。
+    query_prefix: str = ""
+    document_prefix: str = ""
 
     @property
     def model_path(self) -> Path:
@@ -440,11 +463,18 @@ class EmbeddingResource:
 
         同 artifact 重装 → 不变；artifact 或 tokenizer 字节变化 → 必变。
         """
-        return {
+        extra = {
             "artifact_sha256": self.artifact_sha256,
             "tokenizer_sha256": self.tokenizer_sha256,
             "precision": self.precision,
         }
+        # 前缀是**向量空间的一部分** → 非空时才纳入签名（换前缀 = 必须重建索引）。
+        # ⚠ 空前缀**不计入** ⇒ 现役（空前缀）签名逐字段不变，不触发多余重建。
+        if self.query_prefix:
+            extra["query_prefix"] = self.query_prefix
+        if self.document_prefix:
+            extra["document_prefix"] = self.document_prefix
+        return extra
 
     def build_info(self) -> dict:
         """BUILD_INFO.embedding 块（不含绝对路径）。"""
@@ -497,12 +527,19 @@ def load_embedding_resource(root: Path | None = None
         artifact_size=int(data["artifact_size"]),
         precision=str(data["precision"]).lower(),
         dimension=int(data["dimension"]),
-        pooling=str(data.get("pooling") or "cls").lower(),
+        # ⚠ 默认值刻意**留空**（不是 "cls"）：清单若漏声明 pooling，绝不能默认按 CLS
+        #    蒙混——那会为非 CLS 模型静默产出错误向量空间（最难发现的失败模式）。
+        #    留空 → 落到 OnnxEmbedder.probe() 的「未知 pooling」分支 → 按不可用降级。
+        #    （现役 artifact.json 显式声明 "cls"，故这是零影响变更。）
+        pooling=str(data.get("pooling") or "").lower(),
         normalize=bool(data.get("normalize", True)),
         max_length=int(data.get("max_length") or 512),
         tokenizer_files=dict(data.get("tokenizer_files") or {}),
         license=dict(data.get("license") or {}),
         model_filename=model_filename, tokenizer_filename=tok_filename,
+        # 检索前缀（可选；缺省 → 空 ⇒ 现役签名与行为零变化）
+        query_prefix=str(data.get("query_prefix") or ""),
+        document_prefix=str(data.get("document_prefix") or ""),
     )
     if not res.model_path.is_file():
         return None, RES_MISSING_MODEL, f"缺少模型文件 {model_filename}"
@@ -573,6 +610,9 @@ class OnnxEmbedder(BaseEmbedder):
         self.resource = resource
         self.model = resource.id
         self.precision = resource.precision
+        # 检索前缀来自 artifact（默认空 ⇒ 现役零变化）；施加于 embed_query/embed_documents
+        self.query_prefix = str(getattr(resource, "query_prefix", "") or "")
+        self.document_prefix = str(getattr(resource, "document_prefix", "") or "")
         self._session = None
         self._tok = None
         self._np = None
@@ -622,6 +662,11 @@ class OnnxEmbedder(BaseEmbedder):
         失败即 `local_onnx` 不可用 —— 不返回一个「一调用就炸」的嵌入器。
         """
         try:
+            # P0-0 **前置校验**：清单声明的 pooling 必须是受支持的 cls/mean。
+            # 未知值（含漏声明）→ 立即判不可用，走既有降级链，**绝不默认 CLS 蒙混**。
+            pooling = str(getattr(self.resource, "pooling", "") or "").lower()
+            if pooling not in ("cls", "mean"):
+                return False, f"未知 pooling={pooling!r}，按不可用降级"
             self._lazy()
             vecs = self.embed(["探针"])
             if not vecs or not vecs[0]:
@@ -630,6 +675,32 @@ class OnnxEmbedder(BaseEmbedder):
             return True, "OK"
         except BaseException as exc:  # noqa: BLE001 - 含 SIGILL 之外的加载期异常
             return False, f"{type(exc).__name__}: {exc}"
+
+    def _pool(self, last_hidden, mask):
+        """按 artifact 声明的 pooling 把 ``last_hidden_state`` 池化成句向量（P0-0）。
+
+        * ``cls``  —— 取 token 0（``last_hidden[:, 0, :]``）。现役 bge-small-zh 声明它，
+          **与历史硬编码实现逐位一致**（零回归红线）。
+        * ``mean`` —— 按 ``attention_mask`` 加权平均并**排除 padding**：
+          ``(h * m).sum(1) / clip(m.sum(1), 1e-9)``。
+        * 其它    —— ``raise``（由 :meth:`probe` 转成「不可用」并按降级链处理）。
+
+        ``mask`` 是 (batch, seq) 的 attention_mask（1=真 token、0=padding），
+        在 :meth:`embed` 里已算好并传入。
+        """
+        np = self._np
+        if np is None:  # 正常路径 _lazy() 已设好；仅为健壮性兜底
+            import numpy as np  # type: ignore
+
+        pooling = str(getattr(self.resource, "pooling", "") or "").lower()
+        if pooling == "cls":
+            return last_hidden[:, 0, :]
+        if pooling == "mean":
+            m = mask.astype("float32")[:, :, None]          # (batch, seq, 1)
+            summed = (last_hidden * m).sum(axis=1)          # (batch, hidden)
+            denom = np.clip(m.sum(axis=1), 1e-9, None)      # (batch, 1)
+            return summed / denom
+        raise RuntimeError(f"未知 pooling={pooling!r}（仅支持 cls/mean），按不可用降级")
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         self._lazy()
@@ -657,7 +728,8 @@ class OnnxEmbedder(BaseEmbedder):
             if not cand:
                 raise RuntimeError("ONNX 输出里没有可取 CLS 的 3D 张量")
             last_hidden = cand[0]
-        pooled = last_hidden[:, 0, :]                     # CLS，协议规定
+        # P0-0：池化方式由 artifact 声明的 pooling 决定（不再是硬编码 CLS）。
+        pooled = self._pool(last_hidden, mask)
         if self.resource.normalize:
             norms = np.linalg.norm(pooled, axis=1, keepdims=True)
             pooled = pooled / np.clip(norms, 1e-9, None)

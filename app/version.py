@@ -48,13 +48,13 @@ def version_tag() -> str:
     return f"v{APP_VERSION}"
 
 
-def release_zip_name(platform: str = "win-x64") -> str:
-    """未来 Release 包名：``Kavira-v1.3.0-win-x64.zip``。
+def release_zip_name(platform: str = "win-x64", lang: str = "zh") -> str:
+    """未来 Release 包名：``Kavira-v1.3.0-win-x64-zh.zip`` / ``...-en.zip``（按语言分包为两个 zip）。
 
     本轮不做发布流水线，但先把命名规则钉在版本源里，
     免得将来又变成「构建脚本里再硬编码一次」。
     """
-    return f"Kavira-v{APP_VERSION}-{platform}.zip"
+    return f"Kavira-v{APP_VERSION}-{platform}-{lang}.zip"
 
 
 # 说明（A3）：BUILD_INFO.json 的**生成器**是 `scripts/release_integrity.py`

@@ -41,10 +41,10 @@
 
 ### 本地持久路径 / 校验（可直接复用，无需重新下载）
 
-- **bge-reranker-base** → `F:\项目\USB-WIKI\eval\models\bge-reranker-base`
+- **bge-reranker-base** → `<repo>/eval/models/bge-reranker-base`
   - 权重 `model_quantized.onnx` · sha256 `dd98f3e67837d23210a6b7550c08cced4f61845b940ac45be3565840a10f3244`
   - 上游 `BAAI/bge-reranker-base` · revision `280bcc27a84e0b898c251e06fddb25171bd9b101` · license **MIT** · 磁盘 288MB（fp32 导出参考 1061MB）
-- **bge-reranker-v2-m3** → `F:\项目\USB-WIKI\eval\models\bge-reranker-v2-m3`
+- **bge-reranker-v2-m3** → `<repo>/eval/models/bge-reranker-v2-m3`
   - 权重 `model_quantized.onnx` · sha256 `912fc1215c2dbff6499700534bd8d31253af01573861abbfc43afd1fab6cce5d`
   - 上游 `BAAI/bge-reranker-v2-m3` · revision `6f5ff65298512715a1e669753bc754d2bc8f367b` · license **Apache-2.0** · 磁盘 561MB（fp32 导出参考 2166MB）
 

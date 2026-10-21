@@ -2,7 +2,7 @@
 
 覆盖（§21）：
   A 正式 tokenizers 与 A4.2a reference 的 input_ids / attention_mask / token_type_ids 完全一致
-  B 正式 OnnxEmbedder：512 维 / finite / L2≈1 / deterministic，且与 A4.2a INT8 runner 输出一致
+  B 正式 OnnxEmbedder：维度跟随 artifact 声明 / finite / L2≈1 / deterministic，且与 A4.2a INT8 runner 输出一致
   C 用**正式 App 嵌入器**跑现有 RAG regression（不是评测工具里的 runner）
   D onnxruntime 不可用 → App 正常解析、按契约降级，不启动失败
   E tokenizer 缺失 → local_onnx unavailable，**不得**走字符级假 fallback
@@ -229,30 +229,41 @@ def _t_b_embedding() -> None:
         v1 = emb.embed(texts)
         v2 = emb.embed(texts)
 
-        check("B1 dim = 512", all(len(v) == 512 for v in v1), str({len(v) for v in v1}))
+        check(f"B1 dim = {res.dimension}（跟随 artifact 声明）",
+              all(len(v) == res.dimension for v in v1), str({len(v) for v in v1}))
         check("B2 全部有限值", all(math.isfinite(x) for v in v1 for x in v))
         norms = [math.sqrt(sum(x * x for x in v)) for v in v1]
         check("B3 L2 ≈ 1", all(abs(n - 1.0) < 1e-5 for n in norms),
               str([round(n, 6) for n in norms]))
         check("B4 deterministic（两次结果逐位相同）", v1 == v2)
 
-        from runner import OnnxBertEmbedder
-        ref = OnnxBertEmbedder(res.model_path, RESOURCE_DIR, model_name="a42a-int8")
-        ref._lazy()                                        # noqa: SLF001
-        rv = ref.embed(texts)
-        diff = max(abs(a - b) for va, vb in zip(v1, rv) for a, b in zip(va, vb))
-        check("B5 与 A4.2a INT8 runner 输出一致（逐元素 < 1e-5）", diff < 1e-5, f"最大差 {diff:.2e}")
+        # B5：与 A4.2a INT8 参考 runner 逐元素一致。⚠ 该参考 runner **只实现了 CLS**
+        # （A4.2a 选型期的 bge 口径）；当前 artifact 若为 mean pooling（如 e5），两者
+        # 本就不该一致 → 仅在 pooling=cls 时比较，否则 SKIP（不误报为回归）。
+        if res.pooling == "cls":
+            from runner import OnnxBertEmbedder
+            ref = OnnxBertEmbedder(res.model_path, RESOURCE_DIR, model_name="a42a-int8")
+            ref._lazy()                                    # noqa: SLF001
+            rv = ref.embed(texts)
+            diff = max(abs(a - b) for va, vb in zip(v1, rv) for a, b in zip(va, vb))
+            check("B5 与 A4.2a INT8 runner 输出一致（逐元素 < 1e-5）", diff < 1e-5,
+                  f"最大差 {diff:.2e}")
+        else:
+            skip("B5 与 A4.2a INT8 runner 一致（参考 runner 仅实现 CLS）",
+                 f"当前 artifact pooling={res.pooling}")
 
-        # CLS + L2 的证据：同义句相似度显著高于无关句
+        # 语义判别方向（模型无关）：同义句相似度**高于**无关句。
+        # ⚠ 阈值取 +0.05（不取旧的 +0.15）—— 旧阈值是 bge+CLS 的标定；多语言 e5 的
+        # 整体相似度基线更高（无关句也 ≈0.83），固定大间距会误报。只验方向即可。
         def cos(a, b):
             d = sum(x * y for x, y in zip(a, b))
             na = math.sqrt(sum(x * x for x in a))
             nb = math.sqrt(sum(x * x for x in b))
             return d / (na * nb or 1.0)
         sim_same = cos(v1[1], v1[2])          # 过滤网 ↔ 滤芯
-        sim_diff = cos(v1[1], rv[0]) if False else cos(v1[0], v1[1])
-        check("B6 同义句相似度显著高于无关句（CLS 语义可用）",
-              sim_same > sim_diff + 0.15, f"同义 {sim_same:.3f} vs 无关 {sim_diff:.3f}")
+        sim_diff = cos(v1[0], v1[1])          # 无关句
+        check("B6 同义句相似度高于无关句（语义判别可用）",
+              sim_same > sim_diff + 0.05, f"同义 {sim_same:.3f} vs 无关 {sim_diff:.3f}")
 
 
 # ---------------------------------------------------------------------------
@@ -580,8 +591,12 @@ def _t_h_signature() -> None:
             return
         extra = res.signature_extra()
         print(f"      signature_extra = {json.dumps(extra, ensure_ascii=False)}")
-        check("H1 含 artifact_sha256 / tokenizer_sha256 / precision",
-              set(extra) == {"artifact_sha256", "tokenizer_sha256", "precision"})
+        # 前缀键可选（如 multilingual-e5-small 声明 query:/passage:）——核心三项必在。
+        _allowed = {"artifact_sha256", "tokenizer_sha256", "precision",
+                    "query_prefix", "document_prefix"}
+        check("H1 含 artifact_sha256 / tokenizer_sha256 / precision（前缀键可选）",
+              {"artifact_sha256", "tokenizer_sha256", "precision"} <= set(extra) <= _allowed,
+              str(sorted(extra)))
         check("H2 artifact_sha256 与契约一致",
               extra["artifact_sha256"] ==
               json.loads(CONTRACT.read_text(encoding="utf-8"))["artifact_sha256"].lower())

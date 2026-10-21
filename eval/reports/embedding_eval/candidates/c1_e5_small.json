@@ -1,0 +1,153 @@
+{
+  "generated_at": "2026-10-16 20:52:38",
+  "id": "c1_e5_small",
+  "embedding_dir": "<repo>/vendor/cache/embedding_candidates/c1_e5_small",
+  "ok": true,
+  "model_id": "multilingual-e5-small-int8",
+  "artifact_source": "Xenova/multilingual-e5-small",
+  "artifact_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+  "base_model": "intfloat/multilingual-e5-small",
+  "base_model_revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+  "filename": "onnx/model_quantized.onnx",
+  "precision": "int8",
+  "size": 118308185,
+  "declared_size": 118308185,
+  "sha256": "f80102d3f2a1229f387d3c81909990d8945513e347b0eab049f7de3c6f98c193",
+  "declared_sha256": "f80102d3f2a1229f387d3c81909990d8945513e347b0eab049f7de3c6f98c193",
+  "license": {
+    "basis": "derived_from_base_model",
+    "base_model_license": "MIT",
+    "conversion_repository_license": "unspecified",
+    "_comment": "base model intfloat/multilingual-e5-small 显式 license:mit；ONNX 转换仓库 Xenova/multilingual-e5-small 自身未声明 license，权重来自 MIT base model，按 MIT 记录并保留链路。"
+  },
+  "tokenizer": {
+    "files": {
+      "tokenizer.json": {
+        "size": 17082730,
+        "sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+        "declared_sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+        "match": true
+      },
+      "tokenizer_config.json": {
+        "size": 443,
+        "sha256": "a1d6bc8734a6f635dc158508bef000f8e2e5a759c7d92f984b2c86e5ff53425b",
+        "declared_sha256": "a1d6bc8734a6f635dc158508bef000f8e2e5a759c7d92f984b2c86e5ff53425b",
+        "match": true
+      },
+      "special_tokens_map.json": {
+        "size": 167,
+        "sha256": "d05497f1da52c5e09554c0cd874037a083e1dc1b9cfd48034d1c717f1afc07a7",
+        "declared_sha256": "d05497f1da52c5e09554c0cd874037a083e1dc1b9cfd48034d1c717f1afc07a7",
+        "match": true
+      }
+    }
+  },
+  "pooling": "mean",
+  "pooling_config_file": {
+    "word_embedding_dimension": 384,
+    "pooling_mode_cls_token": false,
+    "pooling_mode_mean_tokens": true,
+    "pooling_mode_max_tokens": false,
+    "pooling_mode_mean_sqrt_len_tokens": false
+  },
+  "pooling_from_config_file": "mean",
+  "query_prefix": "query: ",
+  "document_prefix": "passage: ",
+  "normalization": "l2",
+  "dimension": 384,
+  "real_dimension": 384,
+  "max_length": 512,
+  "onnx_io": {
+    "inputs": [
+      {
+        "name": "input_ids",
+        "shape": [
+          "batch_size",
+          "sequence_length"
+        ],
+        "type": "tensor(int64)"
+      },
+      {
+        "name": "attention_mask",
+        "shape": [
+          "batch_size",
+          "sequence_length"
+        ],
+        "type": "tensor(int64)"
+      },
+      {
+        "name": "token_type_ids",
+        "shape": [
+          "batch_size",
+          "sequence_length"
+        ],
+        "type": "tensor(int64)"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "last_hidden_state",
+        "shape": [
+          "batch_size",
+          "sequence_length",
+          384
+        ],
+        "type": "tensor(float)"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "模型文件存在",
+      "ok": true,
+      "detail": "<repo>\\vendor\\cache\\embedding_candidates\\c1_e5_small\\model.onnx"
+    },
+    {
+      "name": "模型大小 == artifact_size",
+      "ok": true,
+      "detail": "declared=118308185 real=118308185"
+    },
+    {
+      "name": "模型 SHA256 == artifact_sha256",
+      "ok": true,
+      "detail": "declared=f80102d3f2a1229f… real=f80102d3f2a1229f…"
+    },
+    {
+      "name": "tokenizer SHA256 匹配 tokenizer.json",
+      "ok": true,
+      "detail": "declared=0b44a9d7b51c3c62… real=0b44a9d7b51c3c62…"
+    },
+    {
+      "name": "tokenizer SHA256 匹配 tokenizer_config.json",
+      "ok": true,
+      "detail": "declared=a1d6bc8734a6f635… real=a1d6bc8734a6f635…"
+    },
+    {
+      "name": "tokenizer SHA256 匹配 special_tokens_map.json",
+      "ok": true,
+      "detail": "declared=d05497f1da52c5e0… real=d05497f1da52c5e0…"
+    },
+    {
+      "name": "onnxruntime 前向成功",
+      "ok": true,
+      "detail": "real_dim=384"
+    },
+    {
+      "name": "真实维度 == 清单 declared dimension",
+      "ok": true,
+      "detail": "declared=384 real=384"
+    },
+    {
+      "name": "清单 pooling 与 1_Pooling/config.json 一致",
+      "ok": true,
+      "detail": "manifest=mean st=mean"
+    }
+  ],
+  "problems": [],
+  "recommended_channel_config": {
+    "semantic_min_corroboration": 2,
+    "SEMANTIC_FLOOR": 0.84,
+    "source": "eval/reports/embedding_eval/channel_sweep.md（T06 扫点，内存级实验，未改产品默认值）",
+    "note": "C1 需把**语义通道** floor 由 0.60 提到 0.84（并保持 corroboration=2）才能消除负例语义引用泄漏（hb_neg_design_life：现役 0→C1 1），且中文三项仍达标（failure@5 15.6%/空结果 3.1%/零字面子集 20%）。这是满足「泄漏=0 且中文达标 且 8 红线全过」的**最小代价**配置。⚠ `SEMANTIC_FLOOR` 是**通道**参数，非 `_is_grounded()` 的闸门 `SEM_FLOOR`(0.6，本次未动)。"
+  }
+}

@@ -180,6 +180,10 @@ def run(ctx, check, section, skip) -> None:
 
     # ---------------------------------------------------------------- P0-E
     section("P0-E：中文短词 LIKE 确定性 lexical 重排")
+    # 本段为纯 lexical 断言：**显式**以 allow_semantic_only=0 口径运行 —— 既不依赖全局
+    # 默认值（默认=1，由 A+B 语义通道阶段引入），也避免语义通道掩盖词法排序。
+    _prev_sem = config.get_bool("SEARCH", "allow_semantic_only", False)
+    config.update({"SEARCH": {"allow_semantic_only": "0"}}, persist=False)
     db_e, tmp_e = _index_synthetic(md)
     try:
         emb = HashEmbedder(512)
@@ -221,12 +225,23 @@ def run(ctx, check, section, skip) -> None:
               bool(ps_h) and any("人员配备" in c for c in ps_h[:2]),
               (ps_h[0][:40] if ps_h else "无召回"))
 
-        # 回归：allow_semantic_only 保持 0（不靠纯语义掩盖词法排序）
-        check("P0-E 保持 allow_semantic_only=0（无语义-only 兜底）",
-              not config.get_bool("SEARCH", "allow_semantic_only", False), "")
+        # 本段口径：allow_semantic_only=0（见段首**显式设定**）——校验「开关能被设为 0 并**生效**」：
+        # 关闭时 hybrid 检索结果**不得**出现 semantic-only 引用（语义专用通道整体不参与），
+        # 从而保证本段 lexical 断言不被语义通道掩盖。
+        # （原断言「默认值=0」已因 A+B 阶段把默认改为 1 而失效；此处改为对**行为**的断言。）
+        _res_off = search_mod.hybrid_search(db_e, emb, "观测人员有哪些", top_k_parents=5)
+        _sem_only = sum(1 for rf in _res_off.references
+                        if getattr(rf, "match_mode", "lexical") == "semantic-only")
+        check("P0-E allow_semantic_only=0 生效：结果无 semantic-only 引用",
+              _sem_only == 0 and not config.get_bool("SEARCH", "allow_semantic_only", False),
+              f"semantic-only={_sem_only} "
+              f"allow={config.get_bool('SEARCH', 'allow_semantic_only', False)}")
     finally:
         import shutil
 
+        # 还原本段覆写的通道开关（避免污染后续用例）
+        config.update({"SEARCH": {"allow_semantic_only": "1" if _prev_sem else "0"}},
+                      persist=False)
         shutil.rmtree(tmp_e, ignore_errors=True)
 
     # ---------------------------------------------------------------- P0-A

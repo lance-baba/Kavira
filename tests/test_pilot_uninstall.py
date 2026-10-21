@@ -199,7 +199,7 @@ with tempfile.TemporaryDirectory() as td:
     td = Path(td)
     custom_app = td / "d_drive" / "Apps" / "Kavira"
     custom_app.mkdir(parents=True)
-    (custom_app / "启动-Windows.bat").write_text("@echo off", encoding="ascii")  # App 特征
+    (custom_app / "start-windows.bat").write_text("@echo off", encoding="ascii")  # App 特征
     lib = td / "Kavira-Data"
     lib.mkdir()
     (lib / "keep.md").write_text("y", encoding="utf-8")

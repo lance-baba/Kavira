@@ -1,0 +1,887 @@
+{
+  "generated_at": "2026-10-16 21:05:09",
+  "manifest": {
+    "name": "HOLDOUT_B",
+    "purpose": "Release Candidate Gate 1 最终验收集（只用一次，不复用 B 做二次验收）",
+    "generated_at": "2026-09-23 07:44:46",
+    "case_count": 57,
+    "hard_case_count": 18,
+    "hard_case_ratio": 0.316,
+    "fixture_count": 8,
+    "fixtures": {
+      "hb_bridge2.md": {
+        "sha256": "479f5b0cc45aaa40211be165b1cca53bbdb3100b52734bad8cd2da34dedeb0db",
+        "bytes": 942
+      },
+      "hb_clinic.md": {
+        "sha256": "c4fa9ff3a4bcd70d104253b5214ab92d56be9d62fe12f39830fafba8891f5cf5",
+        "bytes": 906
+      },
+      "hb_flood.md": {
+        "sha256": "9ce5f492c5f61383c3905c691a8bb33eec1a2974e847b20b2a94399d1383a03d",
+        "bytes": 914
+      },
+      "hb_lab.md": {
+        "sha256": "a6e341e675924f8ca74bc8d6185484e0faf7ea521fb55e2d432acf8eef89af0a",
+        "bytes": 793
+      },
+      "hb_software.md": {
+        "sha256": "8fb3d1ab703da203531a5228277c8848c4e825399cd382f5253ca8865584f02f",
+        "bytes": 850
+      },
+      "hb_substation.md": {
+        "sha256": "cecbd6f6bf069caec0932f7970f660f9fc4057f5b0692c133ab74ae6c3613326",
+        "bytes": 940
+      },
+      "hb_subway.md": {
+        "sha256": "07e8a98b8bf74ae16d1951935cafead8f36bd63c3d62570b08e8210a1f0d1745",
+        "bytes": 1711
+      },
+      "hb_warehouse.md": {
+        "sha256": "d2adbde8eca10a4eb93d19342f781885ba5c0a7fb2a3255b38075b10e44e686b",
+        "bytes": 808
+      }
+    },
+    "gold_file": "datasets\\holdout_b\\holdout_b_gold.jsonl",
+    "gold_sha256": "a244cd8693c9fe9d16e53029148f96f52a2bc383b63d197eaaa6c11d6b88806d",
+    "categories": {
+      "direct_fact": 5,
+      "quantity": 5,
+      "person": 4,
+      "model_spec": 5,
+      "table_relation": 5,
+      "similar_entity": 5,
+      "section_overview": 4,
+      "list_coverage": 4,
+      "negative_no_answer": 4,
+      "causal": 6,
+      "event": 3,
+      "responsibility": 4,
+      "citation": 3
+    },
+    "frozen": true,
+    "frozen_at": "2026-09-23 07:46:54"
+  },
+  "n_cases": 57,
+  "n_fixtures": 8,
+  "embedder": {
+    "tier": "local_onnx",
+    "model_id": "multilingual-e5-small-int8",
+    "dimension": 384,
+    "signature": "local_onnx:multilingual-e5-small-int8:384",
+    "resource_id": "multilingual-e5-small-int8",
+    "base_model": "intfloat/multilingual-e5-small",
+    "precision": "int8",
+    "fallback_reason": "",
+    "resolve_notes": [
+      "内置模型已启动：multilingual-e5-small-int8（384 维）"
+    ],
+    "resolve_warnings": [],
+    "embedding_dir": "<repo>/vendor/cache/embedding_candidates/c1_e5_small"
+  },
+  "retrieval": {
+    "recall@1": 0.975,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "mrr": 0.9875,
+    "coverage_group_recall": 1.0,
+    "coverage_full_rate": 1.0,
+    "relation_accuracy": 0.7142857142857143,
+    "wrong_document_rate": 0.0,
+    "no_answer_fp_rate": 0.0,
+    "attribution_violation_rate": null,
+    "cat_model_spec_r@1": 1.0,
+    "cat_person_r@1": 1.0,
+    "cat_similar_entity_r@1": 1.0,
+    "cat_table_relation_r@1": 0.8,
+    "cat_direct_fact_r@1": 1.0
+  },
+  "relation": {
+    "n": 14,
+    "n_yes": 6,
+    "n_no": 4,
+    "n_insufficient": 4,
+    "positive_relation_accuracy": 1.0,
+    "negative_relation_accuracy": 1.0,
+    "abstention_accuracy": 0.75,
+    "false_association_rate": 0.125
+  },
+  "citation": {
+    "structural_rate": 1.0,
+    "n_refs": 130,
+    "overlap_rate": 0.9811320754716981,
+    "overlap_n": 53,
+    "per_ref_overlap_rate": 0.5555555555555556,
+    "per_ref_n": 117
+  },
+  "unnecessary_guard": {
+    "normal_queries": 44,
+    "routed_to_guard": 1,
+    "blocked_n": 0,
+    "unnecessary_guard_rate": 0.0,
+    "routed_rate": 0.022727272727272728,
+    "cases": [
+      {
+        "id": "hb_p_data",
+        "category": "person",
+        "query": "谁负责数据平差与报表编制？",
+        "guard": "YES"
+      }
+    ],
+    "blocked_cases": []
+  },
+  "negative_guard": {
+    "neg_cases": 4,
+    "neg_cited_cases": 4,
+    "neg_semantic_new_citation_cases": 1,
+    "leaked_ids": [
+      "hb_neg_design_life"
+    ],
+    "leaked": [
+      {
+        "id": "hb_neg_design_life",
+        "query": "该桥的设计使用年限是多少年？",
+        "n_refs": 5,
+        "semantic_only_refs": 5
+      }
+    ]
+  },
+  "per_category": {
+    "citation": [
+      1.0,
+      3
+    ],
+    "direct_fact": [
+      1.0,
+      5
+    ],
+    "list_coverage": [
+      1.0,
+      4
+    ],
+    "model_spec": [
+      1.0,
+      5
+    ],
+    "person": [
+      1.0,
+      4
+    ],
+    "quantity": [
+      1.0,
+      5
+    ],
+    "section_overview": [
+      1.0,
+      4
+    ],
+    "similar_entity": [
+      1.0,
+      5
+    ],
+    "table_relation": [
+      0.8,
+      5
+    ]
+  },
+  "per_case": [
+    {
+      "id": "hb_df_struct",
+      "category": "direct_fact",
+      "query": "地铁车站基坑的围护结构采用什么形式？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_df_clinic_purpose",
+      "category": "direct_fact",
+      "query": "体检中心规程的目的是什么？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_df_software_pos",
+      "category": "direct_fact",
+      "query": "OrbitSync 是什么产品？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_df_win7",
+      "category": "direct_fact",
+      "query": "OrbitSync 是否支持 Windows 7 客户端？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_df_calib_org",
+      "category": "direct_fact",
+      "query": "力学类仪器由哪个机构校准？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_q_depth",
+      "category": "quantity",
+      "query": "车站基坑开挖深度约多少米？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_q_inclino_tube",
+      "category": "quantity",
+      "query": "墙体测斜管共有几根？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_q_baseline",
+      "category": "quantity",
+      "query": "基准点设置了几个？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_q_breaker",
+      "category": "quantity",
+      "query": "变电站断路器有多少台？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 2,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_q_material_total",
+      "category": "quantity",
+      "query": "本次盘点共覆盖多少项物料？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_p_leader",
+      "category": "person",
+      "query": "地铁基坑项目负责人是谁？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_p_data",
+      "category": "person",
+      "query": "谁负责数据平差与报表编制？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "responsibility",
+      "guard": "YES",
+      "allow": true,
+      "reason": "责任方「李岚」",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_p_bridge",
+      "category": "person",
+      "query": "桥梁检测的负责人是谁？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_p_wdw300",
+      "category": "person",
+      "query": "WDW-300 的责任人是谁？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_m_total_station",
+      "category": "model_spec",
+      "query": "地铁监测使用全站仪是什么型号？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_m_level",
+      "category": "model_spec",
+      "query": "电子水准仪的型号是什么？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_m_crack",
+      "category": "model_spec",
+      "query": "裂缝宽度观测仪是什么型号？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_m_transformer2",
+      "category": "model_spec",
+      "query": "2号主变的型号是什么？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_m_protect978",
+      "category": "model_spec",
+      "query": "变压器保护装置的型号是什么？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_tr_freq_remove",
+      "category": "table_relation",
+      "query": "支撑拆除阶段的监测频率是多少？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_tr_level_valid",
+      "category": "table_relation",
+      "query": "电子水准仪的检定有效期到什么时候？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_tr_a1001",
+      "category": "table_relation",
+      "query": "A-1001 的实盘数是多少？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 2,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_tr_single_file",
+      "category": "table_relation",
+      "query": "OrbitSync 单文件上限是多少？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 2,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_tr_transformer2_date",
+      "category": "table_relation",
+      "query": "2号主变的投运日期是什么？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_se_tube_range",
+      "category": "similar_entity",
+      "query": "测斜管的编号范围是什么？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_se_device_model",
+      "category": "similar_entity",
+      "query": "测斜仪的型号是什么？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_se_well_count",
+      "category": "similar_entity",
+      "query": "坑外地下水位观测井有几口？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_se_meter_model",
+      "category": "similar_entity",
+      "query": "水位计的型号是什么？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_se_b1001",
+      "category": "similar_entity",
+      "query": "B-1001 物料的实盘数是多少？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_so_freq",
+      "category": "section_overview",
+      "query": "地铁基坑的监测频率是怎么规定的？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 6,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_so_alert",
+      "category": "section_overview",
+      "query": "地铁基坑的预警值是怎么规定的？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 6,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_so_overhaul",
+      "category": "section_overview",
+      "query": "变电站设备的检修周期分别是多少？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_so_compat",
+      "category": "section_overview",
+      "query": "OrbitSync 的兼容性情况如何？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 2,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_lc_subway_items",
+      "category": "list_coverage",
+      "query": "地铁基坑的监测项目包括哪些？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_lc_clinic_items",
+      "category": "list_coverage",
+      "query": "体检中心开展哪些检测项目？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_lc_software_feat",
+      "category": "list_coverage",
+      "query": "OrbitSync 3.2 有哪些新功能？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 6,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_lc_bridge_defect",
+      "category": "list_coverage",
+      "query": "本次桥梁检测记录了哪些病害？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_neg_cost",
+      "category": "negative_no_answer",
+      "query": "地铁基坑监测的总费用是多少？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_neg_price",
+      "category": "negative_no_answer",
+      "query": "OrbitSync 的授权价格是多少？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_neg_design_life",
+      "category": "negative_no_answer",
+      "query": "该桥的设计使用年限是多少年？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 5,
+      "semantic_only_refs": 5
+    },
+    {
+      "id": "hb_neg_lab_env",
+      "category": "negative_no_answer",
+      "query": "试验室的恒温恒湿要求是多少？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 2,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_c_pos1",
+      "category": "causal",
+      "query": "强降雨是否导致城区 14 处低洼点积水？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "causal",
+      "guard": "YES",
+      "allow": true,
+      "reason": "同一 line 内共现",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_c_pos2",
+      "category": "causal",
+      "query": "泄洪是否导致下游滩地受淹？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "causal",
+      "guard": "YES",
+      "allow": true,
+      "reason": "同一 line 内共现",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_c_neg1",
+      "category": "causal",
+      "query": "强降雨是否导致下游滩地受淹？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "causal",
+      "guard": "NO",
+      "allow": false,
+      "reason": "该结果归属于「泄洪」，不是「强降雨」",
+      "n_refs": 3,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_c_neg2",
+      "category": "causal",
+      "query": "上游来水是否导致城区 14 处低洼点积水？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "causal",
+      "guard": "NO",
+      "allow": false,
+      "reason": "该结果归属于「强降雨」，不是「上游来水」",
+      "n_refs": 4,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_c_ins1",
+      "category": "causal",
+      "query": "强降雨是否导致人员伤亡？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "causal",
+      "guard": "INSUFFICIENT_RELATION",
+      "allow": false,
+      "reason": "分别找到 anchor / target，但没有直接关系证据",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_c_ins2",
+      "category": "causal",
+      "query": "上游来水是否导致转移群众？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "causal",
+      "guard": "INSUFFICIENT_RELATION",
+      "allow": false,
+      "reason": "分别找到 anchor / target，但没有直接关系证据",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_e_pos1",
+      "category": "event",
+      "query": "哪个过程导致库区水位上涨 2.4 米？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "event",
+      "guard": "YES",
+      "allow": true,
+      "reason": "该结果由「上游来水」造成",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_e_pos2",
+      "category": "event",
+      "query": "ZZ-07 支座剪切变形是由什么原因引起的？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "event",
+      "guard": "YES",
+      "allow": true,
+      "reason": "该结果由「支座剪切变形由温度变化」造成",
+      "n_refs": 2,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_e_neg",
+      "category": "event",
+      "query": "哪个过程导致转移群众？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "event",
+      "guard": "INSUFFICIENT_RELATION",
+      "allow": false,
+      "reason": "未找到「转移群众」的成因单元",
+      "n_refs": 5,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_r_pos1",
+      "category": "responsibility",
+      "query": "城市排涝由谁负责？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "responsibility",
+      "guard": "YES",
+      "allow": true,
+      "reason": "责任方「排水管理处」",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_r_pos2",
+      "category": "responsibility",
+      "query": "试剂采购由谁负责？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "responsibility",
+      "guard": "YES",
+      "allow": true,
+      "reason": "责任方「器械科」",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_r_neg1",
+      "category": "responsibility",
+      "query": "水库调度是否由排水管理处负责？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "responsibility",
+      "guard": "NO",
+      "allow": false,
+      "reason": "责任方为「防汛指挥部」，不是「排水管理处」",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_r_neg2",
+      "category": "responsibility",
+      "query": "医疗废物处置是否由器械科负责？",
+      "route": "ATTRIBUTION_GUARD",
+      "relation_type": "responsibility",
+      "guard": "NO",
+      "allow": false,
+      "reason": "责任方为「院感科」，不是「器械科」",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_cit_freq",
+      "category": "citation",
+      "query": "地铁基坑开挖阶段的监测频率是多少？",
+      "route": "PASS_THROUGH",
+      "relation_type": "property",
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_cit_model",
+      "category": "citation",
+      "query": "地铁监测用测斜仪是什么型号？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 1,
+      "semantic_only_refs": 0
+    },
+    {
+      "id": "hb_cit_person",
+      "category": "citation",
+      "query": "地铁基坑数据处理员是谁？",
+      "route": "PASS_THROUGH",
+      "relation_type": null,
+      "guard": null,
+      "allow": null,
+      "reason": "",
+      "n_refs": 4,
+      "semantic_only_refs": 0
+    }
+  ],
+  "blockers": [
+    {
+      "id": "A",
+      "desc": "错误归因被放行（False Association 12.5%）"
+    },
+    {
+      "id": "F",
+      "desc": "语义通道给无答案题新引入引用 1/4 例：hb_neg_design_life"
+    }
+  ],
+  "judged_non_blocking": [],
+  "verdict": "RC_BLOCKED",
+  "verdict_reason": "发现系统性错误，需单独修复后重新创建 Holdout C（不得复用 B 做最终验收）",
+  "elapsed_s": 1.7
+}

@@ -6,6 +6,15 @@
 
 ## [未发布]
 
+- **重要：随包嵌入模型换为 `multilingual-e5-small`（多语言），并提高语义专用通道 floor** ——
+  中文改写召回 failure@5 由 **40.6% 降到 15.6%**、空结果率由 **25% 降到 3.1%**，并补齐英文/多语言
+  能力（英文改写探针语义相似度 0.798→0.887）。为此配套：① 支持随包模型的 `query:`/`passage:`
+  **检索前缀**（e5 系官方要求；纳入 `artifact.json`，缺省为空 = 现役零变化）；② 语义专用通道的
+  固定 floor 由 0.6 提到 **0.84**（新增可配键 `[SEARCH] semantic_floor`，默认 0.84），以消除
+  「孤立语义近邻」被误引（负例题新增 semantic-only 引用 **1→0**，Holdout B 8 红线全过）。
+  模型体积约 **135MB**（原 24MB）。⚠ 换嵌入模型会触发**全量重建**向量索引；维度由 512 变 **384**，
+  库内 vec0 表将**自动重建**（存量用户升级时首启会重建一次）。
+  依据：`docs/embedding-eval-PRD.md` §11、`eval/reports/embedding_eval/`。
 - **改进：批量导入改为「逐个提交 + 实时进度」** —— 此前是一次性把所有文件读进内存
   再整批发一个请求，等待期间界面只有一句「正在转换并索引 N 个文件…」：
   几十个文件要几十秒到几分钟，**没有任何进度**，用户容易以为卡死而刷新页面；
@@ -376,8 +385,8 @@
   避免在 Linux/macOS 上克隆后报 `bad interpreter: /bin/bash^M`。
 
 ### 变更
-- 文档面向外部读者重写：`docs/交付说明.md` → `docs/设计与实现.md`，
-  `docs/验收测试报告.md` → `docs/测试报告.md`，并剥离内部流程措辞
+- 文档面向外部读者重写：`docs/交付说明.md` → `docs/design-and-implementation.md`，
+  `docs/验收test-report.md` → `docs/test-report.md`，并剥离内部流程措辞
   （需求文档编号、验收编号、交付/验收等流程用语）。
 - 新增 `CONTRIBUTING.md`、`SECURITY.md`、本文件，以及 GitHub Actions CI
   （Linux + Windows × Python 3.11 + 3.13，故意不装 `onnxruntime` 以验证降级链）。

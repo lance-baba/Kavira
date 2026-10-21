@@ -686,7 +686,13 @@ class Gateway:
         guard = None
         if rq.route == ROUTE_GUARD:
             try:
-                guard = evaluate_relation(rq, result.parents)
+                # T3.5 安全加固（R1 误归因回潮的结构性防线）：**语义-only 证据不得参与归因裁决**。
+                # 即便某篇「语义沾边」文档被语义通道放行进引用，它也**永远不能**把
+                # 「谁负责…」这类归因从 INSUFFICIENT 翻成 YES/NO。若某查询的全部引用都是
+                # semantic-only → 证据集为空 → 自然 INSUFFICIENT（安全优先）。绝不改排序/TopK。
+                guard_parents = [p for p in result.parents
+                                 if p.get("match_mode", "lexical") != "semantic-only"]
+                guard = evaluate_relation(rq, guard_parents)
             except Exception as exc:  # noqa: BLE001
                 # 守卫自身绝不能拖垮问答：任何异常都退回 PASS_THROUGH 语义。
                 log.warning("归因守卫异常，按正常回答处理: %s", exc)
@@ -702,6 +708,8 @@ class Gateway:
                 # A: 引用 stable anchor（源行范围）—— 前端据此定位，不再搜相似文字
                 "source_start_line": getattr(r, "source_start_line", 0),
                 "source_end_line": getattr(r, "source_end_line", 0),
+                # B/A: 引用匹配来源 —— 前端据此对语义-only 引用显示徽标 + 人话解释（P0-4）
+                "match_mode": getattr(r, "match_mode", "lexical"),
             }
             for r in result.references
         ]

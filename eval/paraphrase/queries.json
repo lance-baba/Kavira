@@ -1,0 +1,258 @@
+{
+  "meta": {
+    "name": "paraphrase_probe_queries",
+    "version": 1,
+    "purpose": "测量「换个说法就找不到」现象：每题都用中文同义/口语/上位说法替换了目标文档里的原字面词，avoid_terms 记录被替换掉的那个原词。",
+    "corpus_dir": "eval/fixtures_holdout_b",
+    "corpus_docs": [
+      "hb_bridge2.md",
+      "hb_clinic.md",
+      "hb_flood.md",
+      "hb_lab.md",
+      "hb_software.md",
+      "hb_substation.md",
+      "hb_subway.md",
+      "hb_warehouse.md"
+    ],
+    "authoring": "人工撰写；未使用模型生成、未套模板。",
+    "gold_definition": "gold_doc = 唯一能回答该问题的语料文档（按文件名判定）。本次不复用 Holdout B 的 57 道题与 gold。",
+    "selfcheck": [
+      "A. avoid_terms 每个词必须逐字出现在 gold_doc 原文中（否则它算不上「文档原字面词」，标注无效）",
+      "B. avoid_terms 每个词必须不出现在 query 中（否则这道不是改写，而是照抄原词，有效性不成立）",
+      "C. 运行期另行统计每条 query 的 lexical_candidates，用真实召回数证明「字面重合」到底有没有断"
+    ]
+  },
+  "queries": [
+    {
+      "id": "pp_bridge_year",
+      "query": "这座桥是哪一年落成的？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「桥梁概况」一节末尾：建成于 2011 年",
+      "avoid_terms": ["建成于"]
+    },
+    {
+      "id": "pp_bridge_joint",
+      "query": "桥面上留的那几道接缝一共设了多少处？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「构件编号」一节：伸缩缝自北向南 SS-01 至 SS-04（共 4 处）",
+      "avoid_terms": ["伸缩缝"]
+    },
+    {
+      "id": "pp_bridge_mid_cause",
+      "query": "中间那跨的垫块被剪歪了，根子在什么地方？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「病害成因」一节第二条：ZZ-07 的病害由温度变化引起（位置为中跨）",
+      "avoid_terms": ["剪切变形", "温度变化"]
+    },
+    {
+      "id": "pp_bridge_device_expiry",
+      "query": "测混凝土开裂大小的那台仪器，标定证书哪天到期？",
+      "gold_doc": "hb_bridge2.md",
+      "answer_hint": "「检测设备」表第一行：裂缝宽度观测仪 ZBL-F120，检定有效期 2026-12-05",
+      "avoid_terms": ["检定有效期", "裂缝宽度观测仪"]
+    },
+
+    {
+      "id": "pp_clinic_fasting",
+      "query": "抽血化验之前得饿多长时间？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「质量要求」第一条：空腹采血要求禁食 8 小时以上",
+      "avoid_terms": ["禁食 8 小时", "空腹采血"]
+    },
+    {
+      "id": "pp_clinic_urine",
+      "query": "尿的标本取好以后，多久之内必须拿去化验？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「质量要求」第二条：尿常规样本需在 2 小时内送检",
+      "avoid_terms": ["尿常规", "送检"]
+    },
+    {
+      "id": "pp_clinic_reagent",
+      "query": "做化验用的那些药水归谁管进货？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「责任划分」第一条：试剂采购由器械科负责",
+      "avoid_terms": ["试剂采购", "器械科"]
+    },
+    {
+      "id": "pp_clinic_flow",
+      "query": "一份标本从接进来到最后发出结果，中间要走几步？",
+      "gold_doc": "hb_clinic.md",
+      "answer_hint": "「样本流程」一节：登记 → 采样 → 离心 → 检测 → 复核 → 签发（共 6 步）",
+      "avoid_terms": ["离心", "复核"]
+    },
+
+    {
+      "id": "pp_flood_rainfall",
+      "query": "六月初那场大雨一共下了多少毫米？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「强降雨过程」一节：6 月 8 日至 10 日，累计雨量 210 毫米",
+      "avoid_terms": ["强降雨", "累计雨量"]
+    },
+    {
+      "id": "pp_flood_inflow",
+      "query": "上游下来的水最多的时候每秒到了多少方？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「上游来水过程」一节：6 月 11 日入库流量达到 3200 立方米每秒",
+      "avoid_terms": ["入库流量", "立方米每秒"]
+    },
+    {
+      "id": "pp_flood_gate",
+      "query": "水库那天把几个口子打开放水了？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「泄洪调度过程」一节：6 月 12 日水库开启三孔闸门泄洪",
+      "avoid_terms": ["泄洪", "三孔闸门"]
+    },
+    {
+      "id": "pp_flood_drain",
+      "query": "城里淹了以后往外抽水这事儿由哪个单位牵头？",
+      "gold_doc": "hb_flood.md",
+      "answer_hint": "「应急处置分工」第一条：城市排涝由排水管理处负责",
+      "avoid_terms": ["城市排涝", "排水管理处"]
+    },
+
+    {
+      "id": "pp_lab_owner",
+      "query": "做材料拉伸的大机器里，三百型的那台平时归谁管？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「仪器台账」表第二行：万能材料试验机 WDW-300，责任人马丽",
+      "avoid_terms": ["万能材料试验机", "WDW-300", "责任人"]
+    },
+    {
+      "id": "pp_lab_cycle",
+      "query": "这些机器多长时间要重新校对一次？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「仪器台账」表校准周期列：三台机器均为 12 个月",
+      "avoid_terms": ["校准周期", "12个月"]
+    },
+    {
+      "id": "pp_lab_org",
+      "query": "测力之类的设备是送到外面哪家单位去标定的？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「校准机构」第一条：力学类仪器由省计量院校准",
+      "avoid_terms": ["力学类仪器", "省计量院"]
+    },
+    {
+      "id": "pp_lab_fail",
+      "query": "要是校下来不合格，这台设备该怎么处理？",
+      "gold_doc": "hb_lab.md",
+      "answer_hint": "「不合格处置」一节：立即停用并张贴停用标识，停用仪器由设备管理员封存",
+      "avoid_terms": ["校准不合格", "停用"]
+    },
+
+    {
+      "id": "pp_sw_position",
+      "query": "这个软件是给谁用的，能自己架服务器吗？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「产品定位」一节：面向团队的文档同步与协作工具，支持私有部署",
+      "avoid_terms": ["私有部署", "面向团队"]
+    },
+    {
+      "id": "pp_sw_current",
+      "query": "现在线上跑的是哪一版，什么时候发的？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「版本信息」表第三行：3.2，2026-04-22，当前版本",
+      "avoid_terms": ["当前版本", "发布时间"]
+    },
+    {
+      "id": "pp_sw_size",
+      "query": "单个文件最大能放多大？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「性能参数」表第二行：单文件上限 2GB",
+      "avoid_terms": ["单文件上限", "2GB"]
+    },
+    {
+      "id": "pp_sw_known",
+      "query": "现在还有哪些地方做得不太好用？",
+      "gold_doc": "hb_software.md",
+      "answer_hint": "「已知问题」一节：大文件首次同步较慢；离线冲突合并暂不支持表格文件",
+      "avoid_terms": ["已知问题"]
+    },
+
+    {
+      "id": "pp_sub_capacity",
+      "query": "站里那两台变压器各自能带多少负荷？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「主变设备」表：1号主变 50MVA，2号主变 63MVA",
+      "avoid_terms": ["容量", "MVA"]
+    },
+    {
+      "id": "pp_sub_breaker",
+      "query": "那种能切断故障电流的设备一共装了几台？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「开关设备」表第一行：断路器 LW36-126，8台",
+      "avoid_terms": ["断路器", "8台"]
+    },
+    {
+      "id": "pp_sub_relay_owner",
+      "query": "站里那些保护类的设备归到哪个人头上？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「设备责任人」第三条：保护装置责任人为吴迪",
+      "avoid_terms": ["保护装置责任人", "吴迪"]
+    },
+    {
+      "id": "pp_sub_overhaul",
+      "query": "变压器多久要彻底拆开修一次？",
+      "gold_doc": "hb_substation.md",
+      "answer_hint": "「检修周期」第一条：主变大修周期为 10 年",
+      "avoid_terms": ["大修", "主变"]
+    },
+
+    {
+      "id": "pp_subway_depth",
+      "query": "这个坑挖了多深？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「工程概况」一节：基坑长约 186 米……开挖深度约 17.6 米",
+      "avoid_terms": ["开挖深度"]
+    },
+    {
+      "id": "pp_subway_items",
+      "query": "这个工程都盯着哪些方面的数据？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「监测项目」一节：地连墙顶水平位移、墙顶竖向位移、墙体测斜、支撑轴力、坑外地表沉降、坑外地下水位",
+      "avoid_terms": ["监测项目"]
+    },
+    {
+      "id": "pp_subway_freq",
+      "query": "挖土的时候多久测一次？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「监测频率」表第一行：开挖阶段 1次/1d",
+      "avoid_terms": ["监测频率", "开挖阶段"]
+    },
+    {
+      "id": "pp_subway_alarm",
+      "query": "墙顶往旁边挪到多少就要报警了？",
+      "gold_doc": "hb_subway.md",
+      "answer_hint": "「预警值」一节：地连墙顶水平位移累计预警值 24mm，变化速率预警值 2mm/d",
+      "avoid_terms": ["预警值", "水平位移"]
+    },
+
+    {
+      "id": "pp_wh_scope",
+      "query": "这次清点一共查了多少种东西？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘点概况」一节：覆盖 A、B 两个库房，共盘点物料 128 项",
+      "avoid_terms": ["盘点", "128 项"]
+    },
+    {
+      "id": "pp_wh_short_a",
+      "query": "A 库那批十二口径的螺丝少了几个？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「A 库物料」表第一行 + 「盘亏处理」第一条：A-1001 六角螺栓 M12，账面 2400 / 实盘 2396，盘亏 4 个",
+      "avoid_terms": ["六角螺栓", "盘亏", "A-1001"]
+    },
+    {
+      "id": "pp_wh_handle",
+      "query": "查出来少的东西后来是怎么处理的？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘亏处理」一节：A-1001 已按损耗处理；A-2103、B-3302 已登记复查",
+      "avoid_terms": ["盘亏处理", "损耗处理", "登记复查"]
+    },
+    {
+      "id": "pp_wh_recheck",
+      "query": "最后谁来对这次清点的结果把关？",
+      "gold_doc": "hb_warehouse.md",
+      "answer_hint": "「盘点复核由仓储主管周涛负责」——复核环节由仓储主管周涛把关（全库唯一片段）",
+      "avoid_terms": ["盘点复核", "仓储主管"]
+    }
+  ]
+}

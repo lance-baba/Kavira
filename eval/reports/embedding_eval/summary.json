@@ -1,0 +1,89 @@
+{
+  "generated_at": "2026-10-16 20:48:14",
+  "gates_run": [
+    0,
+    1
+  ],
+  "candidates": {
+    "incumbent": {
+      "id": "incumbent",
+      "embedding_dir": "vendor/cache/embedding",
+      "expected_dimension": 512,
+      "expected_pooling": "cls",
+      "gates": {
+        "0": {
+          "gate": 0,
+          "passed": true,
+          "report": "<repo>/eval/reports/embedding_eval/candidates/incumbent.json",
+          "detail": "SHA256 == artifact_sha256\n   ✅ tokenizer SHA256 匹配 tokenizer.json\n   ✅ tokenizer SHA256 匹配 tokenizer_config.json\n   ✅ tokenizer SHA256 匹配 special_tokens_map.json\n   ✅ tokenizer SHA256 匹配 vocab.txt\n   ✅ onnxruntime 前向成功\n   ✅ 真实维度 == 清单 declared dimension\n  → <repo>\\eval\\reports\\embedding_eval\\candidates\\incumbent.json\n========================================================================\n",
+          "dimension": 512,
+          "pooling": "cls"
+        },
+        "1": {
+          "gate": 1,
+          "passed": true,
+          "report": "<repo>/eval/reports/embedding_eval/incumbent.speed.json",
+          "detail": "==============\n  门槛1 · 速度基准：incumbent（2 线程）\n========================================================================\n  单条延迟(batch=1)     : 1.01 ms  (median)\n  批量吞吐(batch=32)   : 1.256 ms/条\n  session 加载          : 0.364 s\n  全量重建(8 篇)    : 0.345 s  (52 chunks)\n  → <repo>\\eval\\reports\\embedding_eval\\incumbent.speed.json\n========================================================================\n",
+          "speed": 1.01,
+          "reason": "基线自身（无对照）；作为后续候选的比较基准"
+        }
+      },
+      "verdict": "PASS"
+    },
+    "c1_e5_small": {
+      "id": "c1_e5_small",
+      "embedding_dir": "vendor/cache/embedding_candidates/c1_e5_small",
+      "expected_dimension": 384,
+      "expected_pooling": "mean",
+      "gates": {
+        "0": {
+          "gate": 0,
+          "passed": true,
+          "report": "<repo>/eval/reports/embedding_eval/candidates/c1_e5_small.json",
+          "detail": "artifact_sha256\n   ✅ tokenizer SHA256 匹配 tokenizer.json\n   ✅ tokenizer SHA256 匹配 tokenizer_config.json\n   ✅ tokenizer SHA256 匹配 special_tokens_map.json\n   ✅ onnxruntime 前向成功\n   ✅ 真实维度 == 清单 declared dimension\n   ✅ 清单 pooling 与 1_Pooling/config.json 一致\n  → <repo>\\eval\\reports\\embedding_eval\\candidates\\c1_e5_small.json\n========================================================================\n",
+          "dimension": 384,
+          "pooling": "mean"
+        },
+        "1": {
+          "gate": 1,
+          "passed": true,
+          "report": "<repo>/eval/reports/embedding_eval/c1_e5_small.speed.json",
+          "detail": "=========\n  门槛1 · 速度基准：c1_e5_small（2 线程）\n========================================================================\n  单条延迟(batch=1)     : 2.157 ms  (median)\n  批量吞吐(batch=32)   : 1.689 ms/条\n  session 加载          : 0.855 s\n  全量重建(8 篇)    : 0.474 s  (52 chunks)\n  → <repo>\\eval\\reports\\embedding_eval\\c1_e5_small.speed.json\n========================================================================\n",
+          "speed": 2.157,
+          "rows": [
+            {
+              "item": "单条延迟",
+              "base": 1.01,
+              "candidate": 2.157,
+              "ratio": 2.136,
+              "pass": true
+            },
+            {
+              "item": "批量吞吐/条",
+              "base": 1.256,
+              "candidate": 1.689,
+              "ratio": 1.345,
+              "pass": true
+            },
+            {
+              "item": "全量重建",
+              "base": 0.345,
+              "candidate": 0.474,
+              "ratio": 1.374,
+              "pass": true
+            },
+            {
+              "item": "session 加载",
+              "base": null,
+              "candidate": 0.855,
+              "abs_max": 1.0,
+              "pass": true
+            }
+          ],
+          "reason": "全部 ≤3× 且加载 ≤1.0s"
+        }
+      },
+      "verdict": "PASS"
+    }
+  }
+}

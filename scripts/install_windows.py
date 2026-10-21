@@ -9,7 +9,7 @@
   3. 任意阶段失败 → 回滚到旧 App；首装失败则清理半成品，绝不留下可误启动的 App
   4. Library 为不可触碰边界：安装/更新/回滚全程不碰 Kavira-Data
   5. 仅给启动进程设置进程级 KAVIRA_LIBRARY（不写系统全局环境变量）
-  6. 用户双击入口 启动-Windows.bat 不含 --no-browser（自动开浏览器）；
+  6. 用户双击入口 start-windows.bat 不含 --no-browser（自动开浏览器）；
      --no-browser 仅用于测试/CI/调试
   7. 卸载安全收口（2026-09-19）：默认只删 App + 桌面快捷方式、**保留 Library**；
      彻底清场需 `--delete-library --yes`（或交互选 2 并**逐字输入 DELETE**）。
@@ -42,7 +42,7 @@ from pathlib import Path
 APP_DIRNAME = "App"
 STAGING_SUFFIX = ".staging"
 BACKUP_SUFFIX = ".backup"
-LAUNCHER_NAME = "启动-Windows.bat"
+LAUNCHER_NAME = "start-windows.bat"
 #: 资料目录标记（App 内）—— 与 ``app/core/paths.py`` 的 ``LIBRARY_MARKER_NAME`` 同一约定
 LIBRARY_MARKER = "library_path.txt"
 #: 资料目录名：装本机默认位置时落在 Documents 下，装自定义位置时落在 App 的兄弟目录
@@ -54,6 +54,15 @@ STATE_FILENAME = "install_state.json"
 
 #: 稳定错误码：介质损坏（缺文件 / size 不符 / hash 不符 / manifest 损坏）
 MEDIA_CORRUPTED_RC = 4
+
+#: 界面语言（由 ``--lang`` 在 main() dispatch 前设置；默认中文）。
+#: 只影响**给人看的文案**，不影响任何路径 / 事务 / 校验逻辑。
+_LANG = "zh"
+
+
+def T(zh: str, en: str) -> str:
+    """按当前界面语言取文案（en 仅在 ``_LANG == "en"`` 时生效）。"""
+    return en if _LANG == "en" else zh
 
 
 def _load_integrity():
@@ -231,7 +240,7 @@ def _write_state(app_target: Path, library_target: Path,
         _state_file().write_text(
             json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     except Exception as e:  # 安装记录失败**不算安装失败**（非 BLOCKER）
-        print(f"[install] 提示：安装记录写入失败（不影响安装）：{e}")
+        print(f"[install] {T('提示：安装记录写入失败（不影响安装）：', 'Note: failed to write install record (installation unaffected): ')}{e}")
 
 
 def _read_state() -> dict | None:
@@ -396,7 +405,7 @@ def _resolve_app_target(explicit: str | None, *, interactive: bool,
 # 基础工具
 # ---------------------------------------------------------------------------
 def fail(msg: str, rc: int = 2) -> "None":
-    print(f"[install] 失败：{msg}", file=sys.stderr)
+    print(f"[install] {T('失败：', 'ERROR: ')}{msg}", file=sys.stderr)
     raise SystemExit(rc)
 
 
@@ -583,7 +592,7 @@ def _psq(s: str) -> str:
 
 def create_desktop_shortcut(app_target: Path,
                             desktop_dir: Path | None = None) -> bool:
-    """在桌面创建 Kavira.lnk → 正式 App 的 启动-Windows.bat（Pilot P0-2）。
+    """在桌面创建 Kavira.lnk → 正式 App 的 start-windows.bat（Pilot P0-2）。
 
     设计约束：
       - 复用同一 lnk 文件（WScript.Shell 同名覆盖），重装绝不产生 (1)(2) 副本；
@@ -595,7 +604,7 @@ def create_desktop_shortcut(app_target: Path,
     try:
         target = Path(app_target) / LAUNCHER_NAME
         if not target.is_file():
-            print(f"[install] 桌面快捷方式创建失败，可从以下位置启动：{manual}")
+            print(f"[install] {T('桌面快捷方式创建失败，可从以下位置启动：', 'Failed to create desktop shortcut; start from here instead: ')}{manual}")
             return False
         desktop = Path(desktop_dir) if desktop_dir else _desktop_dir()
         desktop.mkdir(parents=True, exist_ok=True)
@@ -616,21 +625,21 @@ def create_desktop_shortcut(app_target: Path,
             encoding="utf-8", errors="replace")
         if r.returncode != 0 or not lnk.is_file():
             raise RuntimeError((r.stderr or r.stdout).strip() or "lnk 未生成")
-        print(f"[install] 已创建桌面快捷方式：{lnk}")
+        print(f"[install] {T('已创建桌面快捷方式：', 'Desktop shortcut created: ')}{lnk}")
         return True
     except Exception as e:
-        print(f"[install] 桌面快捷方式创建失败（不影响安装），"
-              f"可从以下位置启动：{manual}（{e}）")
+        print(f"[install] {T('桌面快捷方式创建失败（不影响安装），', 'Desktop shortcut failed (installation unaffected); ')}"
+              f"{T('可从以下位置启动：', 'start from here instead: ')}{manual}{T('（', ' (')}{e}{T('）', ')')}")
         return False
 
 
 def ensure_library(library_target: Path) -> None:
     # Library 为不可触碰边界：已存在则接管，绝不覆盖/删除/移动
     if library_target.exists():
-        print(f"[install] 检测到已有 Library，直接接管（不覆盖、不删除）：{library_target}")
+        print(f"[install] {T('检测到已有 Library，直接接管（不覆盖、不删除）：', 'Existing library detected; taking it over (not overwritten, not deleted): ')}{library_target}")
     else:
         library_target.mkdir(parents=True, exist_ok=True)
-        print(f"[install] 已创建 Library：{library_target}")
+        print(f"[install] {T('已创建 Library：', 'Library created: ')}{library_target}")
 
 
 def _run(app_target: Path, library_target: Path, port: int, no_browser: bool) -> int:
@@ -665,13 +674,13 @@ def fail_media(failures: list[str]) -> "None":
     调用点必须在创建 staging / 删除或重命名任何旧 App **之前**，
     因此这里可以断言：已中止且未改动任何已有 App / Library。
     """
-    print(f"[install] MEDIA_CORRUPTED：发布介质校验未通过（{len(failures)} 项）",
+    print(f"[install] {T('MEDIA_CORRUPTED：发布介质校验未通过（', 'MEDIA_CORRUPTED: release media verification failed (')}{len(failures)}{T(' 项）', ' item(s))')}",
           file=sys.stderr)
     for item in failures[:20]:
         print(f"  - {item}", file=sys.stderr)
     if len(failures) > 20:
-        print(f"  … 其余 {len(failures) - 20} 项", file=sys.stderr)
-    print("[install] 已中止：未改动任何已有 App / Library。", file=sys.stderr)
+        print(T(f"  … 其余 {len(failures) - 20} 项", f"  ... {len(failures) - 20} more"), file=sys.stderr)
+    print(f"[install] {T('已中止：未改动任何已有 App / Library。', 'Aborted: no existing App / Library was modified.')}", file=sys.stderr)
     raise SystemExit(MEDIA_CORRUPTED_RC)
 
 
@@ -756,7 +765,7 @@ def uninstall(*, app_target_cli: Path | None = None,
     lnk_exists = lnk.exists()
 
     if not (app_exists or lib_exists or lnk_exists):
-        print("[uninstall] 未发现已安装的 Kavira，无需卸载。")
+        print(f"[uninstall] {T('未发现已安装的 Kavira，无需卸载。', 'No Kavira installation found; nothing to uninstall.')}")
         return 0
 
     # --- 决定模式：keep（保留资料）/ thorough（彻底清场）/ cancel（取消）---
@@ -772,30 +781,30 @@ def uninstall(*, app_target_cli: Path | None = None,
             mode = "keep"
 
     if mode == "cancel":
-        print("[uninstall] 已取消，未做任何改动。")
+        print(f"[uninstall] {T('已取消，未做任何改动。', 'Cancelled; nothing was changed.')}")
         return 0
 
     # --- 执行 ---
     if app_exists:
         _rmtree(app_target)
-        print(f"[uninstall] 已删除程序：{app_target}")
+        print(f"[uninstall] {T('已删除程序：', 'Application removed: ')}{app_target}")
     if lnk_exists:
         try:
             lnk.unlink()
-            print(f"[uninstall] 已删除快捷方式：{lnk}")
+            print(f"[uninstall] {T('已删除快捷方式：', 'Shortcut removed: ')}{lnk}")
         except OSError as e:
-            print(f"[uninstall] 快捷方式删除失败（不影响其余）：{e}", file=sys.stderr)
+            print(f"[uninstall] {T('快捷方式删除失败（不影响其余）：', 'Failed to remove shortcut (nothing else affected): ')}{e}", file=sys.stderr)
 
     if mode == "thorough":
         if lib_exists:
             _rmtree(library_target)
-            print(f"[uninstall] 已删除资料库：{library_target}")
+            print(f"[uninstall] {T('已删除资料库：', 'Library removed: ')}{library_target}")
         _clear_state()
-        print("[uninstall] 已彻底卸载，并清除 Kavira 安装记录。")
+        print(f"[uninstall] {T('已彻底卸载，并清除 Kavira 安装记录。', 'Fully uninstalled; Kavira install record cleared.')}")
     else:
         # 保留资料：清除安装记录（App 已不存在），资料库原样保留
         _clear_state()
-        print("[uninstall] 程序已卸载。\n")
+        print(f"[uninstall] {T('程序已卸载。', 'Application uninstalled.')}\n")
         print("你的资料仍保存在：")
         print(f"  {library_target}\n")
         print("以后重新安装 Kavira 可以继续使用这些资料。")
@@ -811,7 +820,7 @@ def install(release_root: Path, app_target: Path, library_target: Path,
     if not check.ok:
         fail_media(check.failures)
     for warning in check.warnings:
-        print(f"[install] 提示：{warning}")
+        print(f"[install] {T('提示：', 'Note: ')}{warning}")
 
     payload = release_root / "payload"
     validate_payload(payload)
@@ -849,13 +858,14 @@ def install(release_root: Path, app_target: Path, library_target: Path,
 
         # 5) 成功：清理 backup
         _rmtree(backup)
-        print(f"[install] 程序已安装到：{app_target}")
+        print(f"[install] {T('程序已安装到：', 'Installed to: ')}{app_target}")
         # ⚠ 资料目录**必须显式告知**：此前只打印程序路径，用户以为「装进 U 盘 = 资料
         # 也在 U 盘」，换台电脑插上才发现资料留在了上一台的 C 盘里。
-        _lib_note = ("（便携：程序与资料同盘，整根 U 盘拔走即可带走）"
+        _lib_note = (T("（便携：程序与资料同盘，整根 U 盘拔走即可带走）",
+                       " (portable: app and data on the same drive; unplug the stick and take both)")
                      if not str(library_target).lower().startswith(
                          str(_documents_dir()).lower()) else "")
-        print(f"[install] 资料目录：{library_target} {_lib_note}")
+        print(f"[install] {T('资料目录：', 'Library folder: ')}{library_target} {_lib_note}")
         # 5.5) 桌面快捷方式（P0-2）：swap 已成功才调用 → 只指正式 App；
         #      失败仅提示手动启动路径，绝不影响安装结果。
         create_desktop_shortcut(app_target, desktop_dir=desktop_dir)
@@ -936,6 +946,8 @@ def _parse(argv: list[str]):
     pinstall.add_argument("--port", type=int, default=28988)
     pinstall.add_argument("--desktop-dir", default=None,
                           help=argparse.SUPPRESS)  # 测试注入：重定向桌面目录
+    pinstall.add_argument("--lang", choices=["zh", "en"], default="zh",
+                          help="安装器界面语言（默认 zh；仅影响提示文案）")
 
     pverify = sub.add_parser("verify", help="只读校验发布介质（不装、不改、不联网）")
     pverify.add_argument("--release", default=str(default_root),
@@ -943,6 +955,8 @@ def _parse(argv: list[str]):
     pverify.add_argument("--json", action="store_true", help="输出 JSON")
     pverify.add_argument("--shallow", action="store_true",
                          help="只校验存在性与大小，跳过 SHA256（大介质快速体检）")
+    pverify.add_argument("--lang", choices=["zh", "en"], default="zh",
+                         help="安装器界面语言（默认 zh；仅影响提示文案）")
 
     prun = sub.add_parser("run", help="仅启动（需先 install）")
     prun.add_argument("--app-target", default=None)
@@ -963,11 +977,14 @@ def _parse(argv: list[str]):
     puninstall.add_argument("--yes", action="store_true",
                             help="非交互（自动化/测试用）。注意：--yes 单独使用**只删程序、保留资料**；"
                                  "彻底清场需再加 --delete-library")
+    puninstall.add_argument("--lang", choices=["zh", "en"], default="zh",
+                            help="安装器界面语言（默认 zh；仅影响提示文案）")
 
     args = ap.parse_args(argv)
     if args.cmd is None:
         # 双击 install.bat 不带参数 ⇒ 默认安装
         args.cmd = "install"
+        args.lang = "zh"
         args.release = str(default_root)
         args.app_target = None
         args.library_target = None
@@ -978,7 +995,11 @@ def _parse(argv: list[str]):
 
 
 def main(argv: list[str] | None = None) -> int:
+    global _LANG
+
     args = _parse(sys.argv[1:] if argv is None else argv)
+    # 界面语言必须在任何文案输出之前设定（T() 读模块级 _LANG）
+    _LANG = getattr(args, "lang", "zh")
 
     if args.cmd == "verify":
         return verify_cmd(Path(args.release).resolve(),

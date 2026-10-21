@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "description": "嵌入模型评估的候选清单（门槛0/1/2/3 的输入）。embedding_dir 相对仓库根解析；候选字节放 vendor/cache/embedding_candidates/<id>/（gitignore），不进 Git。",
+  "coordinate_note": "本文件只描述『候选 → 资源目录 + 期望 metadata』；真实字节由 acquire 步骤落到 embedding_dir。",
+  "incumbent_baseline": "incumbent",
+  "candidates": [
+    {
+      "id": "incumbent",
+      "resource_id": "bge-small-zh-v1.5-int8",
+      "embedding_dir": "vendor/cache/embedding",
+      "expected_dimension": 512,
+      "expected_pooling": "cls",
+      "status": "incumbent",
+      "is_baseline": true,
+      "license": {
+        "id": "MIT",
+        "basis": "derived_from_base_model",
+        "base_model": "BAAI/bge-small-zh-v1.5",
+        "note": "转换仓库 Xenova/bge-small-zh-v1.5 未声明 license；权重来自 MIT base model，按 MIT 记录并保留链路。"
+      },
+      "prefix": {
+        "required": false,
+        "query": "",
+        "passage": ""
+      }
+    },
+    {
+      "id": "c1_e5_small",
+      "resource_id": "multilingual-e5-small-int8",
+      "embedding_dir": "vendor/cache/embedding_candidates/c1_e5_small",
+      "expected_dimension": 384,
+      "expected_pooling": "mean",
+      "status": "acquired",
+      "is_baseline": false,
+      "license": {
+        "id": "MIT",
+        "basis": "derived_from_base_model",
+        "base_model": "intfloat/multilingual-e5-small",
+        "note": "base model intfloat/multilingual-e5-small 显式 license:mit；ONNX 转换仓库 Xenova/multilingual-e5-small 未声明 license，按 MIT 溯源记录。"
+      },
+      "prefix": {
+        "required": true,
+        "query": "query: ",
+        "passage": "passage: ",
+        "note": "e5 系列官方要求检索时 query 加 'query: ' 前缀、文档加 'passage: ' 前缀。⚠ 本阶段仅**记录**；是否把这个前缀机制纳入 artifact manifest 协议，待老胡拍板后另做（不在本阶段实现）。"
+      }
+    }
+  ]
+}

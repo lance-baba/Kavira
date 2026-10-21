@@ -2195,7 +2195,8 @@ def test_single_version_source(ctx) -> None:
     # ---------- ③ 派生形式都来自同一常量 ----------
     check("User-Agent token 派生自版本源", V.USER_AGENT_TOKEN == f"Kavira/{V.APP_VERSION}")
     check("Git tag 派生自版本源", V.version_tag() == f"v{V.APP_VERSION}")
-    check("发布包名派生自版本源", V.release_zip_name() == f"Kavira-v{V.APP_VERSION}-win-x64.zip")
+    check("发布包名派生自版本源", V.release_zip_name() == f"Kavira-v{V.APP_VERSION}-win-x64-zh.zip")
+    check("发布包名区分语言", V.release_zip_name(lang="en") == f"Kavira-v{V.APP_VERSION}-win-x64-en.zip")
     # A3：BUILD_INFO 的唯一生成器在 scripts/release_integrity.py，其 app_version 取自本文件
     from tests import dist_fixture as _fx
     _ri = _fx.release_integrity()
@@ -3928,7 +3929,7 @@ def test_port_probe() -> None:
 def test_console_encoding_guard() -> None:
     """隐蔽细节 #2：Windows 批处理必须锁死 UTF-8，否则 CP936 控制台会静默崩溃。"""
     section("隐蔽细节 #2 / 终端编码锁死")
-    bat = (ROOT / "启动-Windows.bat").read_text(encoding="utf-8", errors="replace")
+    bat = (ROOT / "start-windows.bat").read_text(encoding="utf-8", errors="replace")
     check("bat 含 chcp 65001", "chcp 65001" in bat)
     check("bat 设置 PYTHONIOENCODING=utf-8", "PYTHONIOENCODING=utf-8" in bat)
     check("bat 设置 PYTHONUTF8=1", "PYTHONUTF8=1" in bat)
@@ -3936,8 +3937,8 @@ def test_console_encoding_guard() -> None:
           all(ord(ch) < 128 for ch in bat), "存在非 ASCII 字符")
     check("bat 在调用 Python 前即完成编码设置",
           bat.index("chcp 65001") < bat.index("launcher.py"))
-    check("macOS 启动脚本存在", (ROOT / "启动-macOS.command").exists())
-    check("Linux 启动脚本存在", (ROOT / "启动-Linux.sh").exists())
+    check("macOS 启动脚本存在", (ROOT / "start-macos.command").exists())
+    check("Linux 启动脚本存在", (ROOT / "start-linux.sh").exists())
 
 
 def test_offline_assets() -> None:
@@ -4371,6 +4372,14 @@ def main() -> int:
         test_offline_assets()
         test_settings_schema_and_defaults()
         test_no_absolute_paths()
+        # 关系指标口径（A′）自证：五桶语义（answered 单列）/ FA 分母恒等式 / 真实报告重算
+        # —— 纯标准库、零副作用（AST 抽取 holdout_b_run 的真实 relation_metrics，不 import 它）。
+        # 目的：任何「把 answered 塞回 abstention 桶」的口径回归都会在这里立刻变红。
+        # 位置刻意放在**最前段**：它不依赖嵌入器/网络/安装环境，而后面若干段（如 Ollama
+        # 流式 UX）在环境异常时会整体中止，把后续检查一起吞掉 —— 口径哨兵不能被环境问题跳过。
+        # 也因此这里 ctx 尚未创建（AppContext 在下方 boot）：本检查纯静态，传入 None 即可。
+        from eval.metric_selfcheck import run as _run_msc
+        _run_msc(None, check, section, skip)
         test_portable_containment()
         test_chrome_fallback_ssrf()
         from tests.test_converters import run as run_converter_tests
@@ -4506,6 +4515,20 @@ def main() -> int:
         PASS.extend(_a41p)
         FAIL.extend(_a41f)
         SKIP.extend(_a41s)
+        # P0-0：pooling 修复单元（合成数组段恒跑；真实模型段缺件时 SKIP）—— 很快，任何模式都跑
+        from tests.test_pooling import run_pooling_tests
+        run_pooling_tests()
+        from tests.test_pooling import PASS as _pool_p, FAIL as _pool_f, SKIP as _pool_s
+        PASS.extend(_pool_p)
+        FAIL.extend(_pool_f)
+        SKIP.extend(_pool_s)
+        # T04(a)：检索前缀协议（默认空前缀 = 现役零变化）—— 纯合成，任何模式都跑
+        from tests.test_prefix_protocol import run_prefix_tests
+        run_prefix_tests()
+        from tests.test_prefix_protocol import PASS as _pfx_p, FAIL as _pfx_f, SKIP as _pfx_s
+        PASS.extend(_pfx_p)
+        FAIL.extend(_pfx_f)
+        SKIP.extend(_pfx_s)
         # A4.2b：bundled embedding 集成（tokenizer parity / 嵌入 / RAG regression /
         #        降级 / 介质改字节 / 重装恢复 / signature）
         if fast:

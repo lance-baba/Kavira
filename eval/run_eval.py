@@ -56,14 +56,22 @@ COVERAGE_CATS = {"list_coverage", "section_overview", "cross_section"}
 # --------------------------------------------------------------------------
 # 建库（完全在隔离库内）
 # --------------------------------------------------------------------------
-def build_library(fixtures_dir: Path | None = None):
+def build_library(fixtures_dir: Path | None = None, embedder=None):
+    """在隔离库里建索引。
+
+    ``embedder`` 可选：**不传时行为与历史完全一致**（``HashEmbedder(DIM)``），
+    所以 DEV 72 / baseline 口径不受影响。需要**真实模型**口径的 harness
+    （如 ``holdout_b_run.py`` 的 local_onnx 基线）显式传入自己的嵌入器，
+    避免把「哈希伪向量」当成真实语义能力来验收。
+    """
     global _DB
     fixtures_dir = fixtures_dir or FIXTURES
     paths.ensure_dirs()
-    db = db_mod.get_db(paths.CACHE_DB, embedding_dim=DIM)
+    dim = int(getattr(embedder, "dim", DIM) or DIM) if embedder is not None else DIM
+    db = db_mod.get_db(paths.CACHE_DB, embedding_dim=dim)
     _DB = db
     db.init_schema()
-    emb = HashEmbedder(DIM)
+    emb = embedder if embedder is not None else HashEmbedder(DIM)
     for src in sorted(fixtures_dir.glob("*.md")):
         dst = paths.NOTES_DIR / src.name
         shutil.copyfile(src, dst)

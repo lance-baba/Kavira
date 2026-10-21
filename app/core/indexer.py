@@ -136,7 +136,8 @@ def _embed_in_batches(embedder, texts: list[str], batch: int = 16) -> list[list[
     out: list[list[float]] = []
     for i in range(0, len(texts), batch):
         chunk = texts[i:i + batch]
-        out.extend(embedder.embed(chunk))
+        # 文档路径：按 artifact 声明的 document 前缀向量化（默认空前缀 = 与之前完全一致）
+        out.extend(embedder.embed_documents(chunk))
     return out
 
 

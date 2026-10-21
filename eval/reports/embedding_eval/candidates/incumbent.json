@@ -1,0 +1,145 @@
+{
+  "generated_at": "2026-10-16 20:48:14",
+  "id": "incumbent",
+  "embedding_dir": "<repo>/vendor/cache/embedding",
+  "ok": true,
+  "model_id": "bge-small-zh-v1.5-int8",
+  "artifact_source": "Xenova/bge-small-zh-v1.5",
+  "artifact_revision": "75c43b069aac4d136ba6bc1122f995fedcfd2781",
+  "base_model": "BAAI/bge-small-zh-v1.5",
+  "base_model_revision": "7999e1d3359715c523056ef9478215996d62a620",
+  "filename": "onnx/model_int8.onnx",
+  "precision": "int8",
+  "size": 23903394,
+  "declared_size": 23903394,
+  "sha256": "b9837c19ce154ff0726d398ee77abbc03a7faf0476c6f93016c84e531be7ebb5",
+  "declared_sha256": "b9837c19ce154ff0726d398ee77abbc03a7faf0476c6f93016c84e531be7ebb5",
+  "license": {
+    "basis": "derived_from_base_model",
+    "base_model_license": "MIT",
+    "conversion_repository_license": "unspecified",
+    "_comment": "转换仓库 Xenova/bge-small-zh-v1.5 自身未声明 license；权重来自 MIT 的 base model，故按 MIT 记录并保留完整链路。不得把转换仓库硬标为 MIT。"
+  },
+  "tokenizer": {
+    "files": {
+      "tokenizer.json": {
+        "size": 439125,
+        "sha256": "48cea5d44424912a6fd1ea647bf4fe50b55ab8b1e5879c3275f80e339e8fae26",
+        "declared_sha256": "48cea5d44424912a6fd1ea647bf4fe50b55ab8b1e5879c3275f80e339e8fae26",
+        "match": true
+      },
+      "tokenizer_config.json": {
+        "size": 367,
+        "sha256": "e6f3b96db926a37d4039995fbf5ad17de158dfb8f6343d607e4dbaad18d75f5a",
+        "declared_sha256": "e6f3b96db926a37d4039995fbf5ad17de158dfb8f6343d607e4dbaad18d75f5a",
+        "match": true
+      },
+      "special_tokens_map.json": {
+        "size": 125,
+        "sha256": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3",
+        "declared_sha256": "b6d346be366a7d1d48332dbc9fdf3bf8960b5d879522b7799ddba59e76237ee3",
+        "match": true
+      },
+      "vocab.txt": {
+        "size": 109540,
+        "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
+        "declared_sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
+        "match": true
+      }
+    }
+  },
+  "pooling": "cls",
+  "pooling_config_file": null,
+  "pooling_from_config_file": null,
+  "normalization": "l2",
+  "dimension": 512,
+  "real_dimension": 512,
+  "max_length": 512,
+  "onnx_io": {
+    "inputs": [
+      {
+        "name": "input_ids",
+        "shape": [
+          "batch_size",
+          "sequence_length"
+        ],
+        "type": "tensor(int64)"
+      },
+      {
+        "name": "attention_mask",
+        "shape": [
+          "batch_size",
+          "sequence_length"
+        ],
+        "type": "tensor(int64)"
+      },
+      {
+        "name": "token_type_ids",
+        "shape": [
+          "batch_size",
+          "sequence_length"
+        ],
+        "type": "tensor(int64)"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "last_hidden_state",
+        "shape": [
+          "batch_size",
+          "sequence_length",
+          512
+        ],
+        "type": "tensor(float)"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "模型文件存在",
+      "ok": true,
+      "detail": "<repo>\\vendor\\cache\\embedding\\model.onnx"
+    },
+    {
+      "name": "模型大小 == artifact_size",
+      "ok": true,
+      "detail": "declared=23903394 real=23903394"
+    },
+    {
+      "name": "模型 SHA256 == artifact_sha256",
+      "ok": true,
+      "detail": "declared=b9837c19ce154ff0… real=b9837c19ce154ff0…"
+    },
+    {
+      "name": "tokenizer SHA256 匹配 tokenizer.json",
+      "ok": true,
+      "detail": "declared=48cea5d44424912a… real=48cea5d44424912a…"
+    },
+    {
+      "name": "tokenizer SHA256 匹配 tokenizer_config.json",
+      "ok": true,
+      "detail": "declared=e6f3b96db926a37d… real=e6f3b96db926a37d…"
+    },
+    {
+      "name": "tokenizer SHA256 匹配 special_tokens_map.json",
+      "ok": true,
+      "detail": "declared=b6d346be366a7d1d… real=b6d346be366a7d1d…"
+    },
+    {
+      "name": "tokenizer SHA256 匹配 vocab.txt",
+      "ok": true,
+      "detail": "declared=45bbac6b341c319a… real=45bbac6b341c319a…"
+    },
+    {
+      "name": "onnxruntime 前向成功",
+      "ok": true,
+      "detail": "real_dim=512"
+    },
+    {
+      "name": "真实维度 == 清单 declared dimension",
+      "ok": true,
+      "detail": "declared=512 real=512"
+    }
+  ],
+  "problems": []
+}

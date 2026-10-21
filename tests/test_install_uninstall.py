@@ -107,7 +107,7 @@ def _shortcut_ok(out: str, lnk: Path) -> bool:
     ⚠ 刻意**不解析 .lnk 二进制、不依赖 WScript.Shell 回读**：CI 的英文 Windows 上
     TargetPath 可能是 8.3 短路径（RUNNER~1）而 Python `resolve()` 不展开短名，
     回读比对会假红（快捷方式其实是对的）。安装器只有在把 TargetPath 正确设为
-    「<App>\\启动-Windows.bat」并 Save 成功时才打印该成功行，故以「成功行 + lnk 存在」为准。
+    「<App>\\start-windows.bat」并 Save 成功时才打印该成功行，故以「成功行 + lnk 存在」为准。
     """
     return lnk.is_file() and "已创建桌面快捷方式" in out
 

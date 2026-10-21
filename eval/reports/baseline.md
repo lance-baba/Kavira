@@ -2,7 +2,7 @@
 
 - 生成时间：2026-09-23 07:29:00
 - 题量：**72**（top_k=5，embedder=local_hash(512)  # 离线可复现；不依赖 ollama）
-- 隔离库：`C:\Users\huqih\AppData\Local\Temp\kavira-eval-cymzopa_`（TEMP，未触碰真实 Library）
+- 隔离库：`<tmp>/kavira-eval-*`（TEMP，未触碰真实 Library）
 - 耗时：0.39s
 
 ## 总指标

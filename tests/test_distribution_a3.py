@@ -784,7 +784,7 @@ def _t_real_strict_build(tmp: Path) -> None:
     REAL_STRICT_BUILD_COUNT += 1
     proc = _run_bounded(
         [sys.executable, str(REPO / "scripts" / "build_release.py"),
-         "--strict", "--output", str(out)],
+         "--lang", "zh", "--strict", "--output", str(out)],
         phase="build_release (strict)", timeout=1200, cwd=str(REPO))
     stderr = proc.stderr or ""
 
@@ -808,7 +808,7 @@ def _t_real_strict_build(tmp: Path) -> None:
               any(s.split("（")[0] in stderr for s in stale), stderr[-300:])
         # 交叉校验：门禁在写盘之后判定，产物里的清单必须如实记录同一组差异 ——
         # 用**独立推导**的期望去比对被测模块的输出，避免「自己证明自己」。
-        inv_path = (out / f"Kavira-v{APP_VERSION}-win-x64"
+        inv_path = (out / f"Kavira-v{APP_VERSION}-win-x64-zh"
                     / "LICENSES" / "THIRD_PARTY.json")
         recorded = []
         if inv_path.is_file():
@@ -825,7 +825,7 @@ def _t_real_strict_build(tmp: Path) -> None:
     if proc.returncode != 0:
         return
 
-    root = out / f"Kavira-v{APP_VERSION}-win-x64"
+    root = out / f"Kavira-v{APP_VERSION}-win-x64-zh"
     ri = fx.release_integrity()
     info = json.loads((root / "BUILD_INFO.json").read_text(encoding="utf-8"))
     inv = json.loads((root / "LICENSES" / "THIRD_PARTY.json").read_text(encoding="utf-8"))
@@ -915,7 +915,7 @@ def _make_fake_repo(root: Path, *, with_site_packages: bool = True,
     (root / "requirements-release.lock").write_text(
         f"foo=={lock_version}\n", encoding="utf-8")
     (root / "README.md").write_text("# fake\n", encoding="utf-8")
-    (root / "docs" / "设计与实现.md").write_text("# fake doc\n", encoding="utf-8")
+    (root / "docs" / "design-and-implementation.md").write_text("# fake doc\n", encoding="utf-8")
     return root
 
 
@@ -963,7 +963,8 @@ def _fake_build(repo: Path, out: Path, *, strict: bool,
         env.pop("KAVIRA_BUILD_COMMIT", None)
     else:
         env["KAVIRA_BUILD_COMMIT"] = commit
-    cmd = [sys.executable, "scripts/build_release.py", "--output", str(out)]
+    cmd = [sys.executable, "scripts/build_release.py", "--lang", "zh",
+           "--output", str(out)]
     if strict:
         cmd.append("--strict")
     return subprocess.run(cmd, cwd=str(repo), capture_output=True, text=True,
@@ -979,7 +980,7 @@ def _t_fake_repo_strict_build(tmp: Path) -> None:
           (p.stderr or p.stdout)[-300:])
     if p.returncode != 0:
         return
-    root = out / "Kavira-v9.9.9-win-x64"
+    root = out / "Kavira-v9.9.9-win-x64-zh"
     ri = fx.release_integrity()
     info = json.loads((root / "BUILD_INFO.json").read_text(encoding="utf-8"))
     inv = json.loads((root / "LICENSES" / "THIRD_PARTY.json").read_text(encoding="utf-8"))
@@ -1022,7 +1023,7 @@ def _t_fake_repo_strict_build(tmp: Path) -> None:
     check("A3-14m commit 不可追溯 → strict 非零退出", p4.returncode != 0, f"rc={p4.returncode}")
 
     # 负向：产物被破坏后 verify 必红
-    good = out / "Kavira-v9.9.9-win-x64"
+    good = out / "Kavira-v9.9.9-win-x64-zh"
     (good / "installer" / "install.py").write_bytes(b"# tampered\n")
     res = ri.verify_media(good)
     check("A3-14n 构建产物被篡改 → MEDIA_CORRUPTED",
@@ -1031,7 +1032,7 @@ def _t_fake_repo_strict_build(tmp: Path) -> None:
 
 
 def _read_fake_inventory(out: Path) -> dict | None:
-    p = out / "Kavira-v9.9.9-win-x64" / "LICENSES" / "THIRD_PARTY.json"
+    p = out / "Kavira-v9.9.9-win-x64-zh" / "LICENSES" / "THIRD_PARTY.json"
     return json.loads(p.read_text(encoding="utf-8")) if p.is_file() else None
 
 
@@ -1157,7 +1158,7 @@ def _t_vendor_license_gate(tmp: Path) -> None:
           == ["LICENSES/packages/foo-1.0/LICENSE-APACHE",
               "LICENSES/packages/foo-1.0/LICENSE-MIT"],
           str(entry_d.get("license_texts")))
-    root_d = out_d / "Kavira-v9.9.9-win-x64"
+    root_d = out_d / "Kavira-v9.9.9-win-x64-zh"
     check("A3.1-D 随包字节与 vendor 字节完全一致（未被改写）",
           (root_d / "LICENSES" / "packages" / "foo-1.0" / "LICENSE-MIT"
            ).read_bytes() == _VENDOR_FILES["LICENSE-MIT"]

@@ -15,8 +15,19 @@ Router 与 Parser **绝不允许各维护一套正则** —— 那是上一轮�
 接入位置：`llm.Gateway.stream_chat()` —— 检索之后、回答之前：
     rq = analyze_relation(query)
     if rq.route == PASS_THROUGH:      →  什么都不做（字节级保持）
-    else: gr = evaluate_relation(rq, result.parents)
+    else:
+        # ⚠ T3.5：证据集**必须过滤掉**语义通道放行的引用（`match_mode == "semantic-only"`），
+        #   否则一篇「语义沾边」的文档会把归因裁决从 INSUFFICIENT 误翻成 YES/NO。
+        #   过滤后若证据为空 → 自然 INSUFFICIENT（安全优先）。
+        guard_parents = [p for p in result.parents
+                         if p.get("match_mode", "lexical") != "semantic-only"]
+        gr = evaluate_relation(rq, guard_parents)
         gr.allow_relation_claim == False → 走受控回答（**不调用 LLM**），citation 照旧下发。
+
+⚠ 调用方注意：`evaluate_relation(rq, parents)` 只认传进来的 `parents`；**该函数自身不做
+   语义过滤** —— 「过滤 semantic-only 证据」是**调用方**的职责（生产在 `llm.py`，评测在
+   `holdout_b_run.py`）。`eval/attribution_guard_spike.py` / `eval/router_spike.py` /
+   `eval/build_gold.py` 使用**合成 parents**、未含此过滤，**不得用作归因判据**。
 """
 from __future__ import annotations
 

@@ -3,6 +3,603 @@
 /* =========================================================================
  *  Kavira 控制台（零框架 · 零 CDN）
  * ========================================================================= */
+/* ---------------------------- i18n ----------------------------
+ * 文案 → 翻译层：**中文原文直接作 key**，缺失时自然回退中文（不引入 ID 体系）。
+ * 只翻译界面文案；用户数据（笔记标题/正文/片段/输入）与后端返回内容一律原样透传。
+ * 语言在首次渲染之前确定：localStorage["kavira.lang"] → navigator.language。
+ * 切换语言写入 localStorage 后整页 reload —— 避免重渲染丢掉对话/笔记状态。
+ * ------------------------------------------------------------- */
+const I18N_EN = {
+  /* ---- 顶栏 / 标签页 ---- */
+  "Kavira · 随身知识库": "Kavira · Portable Knowledge Base",
+  "随身知识库": "Portable Knowledge Base",
+  "初始化中…": "Initializing…",
+  "本地智能搜索 —": "Local semantic search —",
+  "AI 对话 —": "AI Chat —",
+  "授权 —": "License —",
+  "同步 —": "Sync —",
+  "重新拉取状态": "Re-fetch status",
+  "刷新": "Refresh",
+  "安全退出": "Safe Shutdown",
+  "问答": "Q&A",
+  "剪藏": "Clip",
+  "笔记": "Notes",
+  "设置": "Settings",
+  "语言": "Language",
+
+  /* ---- 问答 ---- */
+  "<b>欢迎使用 Kavira。</b> 我会在你的本地资料里搜索最相关的内容，组织成回答，并标注每一处引用的出处。资料默认保存在本机：使用本地搜索和本地 AI 时无需上传；若你主动配置云端 AI，回答所需的问题和相关资料片段会发送给你选择的服务商。":
+    "<b>Welcome to Kavira.</b> I search your local library for the most relevant passages, compose an answer, and cite the source of every claim. Your data stays on this machine by default: local search and local AI need no upload. If you configure a cloud AI, the question and the relevant snippets are sent to the provider you choose.",
+  "向你的知识库提问…  (Enter 发送 / Shift+Enter 换行)": "Ask your knowledge base…  (Enter to send / Shift+Enter for a new line)",
+  "发送": "Send",
+  "问答需激活后使用 —— 到「设置 → 产品授权」激活；笔记浏览与本地搜索不受限制。":
+    "Q&A requires activation — activate under Settings → Product License. Browsing notes and local search stay available.",
+  "检索知识库…": "Searching the knowledge base…",
+  "无法连接本地服务（Kavira 可能已退出）：": "Cannot reach the local service (Kavira may have exited): ",
+  "请求失败：{0}": "Request failed: {0}",
+  "我": "Me",
+  "引用 {0}": "Citation {0}",
+  "\n\n⚠ 这条引用来自语义相似匹配，原文未出现你的原话":
+    "\n\n⚠ This citation comes from a semantic similarity match; your wording does not appear in the source",
+  "点击跳转到该笔记": "Click to open this note",
+  "模型服务异常": "Model service error",
+
+  /* ---- 空库引导 ---- */
+  "知识库还是空的 —— 先加内容，问答才有东西可查": "Your knowledge base is empty — add content first, then you can ask questions",
+  "点顶部 <b>「剪藏」</b> 标签 →  把 <code>.md</code> 文件拖进虚线框，或粘贴一个网址抓取":
+    "Click the <b>Clip</b> tab at the top → drag a <code>.md</code> file into the dashed box, or paste a URL to capture",
+  "也可以把 .md / .txt 笔记直接放进资料库的 <code>notes</code> 文件夹（安装版默认在 文档\\Kavira-Data\\notes），15 秒内自动入库":
+    "You can also drop .md / .txt notes straight into the <code>notes</code> folder of the library (the installer defaults to Documents\\Kavira-Data\\notes); indexed within 15 seconds",
+  "入库后回到这里提问，回答会带 <b>[1]</b> 角标指向原文出处":
+    "Then come back here and ask; answers carry <b>[1]</b> markers pointing to the original source",
+  "去添加第一份内容 →": "Add your first piece of content →",
+  "正在后台重建向量索引，完成后自动恢复智能搜索（无需任何操作）。":
+    "Rebuilding the vector index in the background. Semantic search resumes automatically — no action needed.",
+
+  /* ---- 剪藏 ---- */
+  "往知识库添加内容 —— 三种方式任选": "Add to the knowledge base — pick any of three ways",
+  "<b><span class=\"n\">1</span>拖文件进来</b>把 .md / .txt 拖进下面的虚线框（或点它选文件）。最快，支持一次拖多个。":
+    "<b><span class=\"n\">1</span>Drag files in</b>Drop .md / .txt files into the dashed box below (or click it to choose). Fastest; multiple files at once.",
+  "<b><span class=\"n\">2</span>抓网页</b>粘贴文章网址，自动提取正文入库。":
+    "<b><span class=\"n\">2</span>Capture a web page</b>Paste an article URL; the body text is extracted and indexed automatically.",
+  "<b><span class=\"n\">3</span>粘贴文字</b>微信公众号、PDF 里复制的文字，贴进最下面文本框保存。":
+    "<b><span class=\"n\">3</span>Paste text</b>Text copied from WeChat articles or PDFs: paste it into the box at the bottom and save.",
+  "把文件拖到这里": "Drop files here",
+  "Word / PPT / Excel / PDF / EPUB / HTML / 邮件 / CSV / 代码 / 字幕 / 纯文本 等 —— 自动转成 Markdown 入库":
+    "Word / PPT / Excel / PDF / EPUB / HTML / email / CSV / code / subtitles / plain text and more — converted to Markdown and indexed automatically",
+  "或": "or",
+  "点击选择文件": "choose files",
+  "　·　也可以把 .md / .txt 文件直接放进资料库的 <code>notes</code> 文件夹<span id=\"ddNotesHint\">（位置见「设置 → 资料目录」）</span>，15 秒内自动入库":
+    "　·　You can also drop .md / .txt files straight into the <code>notes</code> folder of the library<span id=\"ddNotesHint\"> (see Settings → Data Directory)</span>; indexed within 15 seconds",
+  "支持哪些格式？<span class=\"hint\">点开看完整清单</span>": "Which formats are supported?<span class=\"hint\">Expand for the full list</span>",
+  "正在读取…": "Loading…",
+  "抓网页入库": "Capture a web page",
+  "抓取入库": "Fetch & Index",
+  "抓取网页需激活后使用 —— 到「设置 → 产品授权」激活；拖入文件与粘贴文字不受限制。":
+    "Web capture requires activation — activate under Settings → Product License. Dragging files and pasting text stay available.",
+  "动态 SPA / 强反爬页面会自动降级为「保留快照 + 引导粘贴」。":
+    "Dynamic SPAs and heavily protected pages automatically fall back to \"keep a snapshot + paste manually\".",
+  "粘贴文字入库": "Paste text",
+  "标题": "Title",
+  "例如：某篇论文的要点摘录": "e.g. Key points from a paper",
+  "正文（支持 Markdown 与 [[双向链接]]）": "Body (Markdown and [[wiki links]] supported)",
+  "粘贴内容…": "Paste content…",
+  "保存并索引": "Save & Index",
+  "暂不支持：": "Not supported yet: ",
+  "PDF 解析库未安装：执行 {0} 后可用。": "PDF parser not installed: run {0} to enable it.",
+
+  /* ---- 笔记 ---- */
+  "已索引文档": "Indexed documents",
+  "过滤标题 / 路径…": "Filter by title / path…",
+  "按分类筛选（只筛选列表，不影响搜索 / 问答）": "Filter by collection (list only; does not affect search / Q&A)",
+  "全部分类": "All collections",
+  "正文": "Document",
+  "阅读": "Reading",
+  "原件": "Original",
+  "从左侧选择一篇文档查看。": "Select a document on the left to view it.",
+  "(无标题)": "(untitled)",
+  "回收站": "Trash",
+  "回收站（{0}）": "Trash ({0})",
+  "快照": "Snapshot",
+  "{0} 切片": "{0} chunks",
+  "更多操作": "More actions",
+  "回收站是空的。": "Trash is empty.",
+  "暂无文档，去「剪藏」页录入一篇吧。": "No documents yet — add one on the Clip page.",
+  "恢复": "Restore",
+  "永久删除": "Delete permanently",
+  "编辑标题": "Edit title",
+  "分类": "Collections",
+  "移入回收站": "Move to trash",
+  "只改显示标题，不动文件名（文件仍是 {0}）。": "Only the display title changes; the file name stays {0}.",
+  "保存": "Save",
+  "标题已更新": "Title updated",
+  "保存失败": "Save failed",
+  "重命名类目": "Rename collection",
+  "删除类目（不会删除文档）": "Delete collection (documents are kept)",
+  "分类（可多选）": "Collections (multi-select)",
+  "还没有类目，在下面新建一个。": "No collections yet — create one below.",
+  "新建类目，回车添加": "New collection, press Enter",
+  "新建": "Create",
+  "重命名失败": "Rename failed",
+  "类目已重命名": "Collection renamed",
+  "删除类目「{0}」？\n\n只删除这个类目，不会删除任何文档。":
+    "Delete collection \"{0}\"?\n\nOnly the collection is deleted; no documents are removed.",
+  "删除失败": "Delete failed",
+  "类目已删除": "Collection deleted",
+  "新建失败": "Create failed",
+  "分类已更新": "Collections updated",
+  "把「{0}」移入回收站？\n\n文件不会被删除，可在「回收站」里恢复。":
+    "Move \"{0}\" to trash?\n\nThe file is not deleted; you can restore it from Trash.",
+  "已移入回收站": "Moved to trash",
+  "操作失败": "Operation failed",
+  "已恢复": "Restored",
+  "永久删除？": "Delete permanently?",
+  "即将<b>永久删除</b>「{0}」": "This will <b>permanently delete</b> \"{0}\"",
+  "此操作不可撤销": "This cannot be undone",
+  "：笔记文件与其检索索引会被彻底清除，无法再从回收站恢复。":
+    ": the note file and its search index are erased for good and cannot be restored from Trash.",
+  "同时删除它的<b>原件文件</b>（剪藏网页 / 导入的 Office、PDF 等）":
+    "Also delete its <b>original file</b> (captured web page / imported Office, PDF, etc.)",
+  "默认不勾选 —— 原件往往无法再生；该笔记若无原件，勾选也无影响。":
+    "Unchecked by default — originals often cannot be regenerated; harmless if this note has no original.",
+  "该笔记已被永久删除。": "This note has been permanently deleted.",
+  "已永久删除": "Permanently deleted",
+  "读取失败": "Load failed",
+  "请重新启动 Kavira（双击启动脚本）后刷新本页。": "Restart Kavira (double-click the launcher) and reload this page.",
+  "读取失败：{0}": "Load failed: {0}",
+  "查看{0}：{1}（{2}）": "View {0}: {1} ({2})",
+  "{0}：{1}（{2}）": "{0}: {1} ({2})",
+  "很快": "moments",
+  "不到 1 分钟": "under a minute",
+  "约 {0} 分钟": "about {0} min",
+  "约 {0} 小时": "about {0} h",
+  "该笔记没有留存原件（纯 Markdown / 纯文本导入）": "No original file was kept for this note (plain Markdown / text import)",
+  "找不到该笔记（可能已被删除）": "Note not found (it may have been deleted)",
+  "该引用缺少定位信息，已打开原文": "This citation has no location data; the document was opened instead",
+  "该引用来自旧索引，已打开对应文档": "This citation comes from an old index; the document was opened instead",
+  "网页快照": "Web snapshot",
+  "新标签打开快照": "Open snapshot in new tab",
+  "在新标签打开": "Open in new tab",
+  "访问原网页": "Visit original page",
+  "预览由服务端转换生成，保留表格与结构，不还原原始排版":
+    "Preview generated by the server; tables and structure are kept, exact layout is not",
+  "下载原件": "Download original",
+  "宽度：": "Width: ",
+  "适应宽度": "Fit width",
+  "实际大小": "Actual size",
+  "剪藏页已禁用脚本，需登录/展开等交互时请用「下载原件」在浏览器打开":
+    "Scripts are disabled in captured pages; for login or expand interactions, use \"Download original\" and open it in a browser",
+  "⚠️ 该网页由前端脚本动态渲染，安全沙箱内（已禁用脚本）无法显示其内容。请用上方「新标签打开快照」或「下载原件」在浏览器中查看完整快照；正文请回「阅读」视图。":
+    "⚠️ This page is rendered by client-side scripts, so its content cannot be shown in the security sandbox (scripts disabled). Use \"Open snapshot in new tab\" or \"Download original\" above to view the full snapshot in a browser; use the Reading view for the text.",
+  "原版预览": "Original preview",
+  "该格式无法内嵌预览。": "This format cannot be previewed inline.",
+  "（空文档）": "(empty document)",
+
+  /* ---- 状态 / 统计 ---- */
+  "已就绪": "Ready",
+  "本地智能搜索：可用": "Local semantic search: available",
+  "本地智能搜索：仅关键词": "Local semantic search: keywords only",
+  "本地模型": "Local model",
+  "云端": "Cloud",
+  "尚未配置": "Not configured",
+  "不可用": "Unavailable",
+  "AI 对话：{0}": "AI Chat: {0}",
+  "AI 对话：{0} —— {1}": "AI Chat: {0} — {1}",
+  "同步：{0}": "Sync: {0}",
+  "{0} 篇 · {1}s": "{0} docs · {1}s",
+  "未运行": "Not running",
+  "授权：{0}": "License: {0}",
+  "已激活": "Activated",
+  "未激活": "Not activated",
+  "异常": "Error",
+  "需激活后使用": "Requires activation",
+  "✅ 就绪": "✅ Ready",
+  "（{0}）": " ({0})",
+  "未检测到本地 Ollama": "Local Ollama not detected",
+  "Ollama 已启动，但本机尚无模型": "Ollama is running, but no model is installed",
+  "本机已有模型，请选择用哪个对话": "Models are installed — choose one for chat",
+  "原配置的模型在本机已不存在": "The configured model no longer exists on this machine",
+  "：{0}": ": {0}",
+  "控制台端口": "Console port",
+  "运行时长": "Uptime",
+  "{0} 秒": "{0} s",
+  "文档 / 切片 / 父块": "Documents / chunks / parents",
+  "库规模": "Library size",
+  "向量召回": "Vector recall",
+  "已启用": "Enabled",
+  "未启用": "Disabled",
+  "嵌入源 / 维度": "Embedding source / dim",
+  "嵌入签名": "Embedding signature",
+  "AI 模式 / 实际": "AI mode / resolved",
+  "对话能力": "Chat capability",
+  "本机模型": "Installed models",
+  "{0} 个": "{0}",
+  "，已选 {0}": " (selected: {0})",
+  "，未选择": " (none selected)",
+  "Ollama 探测": "Ollama probe",
+  "在线": "Online",
+  "离线 ({0})": "Offline ({0})",
+  "已配置": "Configured",
+  "未配置": "Not configured",
+  "同步轮次 / 更新": "Sync cycles / updates",
+  "冷启动耗时": "Cold start",
+  "（无）": "(none)",
+
+  /* ---- 抓取 / 导入 ---- */
+  "抓取网页需激活后使用（设置 → 产品授权）": "Web capture requires activation (Settings → Product License)",
+  "问答需激活后使用（设置 → 产品授权）": "Q&A requires activation (Settings → Product License)",
+  "请输入 URL": "Please enter a URL",
+  "正在检查这个网页是否已保存过…": "Checking whether this page was already saved…",
+  "⚠ 该网页已经保存过：{0}": "⚠ This page was already saved: {0}",
+  "请选择处理方式": "Choose what to do",
+  "打开已有": "Open existing",
+  "更新已有": "Update existing",
+  "另存为新版本": "Save as new version",
+  "取消": "Cancel",
+  "已取消，未做任何改动。": "Cancelled — nothing was changed.",
+  "正在抓取并清洗正文…": "Fetching and cleaning the article body…",
+  "已保存：{0} · 快照：{1}": "Saved: {0} · snapshot: {1}",
+  "该页面为前端动态渲染，仅保留快照": "This page is rendered dynamically; only a snapshot was kept",
+  "抓取成功": "Capture succeeded",
+  "标题：{0} · 字数：{1} · 文件：{2} · 抽取器：{3}":
+    "Title: {0} · characters: {1} · file: {2} · extractor: {3}",
+  "已入库并建立索引": "Indexed",
+  "抓取失败": "Capture failed",
+  "正文不能为空": "The body cannot be empty",
+  "上一批还在导入，请等它完成": "The previous batch is still importing — please wait",
+  "{0}（超过 20MB）": "{0} (over 20 MB)",
+  "{0}（不支持 {1}）": "{0} (unsupported {1})",
+  "已跳过：{0}": "Skipped: {0}",
+  "没有可导入的文件": "No importable files",
+  "正在导入 {0}/{1}：{2}": "Importing {0}/{1}: {2}",
+  "正在导入 {0}/{1}（成功 {2}）：": "Importing {0}/{1} ({2} succeeded):",
+  " —— 读取失败：{0}": " — read failed: {0}",
+  " —— {0}{1}": " — {0}{1}",
+  " —— {0}": " — {0}",
+  "已入库": "Indexed",
+  "（{0} 字）": " ({0} chars)",
+  "导入失败": "Import failed",
+  "导入完成：成功 {0} / {1}": "Import finished: {0} / {1} succeeded",
+  "，失败 {2}": ", {2} failed",
+  "⚠ 全部导入失败，请看下方原因": "⚠ All imports failed — see the reasons below",
+  "读取文档列表失败": "Failed to load the document list",
+
+  /* ---- 设置 ---- */
+  "配置": "Configuration",
+  "默认只显示<b>常用项</b>（一共 7 个），其余全部收在下方「高级设置」里 —— <b>不改它们完全不影响使用</b>。":
+    "Only <b>common settings</b> (7 in total) are shown by default; everything else lives under <b>Advanced</b> below — <b>leaving them untouched will not affect normal use</b>.",
+  "高级设置 <span class=\"hint\">向量检索 / 网页抓取 / 系统端口 —— 看不懂就别动</span>":
+    "Advanced <span class=\"hint\">vector retrieval / web capture / system ports — leave alone if unsure</span>",
+  "保存配置": "Save configuration",
+  "放弃修改": "Discard changes",
+  "把表单填回出厂默认值（不会立即保存）": "Fill the form with factory defaults (does not save immediately)",
+  "恢复默认设置": "Restore defaults",
+  "保存后重启程序才完全生效": "Restart the app for changes to take full effect",
+  "资料目录": "Data Directory",
+  "你的资料现在保存在上面这个位置。想换到一个更大 / 更快的盘，或搬到 U 盘随身携带，都可以在这里完成。":
+    "Your library currently lives at the location above. Move it to a larger or faster drive, or onto a USB stick, right here.",
+  "换到新目录": "Move to a new folder",
+  "例如：E:\\Kavira-Data": "e.g. E:\\Kavira-Data",
+  "检查一下": "Check",
+  "填一个<b>空文件夹</b>的完整路径。已有资料的目录会被拒绝 —— 不会为了腾地方删里面的东西。":
+    "Enter the full path of an <b>empty folder</b>. Folders that already contain data are rejected — nothing is deleted to make room.",
+  "开始迁移": "Start migration",
+  "数据管理": "Data management",
+  "导出知识库备份": "Export library backup",
+  "打包成 zip 下载保存": "Packaged as a zip download",
+  "备份包含<b>笔记正文、导入的原件、图片素材、分类</b>，以及一份恢复说明；<b>不含</b>检索索引与日志（它们随时能自动重建，带上只会让备份大好几倍）。打包时配置里的云端密钥会被清空，不会跟着备份到处跑。":
+    "The backup contains <b>note text, imported originals, images, and collections</b>, plus restore instructions. It <b>does not</b> include search indexes or logs (they rebuild automatically; including them would multiply the size). Cloud API keys in the config are cleared while packing, so they never travel with the backup.",
+  "产品授权": "Product License",
+  "本机设备码（发给授权方）": "Device code (send to the licensor)",
+  "读取中…": "Loading…",
+  "复制": "Copy",
+  "输入激活码": "Enter activation code",
+  "粘贴授权方发来的激活码…": "Paste the activation code from the licensor…",
+  "激活": "Activate",
+  "清除本机激活": "Clear activation",
+  "运行状态": "Runtime status",
+  "索引维护": "Index maintenance",
+  "全量重建索引": "Rebuild full index",
+  "重建向量索引": "Rebuild vector index",
+  "数据真相源始终是 <code>data/notes/</code> 下的 Markdown；<code>cache.db</code> 只是可随时重建的衍生索引。<b>换过嵌入模型后必须点「重建向量索引」</b>，否则向量检索会被自动禁用（界面会黄条提醒）。":
+    "The source of truth is always the Markdown under <code>data/notes/</code>; <code>cache.db</code> is a derived index that can be rebuilt at any time. <b>After changing the embedding model you must click \"Rebuild vector index\"</b>, otherwise vector retrieval is disabled automatically (a warning bar appears).",
+  "运行详情": "Runtime details",
+  "系统自动降级 / 自动适配的过程记录。<b>功能正常时无需理会</b>。":
+    "A log of automatic fallbacks and adaptations. <b>Safe to ignore while everything works.</b>",
+  " · 其他": " · Other",
+  "默认值尚未加载，请先刷新": "Defaults are not loaded yet — refresh first",
+  "把设置填回出厂默认值？\n\n不会立即保存 —— 确认无误后再点「保存配置」才生效。\n（云端 API Key 不会被清空）":
+    "Fill the settings back with factory defaults?\n\nNothing is saved immediately — click \"Save configuration\" to apply.\n(Cloud API keys are not cleared.)",
+  "（默认）": "(default)",
+  "已填回默认值，确认后点「保存配置」生效": "Defaults filled in — click \"Save configuration\" to apply",
+  "正在读取本地 Ollama 模型…": "Reading local Ollama models…",
+  "嵌入模型": "embedding model",
+  "本地对话模型": "local chat model",
+  "填写你本机已安装的模型名": "Enter a model name installed on this machine",
+  "⚠ {0} —— 已切换为手动填写。装好 Ollama 后点「刷新模型列表」可恢复下拉。":
+    "⚠ {0} — switched to manual entry. After installing Ollama, click \"Refresh model list\" to restore the dropdown.",
+  "— 未选择（请从下方本机模型里挑一个）—": "— Not selected (pick one of the installed models below) —",
+  "（不支持此用途，请另选）": " (not usable for this role — choose another)",
+  "（原配置，本机未找到）": " (configured, not found on this machine)",
+  "⚠ Ollama 在线，但本机尚未安装任何模型 —— 请先用 Ollama 装好模型，再点「刷新模型列表」。":
+    "⚠ Ollama is online, but no models are installed — install one with Ollama first, then click \"Refresh model list\".",
+  "⚠ 本机没有可用于「{0}」的模型 —— 请先用 Ollama 安装（对话模型如 qwen2.5，嵌入模型如 bge-m3），再点「刷新模型列表」。":
+    "⚠ No model on this machine can be used as {0} — install one with Ollama (e.g. qwen2.5 for chat, bge-m3 for embeddings), then click \"Refresh model list\".",
+  "已筛出 {0} 个可用「{1}」的模型，请选一个（程序不会自动替你选）。":
+    "Found {0} models usable for {1}; choose one (the app will not choose for you).",
+  "　⚠ 当前 Ollama 未提供能力标签，无法自动分辨用途。":
+    "　⚠ This Ollama does not report capability tags, so roles cannot be filtered automatically.",
+  "⚠ 当前配置的「{0}」{1}，请重新选择。": "⚠ The configured model \"{0}\" {1}; please choose again.",
+  "不支持「{0}」（能力标签里没有 {1}）": "does not support {0} (no {1} capability tag)",
+  "在本机已不存在": "no longer exists on this machine",
+  "✅ 当前模型：{0}　（Ollama：{1}）": "✅ Current model: {0}　(Ollama: {1})",
+  "⚠ 模型选择保存失败：{0}": "⚠ Failed to save model selection: {0}",
+  "✅ 已选择本地模型：{0}（已保存，可直接提问）": "✅ Local model selected: {0} (saved; ready to ask)",
+  "已清空本地模型选择": "Local model selection cleared",
+  "已选择并保存本地模型：{0}": "Local model selected and saved: {0}",
+  "正在调用本地 Ollama（首次要加载模型，可能等几秒）…":
+    "Calling local Ollama (the first call loads the model and may take a few seconds)…",
+  "正在调用云端 API…": "Calling the cloud API…",
+  "未知结果": "Unknown result",
+  "⚠ 嵌入模型相关设置已变更，请点下方「重建向量索引」，否则向量检索会被禁用":
+    "⚠ Embedding settings changed. Click \"Rebuild vector index\" below, or vector retrieval will be disabled",
+  "✅ 配置已保存（重启程序后完全生效）": "✅ Configuration saved (restart the app for full effect)",
+  "已在后台启动…": "Started in the background…",
+  "任务已启动": "Task started",
+  "任务已提交后台执行，可继续使用其他功能。": "Task submitted to the background; you can keep using other features.",
+
+  /* ---- 授权 ---- */
+  "设备不符": "Device mismatch",
+  "已过期": "Expired",
+  "签名无效": "Invalid signature",
+  "产品不符": "Product mismatch",
+  "格式错误": "Malformed",
+  "无法验证": "Cannot verify",
+  "未知": "Unknown",
+  "设备码尚未加载": "Device code is not loaded yet",
+  "设备码已复制": "Device code copied",
+  "复制失败，请手动选择": "Copy failed — select the text manually",
+  "请先粘贴激活码": "Please paste an activation code first",
+  "清除本机激活？\n\n清除后本机立即回到未激活状态（不影响资料库与笔记）。":
+    "Clear the activation on this machine?\n\nIt immediately returns to the unactivated state (your library and notes are unaffected).",
+  "已清除": "Cleared",
+  "该引用没有对应的笔记路径": "This citation has no note path",
+
+  /* ---- 资料目录迁移 / 导出 ---- */
+  "启动参数指定": "set by launch argument",
+  "本机配置指定": "set in local config",
+  "程序目录下的 data": "data folder next to the app",
+  "当前位置": "Current location",
+  "怎么定的": "Determined by",
+  "已存文档": "Stored documents",
+  "{0} 篇": "{0} docs",
+  "占用空间": "Space used",
+  "（{0} 个文件）": " ({0} files)",
+  "该盘剩余": "Free on drive",
+  "备份包约": "Backup ≈ ",
+  "，导出约需 {0}": ", export takes {0}",
+  "（当前在 {0}）": " (currently {0})",
+  "请先填写目标目录": "Enter a target folder first",
+  "正在检查…": "Checking…",
+  "✓ 可以迁到这里": "✓ You can migrate here",
+  "　需要约 {0}，目标可用 {1}。": "　About {0} needed; target has {1} free.",
+  "迁移预计需要 {0}（视磁盘速度而定）—— 期间请勿关闭程序或拔出磁盘。":
+    "Migration is expected to take {0} (depending on disk speed) — do not close the app or unplug the drive.",
+  "预检未通过": "Pre-check failed",
+  "检查失败：{0}": "Check failed: {0}",
+  "将把现有资料完整复制到：\n\n　{0}\n\n· 复制期间请勿关闭电脑或拔出磁盘\n· 完成后会重新打开资料库，页面会短暂无响应\n· 旧目录会原样保留，等你确认没问题后自己删除\n\n确定开始迁移吗？":
+    "Your library will be copied in full to:\n\n　{0}\n\n· Do not shut down the computer or unplug the drive during the copy\n· The library reopens when done; the page may be unresponsive briefly\n· The old folder is left untouched — delete it yourself once you have verified everything\n\nStart the migration?",
+  "正在启动迁移任务…": "Starting the migration task…",
+  "无法开始迁移": "Cannot start migration",
+  "无法开始：{0}": "Cannot start: {0}",
+  "✓ 迁移完成：共 {0} 个文件 / {1}，用时 {2} 秒": "✓ Migration complete: {0} files / {1}, took {2} s",
+  "资料现在保存在：{0}": "The library now lives at: {0}",
+  "旧位置（{0}）仍保留着一份完整副本，确认无误后可自行删除。":
+    "The old location ({0}) still holds a full copy; delete it once verified.",
+  "资料已迁移到新目录": "Library migrated to the new folder",
+  "迁移失败": "Migration failed",
+  "正在打包…此项在服务端完成，<b>打包结束后浏览器会自动开始下载</b>。资料较多时请耐心等待，期间可以继续使用其它功能。":
+    "Packing… this runs on the server; <b>the browser starts downloading when packing finishes</b>. Large libraries take a while — you can keep using other features.",
+  "正在打包备份，完成后浏览器会自动下载": "Packing the backup; the browser downloads it automatically when ready",
+  "若迟迟没有开始下载，可以再点一次；打包失败的临时文件会在下次导出前自动清理。":
+    "If the download does not start, click again; leftover files from failed packs are cleaned up before the next export.",
+  "状态已刷新": "Status refreshed",
+  "将执行 WAL 检查点并释放数据库锁，确保 U 盘可直接拔出。\n\n确定要安全退出吗？":
+    "This runs a WAL checkpoint and releases database locks so the USB drive can be unplugged safely.\n\nShut down safely?",
+  "退出请求失败：{0}": "Shutdown request failed: {0}",
+  "已完成安全退出": "Safe shutdown complete",
+  "WAL 已刷回主库、临时文件已清理，现在可以安全拔出 U 盘。":
+    "WAL has been flushed to the main database and temporary files cleaned up. You can safely unplug the USB drive.",
+
+  /* ---- 设置项：分组标题与说明 ---- */
+  "AI 对话模型": "AI chat model",
+  "决定回答由谁生成。什么都不改也能正常用 —— 会自动降级成本地检索摘要，不会崩。":
+    "Decides who generates answers. The defaults work fine — the app degrades to local retrieval summaries instead of failing.",
+  "AI 提示注入预算": "AI prompt budget",
+  "控制「一次给模型塞多少背景资料」。调大更全但更慢更费 token，调小可能漏信息。":
+    "Controls how much context is sent to the model per answer. Larger is more complete but slower and costs more tokens; smaller may miss information.",
+  "向量检索（决定「怎么找」）": "Vector retrieval (how matching works)",
+  "把问题变成向量做语义匹配。这一组程序会自己适配，基本不用碰。":
+    "Turns questions into vectors for semantic matching. The app adapts automatically; rarely needs changes.",
+  "网页抓取（剪藏行为）": "Web capture (Clip behavior)",
+  "只影响「剪藏」页抓网页的表现。": "Affects web capture on the Clip page only.",
+  "入库分析（AI 增强）": "Ingestion analysis (AI-assisted)",
+  "入库时是否用本地模型生成一句话摘要。确定性抽取（关键词 / 实体 / 语言）永远执行，不受此影响。":
+    "Whether a local model writes a one-line summary at ingestion. Deterministic extraction (keywords / entities / language) always runs regardless.",
+  "检索引用策略": "Citation policy",
+  "控制「引用来源」的严格程度。": "Controls how strict citation sourcing is.",
+  "文件导入边界（安全上限）": "Import limits (safety caps)",
+  "防止超大文件 / 压缩炸弹打爆处理流程。默认值保守，正常文档都能打开。":
+    "Prevents huge files / zip bombs from overwhelming the pipeline. Conservative defaults; normal documents still open.",
+  "系统（端口与后台扫描）": "System (ports and background scanning)",
+  "一般完全不用改。": "Normally never needs changes.",
+
+  /* ---- 设置项：字段标签与说明 ---- */
+  "AI 模式": "AI mode",
+  "「自动」最省心：优先用本地 Ollama（免费、离线），不行再走云端 API，都没有就纯离线检索。":
+    "\"Auto\" is the easiest: prefer local Ollama (free, offline), fall back to a cloud API, and otherwise use offline retrieval only.",
+  "自动（推荐）": "Auto (recommended)",
+  "只用本地 Ollama": "Local Ollama only",
+  "只用云端 API": "Cloud API only",
+  "纯离线，不调用 AI": "Offline only, no AI",
+  "Ollama 服务地址": "Ollama endpoint",
+  "Ollama 装在本机就用默认值，别改。": "Keep the default when Ollama runs on this machine.",
+  "自动启动 Ollama": "Start Ollama automatically",
+  "开启后，程序启动时若发现 Ollama 没在跑，会在**后台静默拉起**（无窗口、不阻塞启动）——你就不必自己去开 Ollama。找不到 Ollama 或启动失败时会自动降级为纯离线检索，不影响使用。介意程序自起后台进程的话可以关掉。":
+    "When enabled, if Ollama is not running at startup the app **starts it silently in the background** (no window, non-blocking) — no need to start it yourself. If Ollama is missing or fails to start, the app falls back to offline retrieval. Turn this off if you dislike background processes.",
+  "自动启动（推荐）": "Start automatically (recommended)",
+  "不自动启动": "Do not start automatically",
+  "本地对话模型": "Local chat model",
+  "从你本机已安装的 Ollama 模型里挑一个。下拉只会列出**能对话**的模型（嵌入/向量模型不会出现，选了也没用）。程序不会替你预设或自动选择任何模型；本机还没有模型时请先用 Ollama 安装，然后点「刷新模型列表」。":
+    "Pick one of the Ollama models installed on this machine. The dropdown lists only **chat-capable** models (embedding models are excluded). The app never preselects a model; if none is installed, install one with Ollama and click \"Refresh model list\".",
+  "云端接口地址": "Cloud API base URL",
+  "选一家常用服务商，或自己填兼容 OpenAI 协议的地址。": "Pick a provider, or enter any OpenAI-compatible base URL.",
+  "通义千问": "Qwen",
+  "Kimi 月之暗面": "Kimi (Moonshot)",
+  "智谱 GLM": "Zhipu GLM",
+  "云端 API Key": "Cloud API key",
+  "留空就不用云端。请妥善保管，勿泄露给他人。": "Leave empty to skip the cloud. Keep it private.",
+  "云端对话模型": "Cloud chat model",
+  "填服务商文档里的模型名，比如 deepseek-chat。": "Use the model name from the provider's docs, e.g. deepseek-chat.",
+  "每段最多注入（字）": "Max characters per passage",
+  "每一段背景最多截取多少字符。默认 400。": "Characters taken from each context passage. Default 400.",
+  "整轮注入上限（字）": "Max characters per turn",
+  "一次回答里，所有背景段加起来的字符上限。默认 1800。": "Total characters across all context passages per answer. Default 1800.",
+  "向量嵌入来源": "Embedding source",
+  "local_onnx 用随包自带的本地模型（bge-small-zh-v1.5，开箱可用、不联网）；ollama 借本机 Ollama 算；api 用云端算。本机没有嵌入能力时会自动降级为纯词法检索，不会崩。":
+    "local_onnx uses the bundled model (bge-small-zh-v1.5, works out of the box, no network); ollama uses local Ollama; api uses the cloud. Without embeddings the app falls back to lexical search.",
+  "本地 ONNX": "Local ONNX",
+  "本地 Ollama": "Local Ollama",
+  "云端 API": "Cloud API",
+  "嵌入模型名": "Embedding model",
+  "用 Ollama 做嵌入时从下拉里选——下拉只列出**能嵌入**的模型（如 bge-m3、nomic-embed-text），对话模型不会出现。用 local_onnx / api 时会自动变回手动填写。":
+    "When embedding through Ollama, choose from the dropdown — it lists only **embedding-capable** models (e.g. bge-m3, nomic-embed-text). With local_onnx / api this becomes a manual field.",
+  "向量维度": "Vector dimensions",
+  "用 ollama / api 时程序会自动探测并覆盖这个值，不用填。只有 local_onnx 才需要手填。改错会让向量检索被自动禁用。":
+    "With ollama / api the app detects this automatically. Only local_onnx requires manual entry; a wrong value disables vector retrieval.",
+  "送入 AI 的段落数": "Passages sent to the AI",
+  "一次给大模型看几段背景。越多信息越全，但更慢、更费 token。默认 5。":
+    "How many context passages the model sees per answer. More is more complete but slower and costs more tokens. Default 5.",
+  "每路召回候选数": "Candidates per recall channel",
+  "词法和向量各捞多少个候选来融合排序。默认 20，不用动。":
+    "How many candidates each lexical and vector channel fetches for fusion. Default 20.",
+  "正文降级门限（字）": "Body fallback threshold (chars)",
+  "抓下来的正文少于这个字数，就判定为动态页面，自动改成「存快照 + 提示手动粘贴」。默认 150。":
+    "If the extracted body is shorter than this, the page is treated as dynamic and falls back to \"save a snapshot + prompt manual paste\". Default 150.",
+  "动态页渲染抓取": "Render dynamic pages",
+  "开启后遇到动态页面会调用本机 Chrome 渲染（更慢更重）。默认关闭 —— 反爬页面不硬刚。":
+    "When enabled, dynamic pages are rendered with local Chrome (slower, heavier). Off by default — bot-protected pages are not forced.",
+  "关闭（推荐）": "Off (recommended)",
+  "开启": "On",
+  "请求超时（秒）": "Request timeout (s)",
+  "默认 20 秒。": "Default 20 seconds.",
+  "降级快照保留字数": "Snapshot length (chars)",
+  "默认 1000。": "Default 1000.",
+  "抓取网页子资源（离线可看）": "Save page sub-resources (offline viewing)",
+  "开启后剪藏网页时把 CSS / 图片 / 字体一起存到本地资源池 —— 离线也能还原版式，且浏览时不向外部发任何请求。默认开启。":
+    "When enabled, CSS / images / fonts are saved to the local asset pool during capture — layout works offline and viewing makes no external requests. On by default.",
+  "开启（推荐）": "On (recommended)",
+  "关闭（只留 HTML）": "Off (HTML only)",
+  "单页资源预算（KB）": "Per-page asset budget (KB)",
+  "单个网页最多存多少 KB 的资源，超出后剩余资源改用占位符，避免个别页面吃掉整块 U 盘。默认 5120（5 MB）。":
+    "Maximum KB of assets per page; beyond this, placeholders are used so one page cannot fill the USB drive. Default 5120 (5 MB).",
+  "单个资源上限（KB）": "Per-asset limit (KB)",
+  "单个图片 / 字体超过这个大小就跳过（留占位，保留原始尺寸以免撑破布局）。默认 512。":
+    "Skip an image / font larger than this (a placeholder keeps its original size so the layout stays intact). Default 512.",
+  "允许抓取内网地址": "Allow private network addresses",
+  "默认关闭：只允许公网地址（防 SSRF，逐跳校验重定向）。开启表示你明确允许抓局域网 / 本机资源；协议白名单与重定向校验仍不变。":
+    "Off by default: public addresses only (SSRF protection, redirects checked hop by hop). Enabling it explicitly allows LAN / localhost resources; the protocol allowlist and redirect checks still apply.",
+  "允许内网": "Allow private network",
+  "生成一句话摘要": "Generate a one-line summary",
+  "模型不在线会自动跳过，不影响入库速度与成功率。默认开启。":
+    "Skipped automatically when no model is online; ingestion speed and success are unaffected. On by default.",
+  "关闭": "Off",
+  "允许「仅语义相关」进入引用": "Allow semantic-only citations",
+  "默认开启：允许语义通道召回 —— 当你换一种说法提问、原文没有出现你的原话时，仍能找到相关资料。放行的引用会标注 semantic-only（原文未出现你的原话）。关闭则引用必须有字面依据，宁可回答「没找到」。":
+    "On by default: allow semantic-channel hits — when you rephrase a question and the source never uses your words, relevant material is still found. Such citations are labelled semantic-only. When off, citations need literal evidence; the answer may be \"not found\".",
+  "显示 semantic-only 徽标": "Show semantic-only badge",
+  "默认开启：在来自语义匹配的引用卡片上显示「semantic-only」徽标与一句人话解释。关闭后仅隐藏徽标，不影响检索行为，也不影响后端对引用的来源判定。":
+    "On by default: semantic matches show a \"semantic-only\" badge and a plain-language note. Turning it off only hides the badge; retrieval and source attribution are unchanged.",
+  "显示（推荐）": "Show (recommended)",
+  "隐藏": "Hide",
+  "语义旁证门限（条）": "Semantic corroboration threshold",
+  "语义-only 放行要求「同一文档内有 ≥ 本值 条候选的语义分 ≥ 语义通道最低相似度」。调高更保守（更难放行）。默认 2。仅影响语义通道，不触碰防编造闸门。":
+    "A semantic-only citation requires at least this many candidates in the same document scoring above the minimum similarity. Higher is stricter. Default 2. Affects the semantic channel only, never the anti-fabrication gate.",
+  "语义通道最低相似度": "Minimum semantic similarity",
+  "语义-only 放行的固定相似度下限（放行阈值 = max(本值, 词法候选池最高分 + 0.05)）。默认 0.84：防止「孤立语义近邻」被误引。仅影响语义通道，不触碰防编造闸门。":
+    "Fixed similarity floor for semantic-only citations (threshold = max(this value, best lexical score + 0.05)). Default 0.84, which prevents isolated semantic neighbours from being cited. Affects the semantic channel only, never the anti-fabrication gate.",
+  "单文件上限（MB）": "Max file size (MB)",
+  "普通文件（PDF / CSV / Markdown 等）单文件大小上限。默认 50。":
+    "Size limit for a single ordinary file (PDF / CSV / Markdown, etc.). Default 50.",
+  "压缩包内文件数上限": "Max entries per archive",
+  "OOXML / EPUB 等压缩容器内的条目数上限。默认 5000。": "Entry limit inside archives such as OOXML / EPUB. Default 5000.",
+  "压缩包单条目上限（MB）": "Max archive entry size (MB)",
+  "单个解压后条目的大小上限。默认 50。": "Size limit for one extracted entry. Default 50.",
+  "压缩包总解压上限（MB）": "Max total extracted size (MB)",
+  "整个压缩包解压后的总大小上限。默认 200。": "Total extracted size limit for an archive. Default 200.",
+  "最大压缩比": "Max compression ratio",
+  "解压膨胀倍数上限（防压缩炸弹）。默认 100。": "Expansion ratio limit (zip-bomb protection). Default 100.",
+  "服务起始端口": "Starting service port",
+  "被占用时程序会自动 +1 往后找，最多试 10 个，所以这里基本不用改。":
+    "If busy, the app tries the next port, up to 10 times; rarely needs changing.",
+  "监听地址": "Listen address",
+  "保持 127.0.0.1 —— 只有本机能访问。别改成 0.0.0.0，那会把整个知识库暴露给局域网。":
+    "Keep 127.0.0.1 — local access only. Do not use 0.0.0.0; that exposes the whole library to the LAN.",
+  "外部文件扫描间隔（秒）": "External file scan interval (s)",
+  "你用 Obsidian / Typora 改了笔记后，多久被同步进索引。默认 15 秒。":
+    "How soon edits made in Obsidian / Typora are synced into the index. Default 15 seconds.",
+  "日志级别": "Log level",
+  "INFO（默认）": "INFO (default)",
+  "DEBUG（排查问题用）": "DEBUG (troubleshooting)",
+  "留空则不使用云端 API": "Leave empty to skip the cloud API",
+  "加载中…": "Loading…",
+  "重新读取本机已安装的 Ollama 模型": "Re-read the Ollama models installed on this machine",
+  "刷新模型列表": "Refresh model list",
+  "测试本地 Ollama": "Test local Ollama",
+  "测试云端 API": "Test cloud API",
+  "会先自动保存当前表单，再真实跑一次调用": "Saves the current form first, then makes a real call",
+};
+
+/* 语言优先级：localStorage → navigator.language（zh* → zh，其它 → en） */
+function detectLang() {
+  try {
+    const saved = localStorage.getItem("kavira.lang");
+    if (saved === "zh" || saved === "en") return saved;
+  } catch (e) { /* 隐私模式禁用存储时忽略 */ }
+  const nav = String(navigator.language || navigator.userLanguage || "").toLowerCase();
+  return nav.indexOf("zh") === 0 ? "zh" : "en";
+}
+
+// 先定语言，再渲染 —— 后续所有 t() 都依赖 LANG
+let LANG = detectLang();
+
+/* t(文案, 参数...)：LANG==="en" 时查表并替换 {0}/{1} 占位符；
+   缺翻译（或中文界面）时回退原文，占位符同样替换（中文原文里也带占位符）。 */
+function t(s, ...args) {
+  let out = s;
+  if (LANG === "en" && Object.prototype.hasOwnProperty.call(I18N_EN, s)) out = I18N_EN[s];
+  if (args.length) {
+    out = String(out).replace(/\{(\d+)\}/g,
+      (m, i) => (args[+i] == null ? m : String(args[+i])));
+  }
+  return out;
+}
+
+/* 静态文案：按 data-i18n* 属性里的中文 key 就位；同步 <html lang> 与 <title>。
+   必须在任何动态渲染之前调用 —— 否则后续 innerHTML 会把翻译覆盖回中文。 */
+function applyI18n() {
+  document.documentElement.setAttribute("lang", LANG === "en" ? "en" : "zh-CN");
+  document.title = t("Kavira · 随身知识库");
+  $$("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  $$("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.getAttribute("data-i18n-html")); });
+  $$("[data-i18n-placeholder]").forEach(el => {
+    el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder")));
+  });
+  $$("[data-i18n-title]").forEach(el => { el.setAttribute("title", t(el.getAttribute("data-i18n-title"))); });
+  $$("[data-i18n-aria]").forEach(el => { el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria"))); });
+  $$("[data-lang]").forEach(b => b.classList.toggle("on", b.dataset.lang === LANG));
+}
+
 const $  = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 
@@ -29,6 +626,11 @@ const S = {
 // B：导航串行化守卫 —— 连续点击不同 citation 时，旧请求不得覆盖较新的点击结果。
 let NOTE_NAV_SEQ = 0;
 
+// P0-4：是否在引用上显示 semantic-only 徽标 + 人话解释（来自 [SEARCH] show_semantic_label）。
+// 仅控「显隐」—— 关闭后内部 data-match-mode / 后端 match_mode 标记仍在（供调试与归因守卫）。
+// 默认 true（安全优先：先让用户知道来源性质）；loadConfig() 拿到配置后按真实值刷新。
+let SEM_LABEL_ON = true;
+
 /* ---------------------------- 工具 ---------------------------- */
 function toast(msg, ms) {
   const d = document.createElement("div");
@@ -51,7 +653,7 @@ function api(path, opts) {
     // 后端进程随之结束，页面还留在浏览器里。没有这层包装时 fetch 只会静默 reject，
     // 表现为「点笔记标题变、内容不变」，看起来像 bug，其实是服务已经没了。
     .catch(err => {
-      throw new Error("无法连接本地服务（Kavira 可能已退出）："
+      throw new Error(t("无法连接本地服务（Kavira 可能已退出）：")
         + ((err && err.message) || err));
     });
 }
@@ -84,11 +686,15 @@ function mdToHtml(src, refs) {
   refsArr.forEach(r => { byId[String(r.id)] = r; });
   text = text.replace(/\[\^?(\d+)\]/g, (m, n) => {
     const ref = byId[String(n)];
-    if (!ref) return '<span class="cite" data-ref="' + n + '" data-tip="引用 ' + n + '">' + n + "</span>";
-    const tip = ((ref.display_source || ref.title) + "\n" + ref.path + "\n\n" + (ref.snippet || "")).slice(0, 320);
+    if (!ref) return '<span class="cite" data-ref="' + n + '" data-tip="' + attrEsc(t("引用 {0}", n)) + '">' + n + "</span>";
+    // P0-4：语义-only 引用在角标 tooltip 里额外给一句人话解释（原文未出现你的原话）。
+    const isSem = (ref.match_mode === "semantic-only");
+    let tip = ((ref.display_source || ref.title) + "\n" + ref.path + "\n\n" + (ref.snippet || "")).slice(0, 320);
+    if (isSem) tip += t("\n\n⚠ 这条引用来自语义相似匹配，原文未出现你的原话");
     // 引用身份全部内联：点击时由 span 自身数据集驱动，不依赖任何全局状态
     const attr = (k, v) => " data-" + k + '="' + attrEsc(v) + '"';
-    return '<span class="cite" data-ref="' + n + '"' +
+    return '<span class="cite' + (isSem ? " cite-sem" : "") + '" data-ref="' + n + '"' +
+      attr("match-mode", ref.match_mode || "lexical") +
       attr("path", ref.path || "") +
       attr("parent-id", ref.parent_id || "") +
       attr("snippet", ref.snippet || "") +
@@ -120,24 +726,24 @@ function applyStatus(st) {
   S.ready = !!(d && d.ready);
   const cR = $("#chipReady"), cE = $("#chipEmbed"), cA = $("#chipAI"), cS = $("#chipSync");
 
-  cR.textContent = S.ready ? "已就绪" : "初始化中…";
+  cR.textContent = S.ready ? t("已就绪") : t("初始化中…");
   cR.className = "chip " + (S.ready ? "on" : "off");
 
   if (!S.ready) return;
 
   const emb = d.embedding || {}, ai = d.ai || {}, syn = d.sync || {}, db = d.db || {};
   const vecOK = db.vec_ready && !emb.signature_mismatch;
-  cE.textContent = vecOK ? "本地智能搜索：可用" : "本地智能搜索：仅关键词";
+  cE.textContent = vecOK ? t("本地智能搜索：可用") : t("本地智能搜索：仅关键词");
   cE.className = "chip " + (vecOK ? "on" : "warn");
 
-  const aiLabel = ({ ollama: "本地模型", api: "云端", offline: "尚未配置", error: "不可用" }[ai.resolved] || ai.provider_mode || "—");
-  cA.textContent = "AI 对话：" + aiLabel;
+  const aiLabel = ({ ollama: t("本地模型"), api: t("云端"), offline: t("尚未配置"), error: t("不可用") }[ai.resolved] || ai.provider_mode || "—");
+  cA.textContent = t("AI 对话：{0}", aiLabel);
   // 悬停说明「为什么是当前状态」—— offline 时尤其要给 reason（如「该模型不支持对话」），
   // 否则用户只看到「尚未配置」，根本不知道卡在哪一步。
-  cA.title = ai.reason ? ("AI 对话：" + aiLabel + " —— " + ai.reason) : "";
+  cA.title = ai.reason ? t("AI 对话：{0} —— {1}", aiLabel, ai.reason) : "";
   cA.className = "chip " + (ai.resolved === "ollama" || ai.resolved === "api" ? "on" : (ai.resolved === "error" ? "warn" : "off"));
 
-  cS.textContent = "同步：" + (syn.running ? (syn.tracked + " 篇 · " + syn.interval + "s") : "未运行");
+  cS.textContent = t("同步：{0}", syn.running ? t("{0} 篇 · {1}s", syn.tracked, syn.interval) : t("未运行"));
   cS.className = "chip " + (syn.running ? "on" : "off");
 
   // 离线授权芯片（状态由后端在 boot 时重算设备指纹并验签得到）
@@ -145,7 +751,7 @@ function applyStatus(st) {
   if (cL) {
     const lic = d.license || {};
     const licOK = lic.status === "OK";
-    cL.textContent = "授权：" + (licOK ? "已激活" : (lic.status === "NO_LICENSE" ? "未激活" : "异常"));
+    cL.textContent = t("授权：{0}", licOK ? t("已激活") : (lic.status === "NO_LICENSE" ? t("未激活") : t("异常")));
     cL.className = "chip " + (licOK ? "on" : (lic.status === "NO_LICENSE" ? "off" : "warn"));
     cL.title = lic.message || "";
   }
@@ -164,7 +770,7 @@ function applyLicenseGate(d) {
   const show = (sel, on) => { const el = $(sel); if (el) el.hidden = !on; };
   const dis = (sel, off) => {
     const el = $(sel); if (!el) return;
-    el.disabled = off; el.title = off ? "需激活后使用" : "";
+    el.disabled = off; el.title = off ? t("需激活后使用") : "";
   };
   if (!S.licenseOK) {
     dis("#btnCapture", true); dis("#capUrl", true); dis("#btnSend", true);
@@ -184,11 +790,11 @@ function renderEmptyGuide(d) {
   if (box.dataset.shown === "1") return;   // 只渲染一次，避免输入框被打断
   box.dataset.shown = "1";
   box.innerHTML =
-    '<div class="empty-guide"><h5>知识库还是空的 —— 先加内容，问答才有东西可查</h5><ol>' +
-    '<li>点顶部 <b>「剪藏」</b> 标签 →  把 <code>.md</code> 文件拖进虚线框，或粘贴一个网址抓取</li>' +
-    '<li>也可以把 .md / .txt 笔记直接放进资料库的 <code>notes</code> 文件夹（安装版默认在 文档\\Kavira-Data\\notes），15 秒内自动入库</li>' +
-    '<li>入库后回到这里提问，回答会带 <b>[1]</b> 角标指向原文出处</li></ol>' +
-    '<div style="margin-top:11px"><button class="btn primary" onclick="switchTab(\'capture\')">去添加第一份内容 →</button></div>' +
+    '<div class="empty-guide"><h5>' + t("知识库还是空的 —— 先加内容，问答才有东西可查") + '</h5><ol>' +
+    '<li>' + t("点顶部 <b>「剪藏」</b> 标签 →  把 <code>.md</code> 文件拖进虚线框，或粘贴一个网址抓取") + '</li>' +
+    '<li>' + t("也可以把 .md / .txt 笔记直接放进资料库的 <code>notes</code> 文件夹（安装版默认在 文档\\Kavira-Data\\notes），15 秒内自动入库") + '</li>' +
+    '<li>' + t("入库后回到这里提问，回答会带 <b>[1]</b> 角标指向原文出处") + '</li></ol>' +
+    '<div style="margin-top:11px"><button class="btn primary" onclick="switchTab(\'capture\')">' + t("去添加第一份内容 →") + '</button></div>' +
     "</div>";
 }
 
@@ -197,7 +803,7 @@ function renderAlerts(d) {
   const items = [];
   if (d && d.vec_healing) {
     // 自愈中：只给中性提示，不吓人 —— 换过嵌入模型后首次启动会短暂出现，完成后自动消失
-    items.push({ cls: "", text: "正在后台重建向量索引，完成后自动恢复智能搜索（无需任何操作）。" });
+    items.push({ cls: "", text: t("正在后台重建向量索引，完成后自动恢复智能搜索（无需任何操作）。") });
   } else if (d && d.db && d.db.signature_mismatch) {
     // 文案由后端生成：真配置变更会给「需重建」指引，临时降级会说明「索引已保留」
     items.push({ cls: "err", text: d.db.signature_mismatch });
@@ -213,36 +819,36 @@ function renderAlerts(d) {
    ⚠ 不在这里推荐任何具体模型 —— 产品尚未拍板推荐型号。 */
 function chatStateText(ai) {
   if (!ai) return "—";
-  if (ai.chat_ready) return "✅ 就绪" + (ai.selected_model ? "（" + ai.selected_model + "）" : "");
+  if (ai.chat_ready) return t("✅ 就绪") + (ai.selected_model ? t("（{0}）", ai.selected_model) : "");
   const map = {
-    no_runtime: "未检测到本地 Ollama",
-    no_model: "Ollama 已启动，但本机尚无模型",
-    selection_required: "本机已有模型，请选择用哪个对话",
-    model_missing: "原配置的模型在本机已不存在",
+    no_runtime: t("未检测到本地 Ollama"),
+    no_model: t("Ollama 已启动，但本机尚无模型"),
+    selection_required: t("本机已有模型，请选择用哪个对话"),
+    model_missing: t("原配置的模型在本机已不存在"),
   };
-  return (map[ai.state] || "尚未配置") + (ai.reason ? "：" + ai.reason : "");
+  return (map[ai.state] || t("尚未配置")) + (ai.reason ? t("：{0}", ai.reason) : "");
 }
 
 function renderStats(d) {
   if (!d || !d.ready) return;
   const emb = d.embedding || {}, ai = d.ai || {}, db = d.db || {}, syn = d.sync || {};
   const rows = [
-    ["控制台端口", d.port || "—"],
-    ["运行时长", (d.uptime || 0) + " 秒"],
-    ["文档 / 切片 / 父块", (db.docs || 0) + " / " + (db.chunks || 0) + " / " + (db.parents || 0)],
+    [t("控制台端口"), d.port || "—"],
+    [t("运行时长"), t("{0} 秒", d.uptime || 0)],
+    [t("文档 / 切片 / 父块"), (db.docs || 0) + " / " + (db.chunks || 0) + " / " + (db.parents || 0)],
     // 库规模档位：让用户有个参照系，而不是只看到一个孤零零的切片数
-    ["库规模", (d.capacity && d.capacity.message) || "—"],
-    ["向量召回", db.vec_ready && !emb.signature_mismatch ? "已启用" : "未启用"],
-    ["嵌入源 / 维度", (emb.source || "—") + " / " + (emb.dim || "—")],
-    ["嵌入签名", emb.signature ? (emb.signature.model + "@" + emb.signature.dim) : "—"],
-    ["AI 模式 / 实际", (ai.provider_mode || "—") + " / " + (ai.resolved || "—")],
-    ["对话能力", chatStateText(ai)],
-    ["本机模型", (ai.installed_model_count || 0) + " 个" +
-      (ai.selected_model ? "，已选 " + ai.selected_model : "，未选择")],
-    ["Ollama 探测", ai.ollama_healthy ? "在线" : ("离线 (" + (ai.ollama_detail || "—") + ")")],
-    ["API Key", ai.api_key_configured ? "已配置" : "未配置"],
-    ["同步轮次 / 更新", (syn.cycles || 0) + " / " + ((syn.indexed || 0) + (syn.updated || 0))],
-    ["冷启动耗时", (d.boot && d.boot.boot_ms ? d.boot.boot_ms : "—") + " ms"],
+    [t("库规模"), (d.capacity && d.capacity.message) || "—"],
+    [t("向量召回"), db.vec_ready && !emb.signature_mismatch ? t("已启用") : t("未启用")],
+    [t("嵌入源 / 维度"), (emb.source || "—") + " / " + (emb.dim || "—")],
+    [t("嵌入签名"), emb.signature ? (emb.signature.model + "@" + emb.signature.dim) : "—"],
+    [t("AI 模式 / 实际"), (ai.provider_mode || "—") + " / " + (ai.resolved || "—")],
+    [t("对话能力"), chatStateText(ai)],
+    [t("本机模型"), t("{0} 个", ai.installed_model_count || 0) +
+      (ai.selected_model ? t("，已选 {0}", ai.selected_model) : t("，未选择"))],
+    [t("Ollama 探测"), ai.ollama_healthy ? t("在线") : t("离线 ({0})", ai.ollama_detail || "—")],
+    ["API Key", ai.api_key_configured ? t("已配置") : t("未配置")],
+    [t("同步轮次 / 更新"), (syn.cycles || 0) + " / " + ((syn.indexed || 0) + (syn.updated || 0))],
+    [t("冷启动耗时"), (d.boot && d.boot.boot_ms ? d.boot.boot_ms : "—") + " ms"],
   ];
   $("#statKV").innerHTML = rows.map(r => "<b>" + esc(r[0]) + "</b><span>" + esc(r[1]) + "</span>").join("");
   renderNotes(d);
@@ -253,7 +859,7 @@ function renderNotes(d) {
   const box = $("#runNotes");
   if (!box) return;
   const notes = (d && d.notes) || [];
-  if (!notes.length) { box.innerHTML = '<div class="hint">（无）</div>'; return; }
+  if (!notes.length) { box.innerHTML = '<div class="hint">' + esc(t("（无）")) + '</div>'; return; }
   box.innerHTML = notes.map(n =>
     '<div class="note-line">· ' + esc(n) + "</div>").join("");
 }
@@ -274,7 +880,7 @@ async function pollStatus(loop, probe) {
 function pushMsg(role, html) {
   const wrap = document.createElement("div");
   wrap.className = "msg " + role;
-  wrap.innerHTML = '<div class="who">' + (role === "user" ? "我" : "W") + '</div><div class="bubble"></div>';
+  wrap.innerHTML = '<div class="who">' + (role === "user" ? t("我") : "W") + '</div><div class="bubble"></div>';
   const bub = wrap.querySelector(".bubble");
   if (html != null) bub.innerHTML = html;
   $("#chatScroll").appendChild(wrap);
@@ -292,7 +898,7 @@ function renderStream(bub) {
 }
 
 async function send() {
-  if (!S.licenseOK) { toast("问答需激活后使用（设置 → 产品授权）", 3600); return; }
+  if (!S.licenseOK) { toast(t("问答需激活后使用（设置 → 产品授权）"), 3600); return; }
   const input = $("#chatInput");
   const q = input.value.trim();
   if (!q || S.busy) return;
@@ -305,7 +911,7 @@ async function send() {
   S.full = ""; S.rendered = ""; S.holding = ""; S.refs = []; S.terms = [];
   S.turn = ++S.turnSeq;                // A：新的一轮，分配独立 turn id
   S.q = q;
-  const bub = pushMsg("assistant", '<span class="hint">检索知识库…</span>');
+  const bub = pushMsg("assistant", '<span class="hint">' + esc(t("检索知识库…")) + '</span>');
   bub._refs = [];                      // 本轮的 refs 快照（随 references 帧到达而填充）
   bub._terms = [];                     // 本轮的「问题实词」（随 meta 帧到达而填充）
 
@@ -337,7 +943,7 @@ async function send() {
     const refs = bub._refs || [];
     bub.innerHTML = mdToHtml(S.full, refs) + (refs.length ? refsHtml(refs) : "");
   } catch (e) {
-    bub.innerHTML = '<div class="alert err" style="margin:0">请求失败：' + esc(e.message) + "</div>";
+    bub.innerHTML = '<div class="alert err" style="margin:0">' + esc(t("请求失败：{0}", e.message)) + "</div>";
   } finally {
     S.busy = false;
     $("#btnSend").disabled = false;
@@ -353,18 +959,27 @@ function refsHtml(refs) {
   const seen = new Map();
   refs.forEach(r => {
     const key = r.path || (r.display_source || r.title);
-    if (!seen.has(key)) seen.set(key, { r, n: 0 });
-    seen.get(key).n += 1;
+    if (!seen.has(key)) seen.set(key, { r, n: 0, allSem: true });
+    const g = seen.get(key);
+    g.n += 1;
+    // P0-4：只有该文档的引用**全部**来自语义通道，才把它标为 semantic-only；
+    // 只要有一条字面命中，就按字面命中处理（绝不误标 P0-4「字面命中引用零误标」）。
+    if (r.match_mode !== "semantic-only") g.allSem = false;
   });
   const uniq = [...seen.values()];
   const attr = (k, v) => " data-" + k + '="' + attrEsc(v) + '"';
-  return '<div class="refs">' + uniq.map(({ r, n }) => {
+  return '<div class="refs">' + uniq.map(({ r, n, allSem }) => {
     // 来源 chip：文档级跳转（只打开整篇，不强制跳某 Parent），身份内联 data-path。
     const cnt = n > 1 ? ' <span class="ref-n">×' + n + "</span>" : "";
+    // semantic-only 徽标：仅当该文档全为语义-only 引用、且用户未关闭标注时显示。
+    const badge = (allSem && SEM_LABEL_ON)
+      ? '<span class="ref-tag semantic">semantic-only</span>' : "";
+    const semNote = allSem ? t("\n\n⚠ 这条引用来自语义相似匹配，原文未出现你的原话") : "";
     return '<span class="ref"' + attr("path", r.path || "") +
-      ' title="' + esc((r.path || "") + "\n" + (r.snippet || "点击跳转到该笔记")) + '">' +
+      attr("match-mode", allSem ? "semantic-only" : "lexical") +
+      ' title="' + esc((r.path || "") + "\n" + (r.snippet || t("点击跳转到该笔记")) + semNote) + '">' +
       // UX-1：来源显示名优先（导入文件→源文件名；剪藏/笔记→标题）
-      esc(r.display_source || r.title) + cnt + "</span>";
+      esc(r.display_source || r.title) + badge + cnt + "</span>";
   }).join("") + "</div>";
 }
 
@@ -390,7 +1005,7 @@ function handleFrame(f, bub) {
     S.full += f.content || "";
     renderStream(bub);   // 未闭合角标滞留，不提前绘制半截标记
   } else if (f.type === "error") {
-    S.full += "\n\n> ⚠ " + (f.message || "模型服务异常");
+    S.full += "\n\n> ⚠ " + (f.message || t("模型服务异常"));
     bub.innerHTML = mdToHtml(S.full);
   }
 }
@@ -400,11 +1015,11 @@ function handleFrame(f, bub) {
      注意后端在真正抓取时**自己也会再查一次** —— 这里的预检只是为了让界面
      能在重复时给出选择，不是安全/正确性的依据。 */
   async function doCapture() {
-  if (!S.licenseOK) { toast("抓取网页需激活后使用（设置 → 产品授权）", 3600); return; }
+  if (!S.licenseOK) { toast(t("抓取网页需激活后使用（设置 → 产品授权）"), 3600); return; }
     const url = $("#capUrl").value.trim();
-    if (!url) return toast("请输入 URL");
+    if (!url) return toast(t("请输入 URL"));
     const box = $("#capResult");
-    box.innerHTML = '<span class="hint"><span class="spin"></span> 正在检查这个网页是否已保存过…</span>';
+    box.innerHTML = '<span class="hint"><span class="spin"></span> ' + esc(t("正在检查这个网页是否已保存过…")) + '</span>';
     $("#btnCapture").disabled = true;
     let dup = null;
     try {
@@ -423,19 +1038,19 @@ function handleFrame(f, bub) {
   function renderDuplicateChoice(url, dup) {
     const box = $("#capResult");
     box.innerHTML =
-      '<div class="alert">⚠ 该网页已经保存过：' + esc(dup.title || dup.rel_path) + "</div>" +
-      '<div class="hint" style="margin:6px 0">请选择处理方式</div>' +
+      '<div class="alert">' + esc(t("⚠ 该网页已经保存过：{0}", dup.title || dup.rel_path)) + "</div>" +
+      '<div class="hint" style="margin:6px 0">' + esc(t("请选择处理方式")) + "</div>" +
       '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
-      '<button class="btn" data-dup="open">打开已有</button>' +
-      '<button class="btn primary" data-dup="update">更新已有</button>' +
-      '<button class="btn" data-dup="new">另存为新版本</button>' +
-      '<button class="btn ghost" data-dup="cancel">取消</button>' +
+      '<button class="btn" data-dup="open">' + esc(t("打开已有")) + "</button>" +
+      '<button class="btn primary" data-dup="update">' + esc(t("更新已有")) + "</button>" +
+      '<button class="btn" data-dup="new">' + esc(t("另存为新版本")) + "</button>" +
+      '<button class="btn ghost" data-dup="cancel">' + esc(t("取消")) + "</button>" +
       "</div>";
     $$("#capResult [data-dup]").forEach(function (b) {
       b.onclick = function () {
         const act = b.dataset.dup;
         if (act === "cancel") {
-          box.innerHTML = '<span class="hint">已取消，未做任何改动。</span>';
+          box.innerHTML = '<span class="hint">' + esc(t("已取消，未做任何改动。")) + '</span>';
           return;
         }
         if (act === "open") return openNoteByPath(dup.rel_path);
@@ -446,7 +1061,7 @@ function handleFrame(f, bub) {
 
   async function doCaptureWith(url, onDup) {
     const box = $("#capResult");
-    box.innerHTML = '<span class="hint"><span class="spin"></span> 正在抓取并清洗正文…</span>';
+    box.innerHTML = '<span class="hint"><span class="spin"></span> ' + esc(t("正在抓取并清洗正文…")) + '</span>';
     $("#btnCapture").disabled = true;
     try {
       const r = await api("/api/capture/url", {
@@ -460,15 +1075,15 @@ function handleFrame(f, bub) {
       : "";
     if (r.status === "partial_fallback") {
       box.innerHTML = '<div class="alert">⚠ ' + esc(r.message) + "</div>" +
-        '<div class="hint">已保存：' + esc(d.file_path) + " · 快照：" + esc(d.snapshot_path || "—") + "</div>" + notesHtml;
-      toast("该页面为前端动态渲染，仅保留快照", 4200);
+        '<div class="hint">' + esc(t("已保存：{0} · 快照：{1}", d.file_path, d.snapshot_path || "—")) + "</div>" + notesHtml;
+      toast(t("该页面为前端动态渲染，仅保留快照"), 4200);
     } else if (r.code === 200) {
-      box.innerHTML = '<div class="alert info">✅ ' + esc(r.message || "抓取成功") + "</div>" +
-        '<div class="hint">标题：' + esc(d.title) + " · 字数：" + d.char_count +
-        " · 文件：" + esc(d.file_path) + " · 抽取器：" + esc(d.extractor || "—") + "</div>" + notesHtml;
-      toast("已入库并建立索引");
+      box.innerHTML = '<div class="alert info">✅ ' + esc(r.message || t("抓取成功")) + "</div>" +
+        '<div class="hint">' + esc(t("标题：{0} · 字数：{1} · 文件：{2} · 抽取器：{3}",
+          d.title, d.char_count, d.file_path, d.extractor || "—")) + "</div>" + notesHtml;
+      toast(t("已入库并建立索引"));
     } else {
-      box.innerHTML = '<div class="alert err">' + esc(r.message || "抓取失败") + "</div>";
+      box.innerHTML = '<div class="alert err">' + esc(r.message || t("抓取失败")) + "</div>";
     }
   } catch (e) {
     box.innerHTML = '<div class="alert err">' + esc(e.message) + "</div>";
@@ -480,7 +1095,7 @@ function handleFrame(f, bub) {
 
 async function doSaveNote() {
   const title = $("#noteTitle").value.trim(), content = $("#noteBody").value.trim();
-  if (!content) return toast("正文不能为空");
+  if (!content) return toast(t("正文不能为空"));
   $("#btnSaveNote").disabled = true;
   try {
     const r = await api("/api/notes/save", { method: "POST", body: JSON.stringify({ title, content }) });
@@ -507,12 +1122,14 @@ async function loadImportFormats() {
       hint.innerHTML = cats.map(c =>
         "<b>" + esc(c.name) + "</b>　" + c.exts.map(e => "<code>" + esc(e) + "</code>").join(" ")
       ).join("<br>") +
-        "<br><span style='color:var(--warn)'>暂不支持：" +
+        "<br><span style='color:var(--warn)'>" + esc(t("暂不支持：")) +
         esc((d.unsupported.legacy_office || []).join(" ")) + " " +
         esc((d.unsupported.image || []).join(" ")) + " " +
         esc((d.unsupported.av || []).slice(0, 4).join(" ")) +
         " —— " + esc(d.unsupported.note) + "</span>" +
-        (d.pdf_backend ? "" : "<br><span style='color:var(--warn)'>PDF 解析库未安装：执行 <code>python setup_runtime_windows.py --with-pdf</code> 后可用。</span>");
+        (d.pdf_backend ? "" : "<br><span style='color:var(--warn)'>" +
+          t("PDF 解析库未安装：执行 {0} 后可用。", "<code>python setup_runtime_windows.py --with-pdf</code>") +
+          "</span>");
     }
   } catch (e) { /* 拿不到就退化为「不限制 accept」，由后端给出明确错误 */ }
 }
@@ -557,7 +1174,7 @@ async function importFiles(files) {
   // 防重入：导入期间用户完全可以再拖一批/再选一次。没有这道闸，两个循环会并发跑，
   // 进度文本互相覆盖，同一个文件还可能被入库两次（拖拽 + 选择器同时触发）。
   if (zone.classList.contains("busy")) {
-    toast("上一批还在导入，请等它完成", 3000);
+    toast(t("上一批还在导入，请等它完成"), 3000);
     return;
   }
   const mainLabel = zone.querySelector(".dz-main");
@@ -565,18 +1182,18 @@ async function importFiles(files) {
   // ---- 1) 先只按元信息过滤，**不读内容** ----
   const accepted = [], skipped = [];
   for (const f of files) {
-    if (f.size > 20 * 1024 * 1024) { skipped.push(`${f.name}（超过 20MB）`); continue; }
+    if (f.size > 20 * 1024 * 1024) { skipped.push(t("{0}（超过 20MB）", f.name)); continue; }
     const ext = ("." + (f.name.split(".").pop() || "")).toLowerCase();
     if (IMPORT.loaded && IMPORT.exts.length && !IMPORT.exts.includes(ext)) {
-      skipped.push(`${f.name}（不支持 ${ext}）`);
+      skipped.push(t("{0}（不支持 {1}）", f.name, ext));
       continue;
     }
     accepted.push(f);
   }
   const skipHtml = skipped.length
-    ? '<span class="bad">已跳过：' + esc(skipped.join("、")) + "</span><br>" : "";
+    ? '<span class="bad">' + esc(t("已跳过：{0}", skipped.join(LANG === "en" ? ", " : "、"))) + "</span><br>" : "";
   if (!accepted.length) {
-    out.innerHTML = '<span class="bad">没有可导入的文件</span><br>' + skipHtml;
+    out.innerHTML = '<span class="bad">' + esc(t("没有可导入的文件")) + '</span><br>' + skipHtml;
     return;
   }
 
@@ -605,8 +1222,8 @@ async function importFiles(files) {
     for (let i = 0; i < accepted.length; i++) {
       const f = accepted[i];
       const short = f.name.length > 30 ? f.name.slice(0, 28) + "…" : f.name;
-      mainLabel.textContent = `正在导入 ${i + 1}/${accepted.length}：${short}`;
-      render(`正在导入 ${i + 1}/${accepted.length}（成功 ${okN}）：`);
+      mainLabel.textContent = t("正在导入 {0}/{1}：{2}", i + 1, accepted.length, short);
+      render(t("正在导入 {0}/{1}（成功 {2}）：", i + 1, accepted.length, okN));
 
       let item;
       try {
@@ -615,8 +1232,7 @@ async function importFiles(files) {
           : { filename: f.name, content: await readTextSmart(f) };
       } catch (e) {
         failN++;
-        rows.push('<span class="bad">❌ ' + esc(f.name) + "</span> —— 读取失败："
-          + esc(e.message || e));
+        rows.push('<span class="bad">❌ ' + esc(f.name) + "</span>" + esc(t(" —— 读取失败：{0}", (e.message || e))));
         continue;
       }
 
@@ -627,12 +1243,12 @@ async function importFiles(files) {
         const x = (((r.data || {}).results) || [])[0] || {};
         if (x.ok) {
           okN++;
-          rows.push('<span class="ok">✅ ' + esc(f.name) + "</span> —— "
-            + esc(x.message || "已入库") + "（" + (x.char_count || 0) + " 字）");
+          rows.push('<span class="ok">✅ ' + esc(f.name) + "</span>" + esc(t(" —— {0}{1}",
+            x.message || t("已入库"), t("（{0} 字）", x.char_count || 0))));
         } else {
           failN++;
-          rows.push('<span class="bad">❌ ' + esc(f.name) + "</span> —— "
-            + esc(x.message || "导入失败"));
+          rows.push('<span class="bad">❌ ' + esc(f.name) + "</span>" + esc(t(" —— {0}",
+            x.message || t("导入失败"))));
         }
       } catch (e) {
         failN++;
@@ -642,14 +1258,14 @@ async function importFiles(files) {
   } finally {
     // ⚠ 必须放 finally：中途任何异常都不能让拖拽区卡在 busy 状态（那样用户再也拖不进文件）
     zone.classList.remove("busy");
-    mainLabel.textContent = "把文件拖到这里";
+    mainLabel.textContent = t("把文件拖到这里");
   }
 
-  const summary = `导入完成：成功 ${okN} / ${accepted.length}`
-    + (failN ? `，失败 ${failN}` : "");
+  const summary = t("导入完成：成功 {0} / {1}", okN, accepted.length)
+    + (failN ? t("，失败 {2}", failN) : "");
   render(summary);
   if (okN) toast("✅ " + summary);
-  else toast("⚠ 全部导入失败，请看下方原因", 4000);
+  else toast(t("⚠ 全部导入失败，请看下方原因"), 4000);
   await loadNotes();
 }
 
@@ -682,7 +1298,7 @@ async function loadNotes() {
     r = await api("/api/notes?limit=500");
   } catch (e) {
     // 服务已停（如启动窗口被关）时给出明确提示，而不是静默保持旧列表
-    toast(e.message || "读取文档列表失败", 5200);
+    toast(e.message || t("读取文档列表失败"), 5200);
     return;
   }
   noteCache = r.data || [];
@@ -710,7 +1326,7 @@ function docCollections(docId) {
   return (collCache.membership[docId] || []).map(collById).filter(Boolean);
 }
 function docDisplayTitle(n) {
-  return collCache.display_titles[n.doc_id] || n.display_source || n.title || "(无标题)";
+  return collCache.display_titles[n.doc_id] || n.display_source || n.title || t("(无标题)");
 }
 function isTrashed(n) { return (collCache.trash || []).indexOf(n.doc_id) >= 0; }
 
@@ -718,12 +1334,12 @@ function renderCollectionFilter() {
   const sel = $("#noteCollectionFilter");
   if (!sel) return;
   const cur = sel.value;
-  const opts = ['<option value="">全部分类</option>'];
+  const opts = ['<option value="">' + esc(t("全部分类")) + "</option>"];
   (collCache.collections || []).slice()
     .sort((a, b) => a.name.localeCompare(b.name, "zh"))
     .forEach(c => opts.push('<option value="' + esc(c.id) + '">' + esc(c.name) + "</option>"));
   const nTrash = (collCache.trash || []).length;
-  opts.push('<option value="__trash__">回收站' + (nTrash ? "（" + nTrash + "）" : "") + "</option>");
+  opts.push('<option value="__trash__">' + esc(nTrash ? t("回收站（{0}）", nTrash) : t("回收站")) + "</option>");
   sel.innerHTML = opts.join("");
   if (Array.from(sel.options).some(o => o.value === cur)) sel.value = cur;
 }
@@ -746,13 +1362,13 @@ function renderNoteList() {
     return '<div class="list-item" data-path="' + esc(n.rel_path) + '">' +
       '<div class="t">' + esc(docDisplayTitle(n)) + "</div>" +
       '<div class="m"><span>' + esc(n.rel_path) + "</span>" +
-      (n.status === "partial_fallback" ? '<span class="pill warn">快照</span>' : "") +
-      "<span>" + (n.chunks || 0) + " 切片</span></div>" +
+      (n.status === "partial_fallback" ? '<span class="pill warn">' + esc(t("快照")) + "</span>" : "") +
+      "<span>" + esc(t("{0} 切片", n.chunks || 0)) + "</span></div>" +
       (tags ? '<div class="tags">' + tags + "</div>" : "") +
-      '<button class="more" title="更多操作">⋯</button>' +
+      '<button class="more" title="' + attrEsc(t("更多操作")) + '">⋯</button>' +
     "</div>";
   }).join("") || '<div class="hint">'
-    + (inTrash ? "回收站是空的。" : "暂无文档，去「剪藏」页录入一篇吧。") + "</div>";
+    + esc(inTrash ? t("回收站是空的。") : t("暂无文档，去「剪藏」页录入一篇吧。")) + "</div>";
 
   $$("#noteList .list-item").forEach(el => {
     el.onclick = () => openNoteItem(el);
@@ -783,8 +1399,8 @@ function _popup(anchor, html) {
 
 function openNoteMenu(anchor, n, inTrash) {
   const items = inTrash
-    ? [["恢复", "restore", ""], ["永久删除", "purge", "danger"]]
-    : [["编辑标题", "title", ""], ["分类", "collections", ""], ["移入回收站", "trash", "danger"]];
+    ? [[t("恢复"), "restore", ""], [t("永久删除"), "purge", "danger"]]
+    : [[t("编辑标题"), "title", ""], [t("分类"), "collections", ""], [t("移入回收站"), "trash", "danger"]];
   const wrap = _popup(anchor, '<div class="menu">' + items.map(([label, act, cls]) =>
     '<button data-act="' + act + '"' + (cls ? ' class="' + cls + '"' : "") + ">" + esc(label) + "</button>")
     .join("") + "</div>");
@@ -813,11 +1429,11 @@ function _modal(title, bodyHtml, onReady) {
 }
 
 function editNoteTitle(n) {
-  _modal("编辑标题",
+  _modal(t("编辑标题"),
     '<input type="text" id="_titleIn" value="' + attrEsc(docDisplayTitle(n)) + '">' +
-    '<div class="hint" style="margin-top:8px">只改显示标题，不动文件名（文件仍是 ' + esc(n.rel_path) + "）。</div>" +
+    '<div class="hint" style="margin-top:8px">' + esc(t("只改显示标题，不动文件名（文件仍是 {0}）。", n.rel_path)) + "</div>" +
     '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
-    '<button class="btn" data-cancel>取消</button><button class="btn primary" data-ok>保存</button></div>',
+    '<button class="btn" data-cancel>' + esc(t("取消")) + '</button><button class="btn primary" data-ok>' + esc(t("保存")) + '</button></div>',
     (root, close) => {
       const inp = root.querySelector("#_titleIn");
       inp.focus(); inp.select();
@@ -827,10 +1443,10 @@ function editNoteTitle(n) {
           method: "POST", body: JSON.stringify({ doc_id: n.doc_id, title: inp.value })
         });
         if (r.code === 200) {
-          const t = inp.value.trim();
-          if (t) collCache.display_titles[n.doc_id] = t; else delete collCache.display_titles[n.doc_id];
-          close(); renderNoteList(); toast("标题已更新");
-        } else { toast(r.message || "保存失败", 3200); }
+          const title = inp.value.trim();
+          if (title) collCache.display_titles[n.doc_id] = title; else delete collCache.display_titles[n.doc_id];
+          close(); renderNoteList(); toast(t("标题已更新"));
+        } else { toast(r.message || t("保存失败"), 3200); }
       };
     });
 }
@@ -843,16 +1459,16 @@ async function editNoteCollections(n) {
     .map(c => '<div class="ck-row">'
       + '<label class="ck"><input type="checkbox" value="' + attrEsc(c.id) + '"'
       + (cur.has(c.id) ? " checked" : "") + '> <span class="ck-name">' + esc(c.name) + "</span></label>"
-      + '<button class="ck-op" data-ren="' + attrEsc(c.id) + '" title="重命名类目">✎</button>'
-      + '<button class="ck-del" data-del="' + attrEsc(c.id) + '" title="删除类目（不会删除文档）">✕</button>'
+      + '<button class="ck-op" data-ren="' + attrEsc(c.id) + '" title="' + attrEsc(t("重命名类目")) + '">✎</button>'
+      + '<button class="ck-del" data-del="' + attrEsc(c.id) + '" title="' + attrEsc(t("删除类目（不会删除文档）")) + '">✕</button>'
       + "</div>").join("");
-  _modal("分类（可多选）",
-    '<div class="ck-list">' + (rows || '<div class="hint">还没有类目，在下面新建一个。</div>') + "</div>" +
+  _modal(t("分类（可多选）"),
+    '<div class="ck-list">' + (rows || '<div class="hint">' + esc(t("还没有类目，在下面新建一个。")) + "</div>") + "</div>" +
     '<div class="row" style="margin-top:10px;gap:8px">' +
-    '<input type="text" id="_newColl" class="grow" placeholder="新建类目，回车添加">' +
-    '<button class="btn" id="_addColl">新建</button></div>' +
+    '<input type="text" id="_newColl" class="grow" placeholder="' + attrEsc(t("新建类目，回车添加")) + '">' +
+    '<button class="btn" id="_addColl">' + esc(t("新建")) + '</button></div>' +
     '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
-    '<button class="btn" data-cancel>取消</button><button class="btn primary" data-ok>保存</button></div>',
+    '<button class="btn" data-cancel>' + esc(t("取消")) + '</button><button class="btn primary" data-ok>' + esc(t("保存")) + '</button></div>',
     (root, close) => {
       // 重命名类目：点 ✎ → 就地变成输入框（Enter 提交 / Esc 取消 / 失焦提交）
       const bindRen = (btn) => {
@@ -873,11 +1489,11 @@ async function editNoteCollections(n) {
             if (!nm || nm === c.name) { if (input.parentNode) input.replaceWith(nameEl); return; }
             const rr = await api("/api/collections/rename",
               { method: "POST", body: JSON.stringify({ id: c.id, name: nm }) });
-            if (rr.code !== 200) { toast(rr.message || "重命名失败", 3200); if (input.parentNode) input.replaceWith(nameEl); return; }
+            if (rr.code !== 200) { toast(rr.message || t("重命名失败"), 3200); if (input.parentNode) input.replaceWith(nameEl); return; }
             c.name = nm;
             close();
             await loadCollections();
-            toast("类目已重命名");
+            toast(t("类目已重命名"));
             editNoteCollections(n);
           };
           input.onkeydown = (ev) => {
@@ -893,13 +1509,13 @@ async function editNoteCollections(n) {
         btn.onclick = async (e) => {
           e.preventDefault(); e.stopPropagation();
           const c = collCache.collections.find(x => x.id === btn.dataset.del);
-          if (!confirm("删除类目「" + (c ? c.name : "") + "」？\n\n只删除这个类目，不会删除任何文档。")) return;
+          if (!confirm(t("删除类目「{0}」？\n\n只删除这个类目，不会删除任何文档。", c ? c.name : ""))) return;
           const r = await api("/api/collections/delete",
             { method: "POST", body: JSON.stringify({ id: btn.dataset.del }) });
-          if (r.code !== 200) { toast(r.message || "删除失败", 3200); return; }
+          if (r.code !== 200) { toast(r.message || t("删除失败"), 3200); return; }
           close();
           await loadCollections();
-          toast("类目已删除");
+          toast(t("类目已删除"));
           editNoteCollections(n);   // 重开，反映最新类目与勾选状态
         };
       };
@@ -908,7 +1524,7 @@ async function editNoteCollections(n) {
         const name = inp.value.trim();
         if (!name) return;
         const r = await api("/api/collections/create", { method: "POST", body: JSON.stringify({ name }) });
-        if (r.code !== 200) { toast(r.message || "新建失败", 3200); return; }
+        if (r.code !== 200) { toast(r.message || t("新建失败"), 3200); return; }
         inp.value = "";
         collCache.collections.push(r.data);
         const listEl = root.querySelector(".ck-list");
@@ -917,9 +1533,9 @@ async function editNoteCollections(n) {
         row.className = "ck-row";
         row.innerHTML = '<label class="ck"><input type="checkbox" value="' + attrEsc(r.data.id)
           + '" checked> <span class="ck-name">' + esc(r.data.name) + "</span></label>"
-          + '<button class="ck-op" data-ren="' + attrEsc(r.data.id) + '" title="重命名类目">✎</button>'
+          + '<button class="ck-op" data-ren="' + attrEsc(r.data.id) + '" title="' + attrEsc(t("重命名类目")) + '">✎</button>'
           + '<button class="ck-del" data-del="' + attrEsc(r.data.id)
-          + '" title="删除类目（不会删除文档）">✕</button>';
+          + '" title="' + attrEsc(t("删除类目（不会删除文档）")) + '">✕</button>';
         listEl.appendChild(row);
         bindRen(row.querySelector("[data-ren]"));
         bindDel(row.querySelector("[data-del]"));
@@ -939,27 +1555,27 @@ async function editNoteCollections(n) {
         if (r.code === 200) {
           if (ids.length) collCache.membership[n.doc_id] = ids;
           else delete collCache.membership[n.doc_id];
-          close(); renderNoteList(); toast("分类已更新");
-        } else { toast(r.message || "保存失败", 3200); }
+          close(); renderNoteList(); toast(t("分类已更新"));
+        } else { toast(r.message || t("保存失败"), 3200); }
       };
     });
 }
 
 async function trashNote(n) {
-  if (!confirm("把「" + docDisplayTitle(n) + "」移入回收站？\n\n文件不会被删除，可在「回收站」里恢复。")) return;
+  if (!confirm(t("把「{0}」移入回收站？\n\n文件不会被删除，可在「回收站」里恢复。", docDisplayTitle(n)))) return;
   const r = await api("/api/notes/trash", { method: "POST", body: JSON.stringify({ doc_id: n.doc_id }) });
   if (r.code === 200) {
     if ((collCache.trash || []).indexOf(n.doc_id) < 0) collCache.trash.push(n.doc_id);
-    renderCollectionFilter(); renderNoteList(); toast("已移入回收站");
-  } else { toast(r.message || "操作失败", 3200); }
+    renderCollectionFilter(); renderNoteList(); toast(t("已移入回收站"));
+  } else { toast(r.message || t("操作失败"), 3200); }
 }
 
 async function restoreNote(n) {
   const r = await api("/api/notes/restore", { method: "POST", body: JSON.stringify({ doc_id: n.doc_id }) });
   if (r.code === 200) {
     collCache.trash = (collCache.trash || []).filter(x => x !== n.doc_id);
-    renderCollectionFilter(); renderNoteList(); toast("已恢复");
-  } else { toast(r.message || "操作失败", 3200); }
+    renderCollectionFilter(); renderNoteList(); toast(t("已恢复"));
+  } else { toast(r.message || t("操作失败"), 3200); }
 }
 
 /* 永久删除 —— 回收站的最后一站，**不可逆**。
@@ -969,20 +1585,20 @@ async function restoreNote(n) {
  *   所以做成勾选框由用户当场决定 —— 不替用户销毁不可替代的数据。 */
 function purgeNote(n) {
   const name = docDisplayTitle(n);
-  _modal("永久删除？",
-    '<div style="line-height:1.75">即将<b>永久删除</b>「' + esc(name) + '」<br>' +
+  _modal(t("永久删除？"),
+    '<div style="line-height:1.75">' + t("即将<b>永久删除</b>「{0}」", esc(name)) + '<br>' +
       '<span class="hint">' + esc(n.rel_path) + '</span><br><br>' +
-      '<span style="color:var(--danger);font-weight:600">此操作不可撤销</span>：' +
-      '笔记文件与其检索索引会被彻底清除，无法再从回收站恢复。</div>' +
+      '<span style="color:var(--danger);font-weight:600">' + esc(t("此操作不可撤销")) + '</span>' +
+      esc(t("：笔记文件与其检索索引会被彻底清除，无法再从回收站恢复。")) + '</div>' +
     '<label class="row" style="margin-top:12px;gap:7px;align-items:flex-start;' +
       'font-size:12.5px;line-height:1.55;cursor:pointer">' +
       '<input type="checkbox" id="_purgeOrig" style="margin-top:3px">' +
-      '<span>同时删除它的<b>原件文件</b>（剪藏网页 / 导入的 Office、PDF 等）<br>' +
-      '<span class="hint">默认不勾选 —— 原件往往无法再生；该笔记若无原件，勾选也无影响。</span>' +
+      '<span>' + t("同时删除它的<b>原件文件</b>（剪藏网页 / 导入的 Office、PDF 等）") + '<br>' +
+      '<span class="hint">' + esc(t("默认不勾选 —— 原件往往无法再生；该笔记若无原件，勾选也无影响。")) + '</span>' +
       '</span></label>' +
     '<div class="row" style="margin-top:14px;justify-content:flex-end">' +
-      '<button class="btn" data-cancel>取消</button>' +
-      '<button class="btn danger" data-ok>永久删除</button></div>',
+      '<button class="btn" data-cancel>' + esc(t("取消")) + '</button>' +
+      '<button class="btn danger" data-ok>' + esc(t("永久删除")) + '</button></div>',
     (root, close) => {
       root.querySelector("[data-cancel]").onclick = close;
       root.querySelector("[data-ok]").onclick = async () => {
@@ -991,7 +1607,7 @@ function purgeNote(n) {
           method: "POST",
           body: JSON.stringify({ doc_id: n.doc_id, delete_originals: also })
         });
-        if (r.code !== 200) { toast(r.message || "删除失败", 3200); return; }
+        if (r.code !== 200) { toast(r.message || t("删除失败"), 3200); return; }
         collCache.trash = (collCache.trash || []).filter(x => x !== n.doc_id);
         delete collCache.membership[n.doc_id];
         delete collCache.display_titles[n.doc_id];
@@ -1002,9 +1618,9 @@ function purgeNote(n) {
         if (NOTE && NOTE.path === n.rel_path) {
           NOTE.payload = null;
           $("#noteTitleBar").textContent = "";
-          $("#noteView").innerHTML = '<span class="empty">该笔记已被永久删除。</span>';
+          $("#noteView").innerHTML = '<span class="empty">' + esc(t("该笔记已被永久删除。")) + '</span>';
         }
-        toast("已永久删除");
+        toast(t("已永久删除"));
       };
     });
 }
@@ -1024,14 +1640,14 @@ async function openNoteItem(el, jump, nav, terms) {
       NOTE.payload = null;
       $("#noteSeg").hidden = true;
       $("#noteView").innerHTML = '<div class="alert err" style="margin:8px 0">'
-        + esc(e.message || "读取失败") + "<br>请重新启动 Kavira（双击启动脚本）后刷新本页。</div>";
+        + esc(e.message || t("读取失败")) + "<br>" + esc(t("请重新启动 Kavira（双击启动脚本）后刷新本页。")) + "</div>";
       return;
     }
     if (nav != null && nav !== NOTE_NAV_SEQ) return;                 // B：有更新的导航已发生 → 放弃
     if (r.code !== 200) {
       NOTE.payload = null;
       $("#noteSeg").hidden = true;
-      $("#noteView").innerHTML = '<span class="empty">读取失败：' + esc(r.message || "") + "</span>";
+      $("#noteView").innerHTML = '<span class="empty">' + esc(t("读取失败：{0}", r.message || "")) + "</span>";
       return;
     }
     NOTE.payload = r.data;
@@ -1040,8 +1656,8 @@ async function openNoteItem(el, jump, nav, terms) {
     const btn = $("#segOriginal");
     btn.disabled = !orig;
     btn.title = orig
-      ? ("查看" + noteLabels(orig).original + "：" + orig.name + "（" + fmtSize(orig.size) + "）")
-      : "该笔记没有留存原件（纯 Markdown / 纯文本导入）";
+      ? t("查看{0}：{1}（{2}）", noteLabels(orig).original, orig.name, fmtSize(orig.size))
+      : t("该笔记没有留存原件（纯 Markdown / 纯文本导入）");
     if (jump) {
       // 证据跳转只在「渲染」视图里定位（B4：不做 PDF/DOCX 页面坐标）。
       // 若该笔记默认开「原版」，先切回渲染视图再定位。
@@ -1074,7 +1690,7 @@ async function openNoteByPath(path, jump, nav, terms) {
     if (nav != null && nav !== NOTE_NAV_SEQ) return;
     el = find();
   }
-  if (!el) { toast("找不到该笔记（可能已被删除）", 3200); return; }
+  if (!el) { toast(t("找不到该笔记（可能已被删除）"), 3200); return; }
   el.scrollIntoView({ block: "center" });
   await openNoteItem(el, jump, nav, terms);
 }
@@ -1113,7 +1729,7 @@ async function jumpToEvidence(path, jump, nav, terms) {
     } catch (e) { /* 走兜底 */ }
   }
   const src = (ev && ev.content) || jump.snippet || "";
-  if (!src) { toast("该引用缺少定位信息，已打开原文", 3000); return; }
+  if (!src) { toast(t("该引用缺少定位信息，已打开原文"), 3000); return; }
 
   // 源行范围：SSE 引用帧优先，其次 evidence 接口（两者同源，都为 0 表示老索引）
   const rStart = Number(jump.source_start_line || 0) || Number((ev && ev.source_start_line) || 0);
@@ -1159,7 +1775,7 @@ async function jumpToEvidence(path, jump, nav, terms) {
       }
     }
     if (start < 0) {
-      toast("该引用来自旧索引，已打开对应文档", 3400);
+      toast(t("该引用来自旧索引，已打开对应文档"), 3400);
       return;
     }
     const targetLen = _normTxt(src).length;
@@ -1389,8 +2005,8 @@ const NOTE = { payload: null, view: "rendered" };
 function noteLabels(orig) {
   const isWeb = !!(orig && (orig.ext === ".html" || orig.ext === ".htm"));
   return {
-    rendered: "阅读",
-    original: isWeb ? "网页快照" : "原件",
+    rendered: t("阅读"),
+    original: isWeb ? t("网页快照") : t("原件"),
     raw: "Markdown",
   };
 }
@@ -1424,12 +2040,12 @@ function fmtSize(n) {
    以为程序卡死，进而强杀进程（那反而会留下半截文件）。估算刻意保守。 */
 function fmtDuration(sec) {
   sec = Math.max(0, Math.round(Number(sec) || 0));
-  if (!sec) return "很快";
-  if (sec < 45) return "不到 1 分钟";
+  if (!sec) return t("很快");
+  if (sec < 45) return t("不到 1 分钟");
   const min = Math.round(sec / 60);
-  if (min < 60) return "约 " + min + " 分钟";
+  if (min < 60) return t("约 {0} 分钟", min);
   const hr = min / 60;
-  return "约 " + (hr < 10 ? hr.toFixed(1) : Math.round(hr)) + " 小时";
+  return t("约 {0} 小时", hr < 10 ? hr.toFixed(1) : Math.round(hr));
 }
 
 function setNoteView(view) {
@@ -1457,41 +2073,39 @@ function setNoteView(view) {
     const url = "/api/notes/original?path=" + encodeURIComponent(d.path);
     // 「在新标签打开」实际打开的是本地离线快照 → 文案必须说清楚（网页剪藏）；
     // PDF/Office 的它就是原件本身，保留「在新标签打开」。
-    const openLabel = isWeb ? "新标签打开快照" : "在新标签打开";
+    const openLabel = isWeb ? t("新标签打开快照") : t("在新标签打开");
     const srcUrl = frontmatterValue(d.content, "source_url");
     const visit = (isWeb && /^https?:\/\//i.test(srcUrl))
-      ? '　<a href="' + esc(srcUrl) + '" target="_blank" rel="noopener noreferrer">访问原网页</a>'
+      ? '　<a href="' + esc(srcUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(t("访问原网页")) + '</a>'
       : "";
     const isPdf = orig.ext === ".pdf";
     // Office 原件（docx/xlsx）：浏览器不认这类格式，必须由服务端转成 HTML 再预览
     const isOffice = /^\.(docx|docm|dotx|dotm|xlsx|xlsm|xltx)$/.test(orig.ext);
-    const meta = '<div class="doc-meta">' + labels.original + "：" + esc(orig.name) +
-      "（" + fmtSize(orig.size) + "）" + visit +
+    const meta = '<div class="doc-meta">' + esc(t("{0}：{1}（{2}）", labels.original, orig.name, fmtSize(orig.size))) + visit +
       (isOffice
-        ? '<span class="hint">　预览由服务端转换生成，保留表格与结构，不还原原始排版</span>'
+        ? '<span class="hint">　' + esc(t("预览由服务端转换生成，保留表格与结构，不还原原始排版")) + '</span>'
         : "") +
-      '　<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + openLabel + "</a>" +
-      '　<a href="' + url + '?download=1" download>下载原件</a></div>';
+      '　<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + esc(openLabel) + "</a>" +
+      '　<a href="' + url + '?download=1" download>' + esc(t("下载原件")) + "</a></div>";
 
     // 剪藏页加宽度切换；PDF 用浏览器自带查看器（自带缩放），无需切换
     const tools = isWeb
-      ? '<div class="frame-tools">宽度：'
-        + '<button type="button" data-m="fit" class="on">适应宽度</button>'
-        + '<button type="button" data-m="raw">实际大小</button>'
-        + '<span>剪藏页已禁用脚本，需登录/展开等交互时请用「下载原件」在浏览器打开</span></div>'
+      ? '<div class="frame-tools">' + esc(t("宽度："))
+        + '<button type="button" data-m="fit" class="on">' + esc(t("适应宽度")) + '</button>'
+        + '<button type="button" data-m="raw">' + esc(t("实际大小")) + '</button>'
+        + '<span>' + esc(t("剪藏页已禁用脚本，需登录/展开等交互时请用「下载原件」在浏览器打开")) + '</span></div>'
       : "";
 
     // 动态页降级快照（partial_fallback）：正文完全靠前端脚本渲染，
     // 沙箱（禁脚本——安全底线）里只会是一片空白。与其让用户对着白屏
     // 以为「快照打不开」，不如把原因和出路一次说清楚。
     const snapWarn = (isWeb && frontmatterValue(d.content, "status") === "partial_fallback")
-      ? '<div class="snap-warn">⚠️ 该网页由前端脚本动态渲染，安全沙箱内（已禁用脚本）无法显示其内容。' +
-        '请用上方「新标签打开快照」或「下载原件」在浏览器中查看完整快照；正文请回「阅读」视图。</div>'
+      ? '<div class="snap-warn">' + esc(t("⚠️ 该网页由前端脚本动态渲染，安全沙箱内（已禁用脚本）无法显示其内容。请用上方「新标签打开快照」或「下载原件」在浏览器中查看完整快照；正文请回「阅读」视图。")) + '</div>'
       : "";
 
     box.className = "doc-md doc-original";   // 让 #noteView 成为填满面板的 flex 列
     box.innerHTML = snapWarn + meta + tools +
-      '<div class="frame-wrap fit"><iframe class="doc-frame" title="原版预览"></iframe></div>';
+      '<div class="frame-wrap fit"><iframe class="doc-frame" title="' + attrEsc(t("原版预览")) + '"></iframe></div>';
     const wrap = box.querySelector(".frame-wrap");
     const frame = wrap.querySelector("iframe");
 
@@ -1524,8 +2138,8 @@ function setNoteView(view) {
       frame.src = url + "&as=html";
       return;
     } else {
-      wrap.outerHTML = '<div class="doc-dl">该格式无法内嵌预览。<br><br>' +
-        '<a class="btn" href="' + url + '?download=1" download>下载原件</a></div>';
+      wrap.outerHTML = '<div class="doc-dl">' + esc(t("该格式无法内嵌预览。")) + '<br><br>' +
+        '<a class="btn" href="' + url + '?download=1" download>' + esc(t("下载原件")) + '</a></div>';
       return;
     }
 
@@ -1657,7 +2271,7 @@ function docToHtml(src, baseLine) {
   }
   flushAll();
   return out.join("").replace(/\u0000F(\d+)\u0000/g, (m, i) => fences[+i]) ||
-    '<span class="empty">（空文档）</span>';
+    '<span class="empty">' + esc(t("（空文档）")) + '</span>';
 }
 
 function inline(s) {
@@ -1770,8 +2384,22 @@ const CFG_SCHEMA = [
     desc: "控制「引用来源」的严格程度。",
     fields: [
       { key: "allow_semantic_only", label: "允许「仅语义相关」进入引用", type: "select",
-        tip: "默认关闭：引用必须有字面依据，宁可回答「没找到」，也不用语义相近但无关的文档冒充出处。开启则召回更多，但引用可能不相关。",
-        options: [["0", "关闭（推荐）"], ["1", "允许"]] },
+        tip: "默认开启：允许语义通道召回 —— 当你换一种说法提问、原文没有出现你的原话时，" +
+          "仍能找到相关资料。放行的引用会标注 semantic-only（原文未出现你的原话）。" +
+          "关闭则引用必须有字面依据，宁可回答「没找到」。",
+        options: [["1", "开启（推荐）"], ["0", "关闭"]] },
+      { key: "show_semantic_label", label: "显示 semantic-only 徽标", type: "select",
+        tip: "默认开启：在来自语义匹配的引用卡片上显示「semantic-only」徽标与一句人话解释。" +
+          "关闭后仅隐藏徽标，不影响检索行为，也不影响后端对引用的来源判定。",
+        options: [["1", "显示（推荐）"], ["0", "隐藏"]] },
+      { key: "semantic_min_corroboration", label: "语义旁证门限（条）", type: "number",
+        min: 1, max: 10,
+        tip: "语义-only 放行要求「同一文档内有 ≥ 本值 条候选的语义分 ≥ 语义通道最低相似度」。" +
+          "调高更保守（更难放行）。默认 2。仅影响语义通道，不触碰防编造闸门。" },
+      { key: "semantic_floor", label: "语义通道最低相似度", type: "number",
+        min: 0, max: 1, step: 0.01,
+        tip: "语义-only 放行的固定相似度下限（放行阈值 = max(本值, 词法候选池最高分 + 0.05)）。" +
+          "默认 0.84：防止「孤立语义近邻」被误引。仅影响语义通道，不触碰防编造闸门。" },
     ],
   },
   {
@@ -1820,20 +2448,21 @@ function cfgControl(sec, f, val) {
     case "select":
       return "<select " + a + ">" + f.options.map(o =>
         '<option value="' + esc(o[0]) + '"' + (String(val) === String(o[0]) ? " selected" : "") + ">" +
-        esc(o[1]) + "</option>").join("") + "</select>";
+        esc(t(o[1])) + "</option>").join("") + "</select>";
     case "preset-text":
     case "datalist":
       return '<div class="ctl-inline"><input type="text" ' + a + ' list="dl_' + sec + "_" + f.key +
-        '" value="' + esc(val) + '" placeholder="' + esc(f.placeholder || "") + '"><datalist id="dl_' +
+        '" value="' + esc(val) + '" placeholder="' + esc(t(f.placeholder || "")) + '"><datalist id="dl_' +
         sec + "_" + f.key + '">' + (f.options || []).map(o =>
-          Array.isArray(o) ? '<option value="' + esc(o[0]) + '">' + esc(o[1]) + "</option>"
+          Array.isArray(o) ? '<option value="' + esc(o[0]) + '">' + esc(t(o[1])) + "</option>"
                            : '<option value="' + esc(o) + '"></option>').join("") + "</datalist></div>";
     case "password":
       return '<input type="password" ' + a + ' value="' + esc(val) +
-        '" placeholder="留空则不使用云端 API" autocomplete="off">';
+        '" placeholder="' + attrEsc(t("留空则不使用云端 API")) + '" autocomplete="off">';
     case "number":
       return '<input type="number" ' + a + ' value="' + esc(val) + '" style="max-width:140px"' +
-        (f.min != null ? ' min="' + f.min + '"' : "") + (f.max != null ? ' max="' + f.max + '"' : "") + ">";
+        (f.min != null ? ' min="' + f.min + '"' : "") + (f.max != null ? ' max="' + f.max + '"' : "") +
+        (f.step != null ? ' step="' + f.step + '"' : "") + ">";
     case "range":
       return '<div class="ctl-inline"><input type="range" ' + a + ' min="' + f.min + '" max="' + f.max +
         '" step="' + f.step + '" value="' + esc(val) +
@@ -1844,27 +2473,27 @@ function cfgControl(sec, f, val) {
       // 嵌入模型复用同一控件，但不需要即时落盘，故只对 ollama_chat_model 挂 onchange。
       const selOnChange = f.key === "ollama_chat_model" ? ' onchange="onSelectChatModel(this)"' : "";
       return '<div class="ctl-inline ollama-ctl"><select ' + a + ' class="ollama-sel"' + selOnChange + '>' +
-        '<option value="' + esc(val) + '">' + esc(val || "加载中…") + "</option></select>" +
-        '<button class="btn" type="button" title="重新读取本机已安装的 Ollama 模型" onclick="refreshOllamaModels()">刷新模型列表</button></div>' +
-        '<div class="tip ollama-hint">正在读取本地 Ollama 模型…</div>';
+        '<option value="' + esc(val) + '">' + esc(val || t("加载中…")) + "</option></select>" +
+        '<button class="btn" type="button" title="' + attrEsc(t("重新读取本机已安装的 Ollama 模型")) + '" onclick="refreshOllamaModels()">' + esc(t("刷新模型列表")) + '</button></div>' +
+        '<div class="tip ollama-hint">' + esc(t("正在读取本地 Ollama 模型…")) + '</div>';
     default:
-      return '<input type="text" ' + a + ' value="' + esc(val) + '" placeholder="' + esc(f.placeholder || "") + '">';
+      return '<input type="text" ' + a + ' value="' + esc(val) + '" placeholder="' + esc(t(f.placeholder || "")) + '">';
   }
 }
 
 function cfgGroup(g, cfg) {
   const body = g.fields.map(f => '<div class="field">' +
-    '<div class="frow"><label>' + esc(f.label) + "</label></div>" +
+    '<div class="frow"><label>' + esc(t(f.label)) + "</label></div>" +
     cfgControl(g.sec, f, cfgVal(cfg, g.sec, f.key)) +
-    (f.tip ? '<div class="tip">' + esc(f.tip) + "</div>" : "") + "</div>").join("");
+    (f.tip ? '<div class="tip">' + esc(t(f.tip)) + "</div>" : "") + "</div>").join("");
   const testbar = g.test === "ai"
     ? '<div class="testbar">' +
-      '<button class="btn" type="button" title="会先自动保存当前表单，再真实跑一次调用" onclick="testAI(\'ollama\')">测试本地 Ollama</button>' +
-      '<button class="btn" type="button" title="会先自动保存当前表单，再真实跑一次调用" onclick="testAI(\'api\')">测试云端 API</button>' +
+      '<button class="btn" type="button" title="' + attrEsc(t("会先自动保存当前表单，再真实跑一次调用")) + '" onclick="testAI(\'ollama\')">' + esc(t("测试本地 Ollama")) + '</button>' +
+      '<button class="btn" type="button" title="' + attrEsc(t("会先自动保存当前表单，再真实跑一次调用")) + '" onclick="testAI(\'api\')">' + esc(t("测试云端 API")) + '</button>' +
       '<div class="test-out" id="testOut"></div></div>'
     : "";
-  return '<div class="cfg-group"><h4>' + esc(g.title) + "</h4>" +
-    (g.desc ? '<div class="gdesc">' + esc(g.desc) + "</div>" : "") + body + testbar + "</div>";
+  return '<div class="cfg-group"><h4>' + esc(t(g.title)) + "</h4>" +
+    (g.desc ? '<div class="gdesc">' + esc(t(g.desc)) + "</div>" : "") + body + testbar + "</div>";
 }
 
 async function loadConfig() {
@@ -1872,6 +2501,9 @@ async function loadConfig() {
   const cfg = r.data || {};
   CFG_DEFAULTS = r.defaults || {};
   CFG_ORIGINAL = JSON.parse(JSON.stringify(cfg));
+  // P0-4：语义-only 徽标显隐（[SEARCH] show_semantic_label，默认开）。
+  // 只影响徽标是否绘制；引用上的 data-match-mode / 后端 match_mode 标记始终保留。
+  SEM_LABEL_ON = String(cfgVal(cfg, "SEARCH", "show_semantic_label")) !== "0";
 
   const seen = new Set();
   const common = [], advanced = [];
@@ -1885,7 +2517,7 @@ async function loadConfig() {
   Object.keys(cfg).forEach(sec => {
     const hidden = Object.keys(cfg[sec]).filter(k => !seen.has(sec + "." + k) && !/_set$/.test(k));
     if (!hidden.length) return;
-    extra.push('<div class="cfg-group"><h4>' + esc(sec) + " · 其他</h4>" + hidden.map(k =>
+    extra.push('<div class="cfg-group"><h4>' + esc(sec + t(" · 其他")) + "</h4>" + hidden.map(k =>
       '<div class="field"><div class="frow"><label>' + esc(k) + "</label></div>" +
       '<input type="text" data-sec="' + esc(sec) + '" data-key="' + esc(k) +
       '" value="' + esc(cfg[sec][k]) + '"></div>').join("") + "</div>");
@@ -1899,9 +2531,8 @@ async function loadConfig() {
 /* 「恢复默认设置」：把表单填回出厂默认值（**不落盘**，用户再点「保存配置」才生效）。
    密钥字段刻意跳过 —— 默认值为空，重置会把真 Key 覆盖掉。 */
 function applyConfigDefaults() {
-  if (!Object.keys(CFG_DEFAULTS).length) { toast("默认值尚未加载，请先刷新"); return; }
-  if (!confirm("把设置填回出厂默认值？\n\n不会立即保存 —— 确认无误后再点「保存配置」才生效。" +
-               "\n（云端 API Key 不会被清空）")) return;
+  if (!Object.keys(CFG_DEFAULTS).length) { toast(t("默认值尚未加载，请先刷新")); return; }
+  if (!confirm(t("把设置填回出厂默认值？\n\n不会立即保存 —— 确认无误后再点「保存配置」才生效。\n（云端 API Key 不会被清空）"))) return;
   $$("#cfgForm [data-sec], #cfgAdvanced [data-sec]").forEach(el => {
     const sec = el.dataset.sec, key = el.dataset.key;
     if (SENSITIVE.has(sec + "." + key)) return;            // 不重置密钥
@@ -1909,7 +2540,7 @@ function applyConfigDefaults() {
     if (d === undefined) return;
     if (el.tagName === "SELECT" && !Array.from(el.options).some(o => o.value === String(d))) {
       const o = document.createElement("option");
-      o.value = String(d); o.textContent = String(d) || "（默认）";
+      o.value = String(d); o.textContent = String(d) || t("（默认）");
       el.appendChild(o);
     }
     el.value = d;
@@ -1918,7 +2549,7 @@ function applyConfigDefaults() {
       if (rv) rv.textContent = (+d).toFixed(2);
     }
   });
-  toast("已填回默认值，确认后点「保存配置」生效");
+  toast(t("已填回默认值，确认后点「保存配置」生效"));
 }
 
 /* Ollama 模型下拉（对话模型 + 嵌入模型通用）：在线就列出本机已装模型，
@@ -1928,7 +2559,7 @@ async function refreshOllamaModels() {
   const sels = $$(".ollama-sel");
   if (!sels.length) return;
   sels.forEach(s => { const h = s.closest(".ollama-ctl").parentElement.querySelector(".ollama-hint");
-                      if (h) h.textContent = "正在读取本地 Ollama 模型…"; });
+                      if (h) h.textContent = t("正在读取本地 Ollama 模型…"); });
   let d = null;
   try {
     const r = await api("/api/ollama/models");
@@ -1936,7 +2567,7 @@ async function refreshOllamaModels() {
   } catch (e) {
     sels.forEach(sel => {
       const h = sel.closest(".ollama-ctl").parentElement.querySelector(".ollama-hint");
-      if (h) h.textContent = "读取失败：" + e.message;
+      if (h) h.textContent = t("读取失败：{0}", e.message);
     });
     return;
   }
@@ -1951,7 +2582,7 @@ async function refreshOllamaModels() {
     // "does not support chat"。能力过滤把这类错误挡在**选择之前**。
     const role = sel.dataset.key === "embedding_model_name" ? "embed" : "chat";
     const needCap = role === "embed" ? "embedding" : "completion";
-    const roleName = role === "embed" ? "嵌入模型" : "本地对话模型";
+    const roleName = role === "embed" ? t("嵌入模型") : t("本地对话模型");
 
     if (!d.available) {
       const inp = document.createElement("input");
@@ -1959,10 +2590,10 @@ async function refreshOllamaModels() {
       inp.dataset.sec = sel.dataset.sec;
       inp.dataset.key = sel.dataset.key;
       inp.value = current;
-      inp.placeholder = "填写你本机已安装的模型名";
+      inp.placeholder = t("填写你本机已安装的模型名");
       sel.replaceWith(inp);
-      if (hint) hint.innerHTML = "⚠ " + esc(d.detail || "未检测到本地 Ollama") +
-        " —— 已切换为手动填写。装好 Ollama 后点「刷新模型列表」可恢复下拉。";
+      if (hint) hint.innerHTML = esc(t("⚠ {0} —— 已切换为手动填写。装好 Ollama 后点「刷新模型列表」可恢复下拉。",
+        d.detail || t("未检测到本地 Ollama")));
       return;
     }
     const all = d.models || [];
@@ -1974,10 +2605,10 @@ async function refreshOllamaModels() {
     const bits = m => [m.params, m.size_text].filter(Boolean).join(" · ");
     const installed = all.some(m => m.name === current);
     const usableNow = models.some(m => m.name === current);
-    sel.innerHTML = '<option value="">— 未选择（请从下方本机模型里挑一个）—</option>' +
+    sel.innerHTML = '<option value="">' + esc(t("— 未选择（请从下方本机模型里挑一个）—")) + '</option>' +
       (current && !usableNow
         ? '<option value="' + esc(current) + '">' + esc(current) +
-          (installed ? "（不支持此用途，请另选）" : "（原配置，本机未找到）") + "</option>"
+          esc(installed ? t("（不支持此用途，请另选）") : t("（原配置，本机未找到）")) + "</option>"
         : "") +
       models.map(m =>
         '<option value="' + esc(m.name) + '">' + esc(m.name) +
@@ -1987,21 +2618,18 @@ async function refreshOllamaModels() {
     sel.value = current;
     if (hint) {
       if (!all.length) {
-        hint.innerHTML = "⚠ Ollama 在线，但本机尚未安装任何模型 —— " +
-          "请先用 Ollama 装好模型，再点「刷新模型列表」。";
+        hint.innerHTML = esc(t("⚠ Ollama 在线，但本机尚未安装任何模型 —— 请先用 Ollama 装好模型，再点「刷新模型列表」。"));
       } else if (hasCaps && !models.length) {
-        hint.innerHTML = "⚠ 本机没有可用于「" + roleName + "」的模型 —— 请先用 Ollama 安装" +
-          "（对话模型如 qwen2.5，嵌入模型如 bge-m3），再点「刷新模型列表」。";
+        hint.innerHTML = esc(t("⚠ 本机没有可用于「{0}」的模型 —— 请先用 Ollama 安装（对话模型如 qwen2.5，嵌入模型如 bge-m3），再点「刷新模型列表」。", roleName));
       } else if (!current) {
-        hint.innerHTML = "已筛出 " + models.length + " 个可用「" + roleName + "」的模型，请选一个" +
-          "（程序不会自动替你选）。" +
-          (hasCaps ? "" : "　⚠ 当前 Ollama 未提供能力标签，无法自动分辨用途。");
+        hint.innerHTML = esc(t("已筛出 {0} 个可用「{1}」的模型，请选一个（程序不会自动替你选）。", models.length, roleName)) +
+          (hasCaps ? "" : esc(t("　⚠ 当前 Ollama 未提供能力标签，无法自动分辨用途。")));
       } else if (!usableNow) {
-        hint.innerHTML = "⚠ 当前配置的「" + esc(current) + "」" +
-          (installed ? "不支持「" + roleName + "」（能力标签里没有 " + needCap + "）"
-                     : "在本机已不存在") + "，请重新选择。";
+        hint.innerHTML = esc(t("⚠ 当前配置的「{0}」{1}，请重新选择。", current,
+          installed ? t("不支持「{0}」（能力标签里没有 {1}）", roleName, needCap)
+                    : t("在本机已不存在")));
       } else {
-        hint.innerHTML = "✅ 当前模型：" + esc(current) + "　（Ollama：" + esc(d.host) + "）";
+        hint.innerHTML = esc(t("✅ 当前模型：{0}　（Ollama：{1}）", current, d.host));
       }
     }
   });
@@ -2017,7 +2645,7 @@ async function onSelectChatModel(sel) {
       method: "POST",
       body: JSON.stringify({ data: { AI: { ollama_chat_model: val } } }),
     });
-    if (r.code !== 200) { toast("⚠ 模型选择保存失败：" + (r.message || "")); return; }
+    if (r.code !== 200) { toast(t("⚠ 模型选择保存失败：{0}", r.message || "")); return; }
     // 同步 CFG_ORIGINAL，避免后续「保存配置」把它覆盖回旧值
     if (!CFG_ORIGINAL.AI) CFG_ORIGINAL.AI = {};
     CFG_ORIGINAL.AI.ollama_chat_model = val;
@@ -2027,12 +2655,12 @@ async function onSelectChatModel(sel) {
       ? sel.closest(".ollama-ctl").parentElement.querySelector(".ollama-hint") : null;
     if (hint) {
       hint.innerHTML = val
-        ? ("✅ 已选择本地模型：" + esc(val) + "（已保存，可直接提问）")
-        : "已清空本地模型选择";
+        ? esc(t("✅ 已选择本地模型：{0}（已保存，可直接提问）", val))
+        : esc(t("已清空本地模型选择"));
     }
-    toast(val ? ("已选择并保存本地模型：" + val) : "已清空本地模型选择");
+    toast(val ? t("已选择并保存本地模型：{0}", val) : t("已清空本地模型选择"));
   } catch (e) {
-    toast("⚠ 模型选择保存失败：" + e.message);
+    toast(t("⚠ 模型选择保存失败：{0}", e.message));
   }
 }
 
@@ -2040,13 +2668,13 @@ async function testAI(target) {
   const out = $("#testOut");
   out.className = "test-out loading";
   out.textContent = target === "ollama"
-    ? "正在调用本地 Ollama（首次要加载模型，可能等几秒）…"
-    : "正在调用云端 API…";
+    ? t("正在调用本地 Ollama（首次要加载模型，可能等几秒）…")
+    : t("正在调用云端 API…");
   await saveConfig(true);   // 测的是你刚改的值，先落盘
   const r = await api("/api/ai/test", { method: "POST", body: JSON.stringify({ target }) });
   const d = r.data || {};
   out.className = "test-out " + (d.ok ? "ok" : "bad");
-  out.textContent = (d.ok ? "✅ " : "❌ ") + (d.detail || r.message || "未知结果");
+  out.textContent = (d.ok ? "✅ " : "❌ ") + (d.detail || r.message || t("未知结果"));
 }
 
 async function saveConfig(silent) {
@@ -2066,32 +2694,32 @@ async function saveConfig(silent) {
   CFG_ORIGINAL = JSON.parse(JSON.stringify(data));
 
   if (changed) {
-    toast("⚠ 嵌入模型相关设置已变更，请点下方「重建向量索引」，否则向量检索会被禁用", 6000);
+    toast(t("⚠ 嵌入模型相关设置已变更，请点下方「重建向量索引」，否则向量检索会被禁用"), 6000);
   }
-  if (!silent) toast("✅ 配置已保存（重启程序后完全生效）");
+  if (!silent) toast(t("✅ 配置已保存（重启程序后完全生效）"));
   return true;
 }
 
 async function rebuild(vec) {
   const log = $("#rebuildLog");
-  log.innerHTML = '<span class="spin"></span> 已在后台启动…';
+  log.innerHTML = '<span class="spin"></span> ' + esc(t("已在后台启动…"));
   const r = await api(vec ? "/api/system/rebuild-vectors" : "/api/system/rebuild-index", {
     method: "POST", body: "{}",
   });
-  toast(r.message || "任务已启动");
+  toast(r.message || t("任务已启动"));
   setTimeout(async () => {
     await loadNotes(); await pollStatus(false);
-    log.textContent = "任务已提交后台执行，可继续使用其他功能。";
+    log.textContent = t("任务已提交后台执行，可继续使用其他功能。");
   }, 2500);
 }
 
 /* ---------------------------- 产品授权 ---------------------------- */
 function licStatusLabel(st) {
-  const m = { OK: "已激活", NO_LICENSE: "未激活", DEVICE_MISMATCH: "设备不符",
-              EXPIRED: "已过期", BAD_SIGNATURE: "签名无效",
-              PRODUCT_MISMATCH: "产品不符", MALFORMED: "格式错误",
-              CRYPTO_UNAVAILABLE: "无法验证" };
-  return m[(st && st.status) || ""] || "未知";
+  const m = { OK: t("已激活"), NO_LICENSE: t("未激活"), DEVICE_MISMATCH: t("设备不符"),
+              EXPIRED: t("已过期"), BAD_SIGNATURE: t("签名无效"),
+              PRODUCT_MISMATCH: t("产品不符"), MALFORMED: t("格式错误"),
+              CRYPTO_UNAVAILABLE: t("无法验证") };
+  return m[(st && st.status) || ""] || t("未知");
 }
 
 function renderLicense(st) {
@@ -2114,26 +2742,26 @@ async function loadLicense() {
     renderLicense(r.data || {});
   } catch (e) {
     const box = $("#licState");
-    if (box) box.innerHTML = '<span class="lic-badge warn">读取失败</span> ' + esc(e.message);
+    if (box) box.innerHTML = '<span class="lic-badge warn">' + esc(t("读取失败")) + '</span> ' + esc(e.message);
   }
 }
 
 function copyDeviceCode() {
   const v = $("#licDeviceCode") ? $("#licDeviceCode").value : "";
-  if (!v) { toast("设备码尚未加载"); return; }
+  if (!v) { toast(t("设备码尚未加载")); return; }
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(v).then(() => toast("设备码已复制"), () => fallbackCopy());
+    navigator.clipboard.writeText(v).then(() => toast(t("设备码已复制")), () => fallbackCopy());
   } else { fallbackCopy(); }
   function fallbackCopy() {
     const el = $("#licDeviceCode"); el.removeAttribute("readonly"); el.select();
-    try { document.execCommand("copy"); toast("设备码已复制"); } catch (e) { toast("复制失败，请手动选择"); }
+    try { document.execCommand("copy"); toast(t("设备码已复制")); } catch (e) { toast(t("复制失败，请手动选择")); }
     el.setAttribute("readonly", "readonly");
   }
 }
 
 async function doActivate() {
   const code = ($("#licCode") ? $("#licCode").value : "").trim();
-  if (!code) { toast("请先粘贴激活码"); return; }
+  if (!code) { toast(t("请先粘贴激活码")); return; }
   const r = await api("/api/license/activate", {
     method: "POST", body: JSON.stringify({ code }),
   });
@@ -2143,10 +2771,10 @@ async function doActivate() {
 }
 
 async function doClearLicense() {
-  if (!confirm("清除本机激活？\n\n清除后本机立即回到未激活状态（不影响资料库与笔记）。")) return;
+  if (!confirm(t("清除本机激活？\n\n清除后本机立即回到未激活状态（不影响资料库与笔记）。"))) return;
   const r = await api("/api/license/clear", { method: "POST", body: "{}" });
   const d = r.data || {};
-  toast(r.message || "已清除");
+  toast(r.message || t("已清除"));
   renderLicense(d.state || {}); pollStatus(false);
 }
 
@@ -2168,7 +2796,7 @@ document.addEventListener("click", async function (ev) {
   const chip = ev.target && ev.target.closest ? ev.target.closest(".cite,.ref") : null;
   if (!chip) return;
   const path = chip.dataset.path;
-  if (!path) { toast("该引用没有对应的笔记路径", 2600); return; }
+  if (!path) { toast(t("该引用没有对应的笔记路径"), 2600); return; }
   const isCite = chip.classList.contains("cite");
   const jump = isCite ? {
     parent_id: chip.dataset.parentId || "",
@@ -2194,7 +2822,7 @@ document.addEventListener("click", async function (ev) {
 let DD_BUSY = false, DD_TIMER = null, DD_TARGET = "";
 
 function ddSourceText(s) {
-  const map = { env: "启动参数指定", marker: "本机配置指定", default: "程序目录下的 data" };
+  const map = { env: t("启动参数指定"), marker: t("本机配置指定"), default: t("程序目录下的 data") };
   return map[s] || s || "—";
 }
 
@@ -2205,22 +2833,21 @@ async function loadDataDir() {
     const r = await api("/api/datadir");
     const d = r.data || {};
     kv.innerHTML = [
-      ["当前位置", d.path || "—"],
-      ["怎么定的", ddSourceText(d.source)],
-      ["已存文档", (d.notes || 0) + " 篇"],
-      ["占用空间", fmtSize(d.bytes || 0) + "（" + (d.files || 0) + " 个文件）"],
-      ["该盘剩余", d.free_bytes > 0 ? fmtSize(d.free_bytes) : "—"],
+      [t("当前位置"), d.path || "—"],
+      [t("怎么定的"), ddSourceText(d.source)],
+      [t("已存文档"), t("{0} 篇", d.notes || 0)],
+      [t("占用空间"), fmtSize(d.bytes || 0) + t("（{0} 个文件）", d.files || 0)],
+      [t("该盘剩余"), d.free_bytes > 0 ? fmtSize(d.free_bytes) : "—"],
       // 预告导出规模与耗时：备份只打包用户资料，比"占用空间"小（不含索引/备份/日志）
-      ["备份包约", fmtSize(d.export_bytes || 0)
-        + "，导出约需 " + fmtDuration(d.est_export_seconds)],
+      [t("备份包约"), fmtSize(d.export_bytes || 0) + t("，导出约需 {0}", fmtDuration(d.est_export_seconds))],
     ].map(x => "<b>" + esc(x[0]) + "</b><span>" + esc(x[1]) + "</span>").join("");
     // 剪藏页那句提示原本写死「文档\Kavira-Data\notes」——自定义/U盘安装时是错的，
     // 这里按本次读到的真实资料目录回填。
     const nh = $("#ddNotesHint");
-    if (nh && d.path) nh.innerHTML = "（当前在 " + esc(d.path + "/notes") + "）";
+    if (nh && d.path) nh.innerHTML = esc(t("（当前在 {0}）", d.path + "/notes"));
     return d;
   } catch (e) {
-    kv.innerHTML = '<span class="hint">读取失败：' + esc(e.message) + "</span>";
+    kv.innerHTML = '<span class="hint">' + esc(t("读取失败：{0}", e.message)) + "</span>";
     return null;
   }
 }
@@ -2228,8 +2855,8 @@ async function loadDataDir() {
 async function ddCheck() {
   const target = ($("#ddTarget").value || "").trim();
   const box = $("#ddResult"), btn = $("#btnDdMigrate");
-  if (!target) { box.innerHTML = '<span style="color:var(--warn)">请先填写目标目录</span>'; btn.disabled = true; return; }
-  box.innerHTML = '<span class="hint">正在检查…</span>';
+  if (!target) { box.innerHTML = '<span style="color:var(--warn)">' + esc(t("请先填写目标目录")) + '</span>'; btn.disabled = true; return; }
+  box.innerHTML = '<span class="hint">' + esc(t("正在检查…")) + '</span>';
   btn.disabled = true;
   try {
     const r = await api("/api/datadir/precheck", { method: "POST", body: JSON.stringify({ target }) });
@@ -2237,48 +2864,42 @@ async function ddCheck() {
     // ⚠ 后端统一用 code 字段表示成败（不是 ok）——判断错会让「预检通过」永远显示成失败。
     if (r.code === 200) {
       DD_TARGET = d.path || target;
-      let html = '<span style="color:var(--ok)">✓ 可以迁到这里</span>　需要约 ' + fmtSize(d.bytes || 0) +
-        "，目标可用 " + fmtSize(d.free_bytes > 0 ? d.free_bytes : 0) + "。" +
-        "<br>迁移预计需要 " + fmtDuration(d.est_migrate_seconds) +
-        "（视磁盘速度而定）—— 期间请勿关闭程序或拔出磁盘。";
+      let html = '<span style="color:var(--ok)">' + esc(t("✓ 可以迁到这里")) + '</span>' +
+        esc(t("　需要约 {0}，目标可用 {1}。", fmtSize(d.bytes || 0), fmtSize(d.free_bytes > 0 ? d.free_bytes : 0))) +
+        "<br>" + esc(t("迁移预计需要 {0}（视磁盘速度而定）—— 期间请勿关闭程序或拔出磁盘。", fmtDuration(d.est_migrate_seconds)));
       (d.warnings || []).forEach(w => { html += "<br>· " + esc(w); });
       box.innerHTML = html;
       btn.disabled = false;
     } else {
       DD_TARGET = "";
-      box.innerHTML = '<span style="color:var(--danger)">' + esc(r.message || "预检未通过") + "</span>";
+      box.innerHTML = '<span style="color:var(--danger)">' + esc(r.message || t("预检未通过")) + "</span>";
     }
   } catch (e) {
     DD_TARGET = "";
-    box.innerHTML = '<span style="color:var(--danger)">检查失败：' + esc(e.message) + "</span>";
+    box.innerHTML = '<span style="color:var(--danger)">' + esc(t("检查失败：{0}", e.message)) + "</span>";
   }
 }
 
 async function ddMigrate() {
   if (!DD_TARGET) return;
-  if (!confirm(
-    "将把现有资料" + "" + "完整复制到：\n\n　" + DD_TARGET + "\n\n" +
-    "· 复制期间请勿关闭电脑或拔出磁盘\n" +
-    "· 完成后会重新打开资料库，页面会短暂无响应\n" +
-    "· 旧目录会原样保留，等你确认没问题后自己删除\n\n" +
-    "确定开始迁移吗？")) return;
+  if (!confirm(t("将把现有资料完整复制到：\n\n　{0}\n\n· 复制期间请勿关闭电脑或拔出磁盘\n· 完成后会重新打开资料库，页面会短暂无响应\n· 旧目录会原样保留，等你确认没问题后自己删除\n\n确定开始迁移吗？", DD_TARGET))) return;
   const btn = $("#btnDdMigrate"), chk = $("#btnDdCheck"), inp = $("#ddTarget");
   DD_BUSY = true;
   btn.disabled = true; chk.disabled = true; inp.disabled = true;
   $("#ddProgress").hidden = false;
   $("#ddBar").style.width = "0%";
-  $("#ddStage").textContent = "正在启动迁移任务…";
+  $("#ddStage").textContent = t("正在启动迁移任务…");
   try {
     const r = await api("/api/datadir/migrate", { method: "POST", body: JSON.stringify({ target: DD_TARGET }) });
     if (r.code !== 202) {       // 409 已在迁移 / 400 目标不合规 —— 都别开始轮询
       $("#ddStage").innerHTML = '<span style="color:var(--danger)">' +
-        esc(r.message || "无法开始迁移") + "</span>";
+        esc(r.message || t("无法开始迁移")) + "</span>";
       ddFinish();
       return;
     }
     DD_TIMER = setInterval(ddPoll, 800);
   } catch (e) {
-    $("#ddStage").innerHTML = '<span style="color:var(--danger)">无法开始：' + esc(e.message) + "</span>";
+    $("#ddStage").innerHTML = '<span style="color:var(--danger)">' + esc(t("无法开始：{0}", e.message)) + "</span>";
     ddFinish();
   }
 }
@@ -2294,17 +2915,16 @@ function ddPoll() {
     const res = p.result || {};
     if (res.ok) {
       $("#ddStage").innerHTML =
-        '<span style="color:var(--ok)">✓ 迁移完成：共 ' + (res.files || 0) + " 个文件 / " +
-        fmtSize(res.bytes || 0) + "，用时 " + (res.seconds || 0) + " 秒</span><br>" +
-        "资料现在保存在：" + esc(res.to || "") + "<br>" +
-        '<span class="hint">旧位置（' + esc(res.from || "") +
-        "）仍保留着一份完整副本，确认无误后可自行删除。</span>";
+        '<span style="color:var(--ok)">' + esc(t("✓ 迁移完成：共 {0} 个文件 / {1}，用时 {2} 秒",
+          res.files || 0, fmtSize(res.bytes || 0), res.seconds || 0)) + "</span><br>" +
+        esc(t("资料现在保存在：{0}", res.to || "")) + "<br>" +
+        '<span class="hint">' + esc(t("旧位置（{0}）仍保留着一份完整副本，确认无误后可自行删除。", res.from || "")) + "</span>";
       DD_TARGET = ""; $("#ddTarget").value = "";
       loadDataDir(); pollStatus(false); loadNotes();
-      toast("资料已迁移到新目录");
+      toast(t("资料已迁移到新目录"));
     } else {
       $("#ddStage").innerHTML =
-        '<span style="color:var(--danger)">' + esc(res.message || p.message || "迁移失败") +
+        '<span style="color:var(--danger)">' + esc(res.message || p.message || t("迁移失败")) +
         "</span>";
       loadDataDir();
     }
@@ -2323,15 +2943,13 @@ function ddExport() {
   const btn = $("#btnDdExport"), hint = $("#ddExportHint");
   if (btn.disabled) return;
   btn.disabled = true;
-  hint.innerHTML = "正在打包…此项在服务端完成，<b>打包结束后浏览器会自动开始下载</b>。" +
-    "资料较多时请耐心等待，期间可以继续使用其它功能。";
-  toast("正在打包备份，完成后浏览器会自动下载");
+  hint.innerHTML = t("正在打包…此项在服务端完成，<b>打包结束后浏览器会自动开始下载</b>。资料较多时请耐心等待，期间可以继续使用其它功能。");
+  toast(t("正在打包备份，完成后浏览器会自动下载"));
   window.location.href = "/api/datadir/export";
   // 只是把按钮解禁（不宣称完成）：下载是否真的出现由用户自己看浏览器。
   setTimeout(() => {
     btn.disabled = false;
-    hint.innerHTML = '<span class="hint">若迟迟没有开始下载，可以再点一次；' +
-      "打包失败的临时文件会在下次导出前自动清理。</span>";
+    hint.innerHTML = '<span class="hint">' + esc(t("若迟迟没有开始下载，可以再点一次；打包失败的临时文件会在下次导出前自动清理。")) + "</span>";
   }, 60000);
 }
 
@@ -2358,7 +2976,7 @@ $("#btnCfgReload").onclick = loadConfig;
 $("#btnCfgDefaults").onclick = applyConfigDefaults;
 $("#btnRebuild").onclick = () => rebuild(false);
 $("#btnRebuildVec").onclick = () => rebuild(true);
-$("#btnRefresh").onclick = async () => { await pollStatus(false, true); await loadNotes(); toast("状态已刷新"); };
+$("#btnRefresh").onclick = async () => { await pollStatus(false, true); await loadNotes(); toast(t("状态已刷新")); };
 if ($("#btnLicCopy")) $("#btnLicCopy").onclick = copyDeviceCode;
 if ($("#btnLicActivate")) $("#btnLicActivate").onclick = doActivate;
 if ($("#btnLicClear")) $("#btnLicClear").onclick = doClearLicense;
@@ -2367,18 +2985,27 @@ if ($("#btnDdMigrate")) $("#btnDdMigrate").onclick = ddMigrate;
 if ($("#btnDdExport")) $("#btnDdExport").onclick = ddExport;
 
 $("#btnShutdown").onclick = async () => {
-  if (!confirm("将执行 WAL 检查点并释放数据库锁，确保 U 盘可直接拔出。\n\n确定要安全退出吗？")) return;
+  if (!confirm(t("将执行 WAL 检查点并释放数据库锁，确保 U 盘可直接拔出。\n\n确定要安全退出吗？"))) return;
   try {
     await api("/api/system/shutdown", { method: "POST", body: "{}" });
     document.body.innerHTML =
       '<div style="display:grid;place-items:center;height:100vh;font:15px/1.8 sans-serif;color:#0f172a;text-align:center">' +
-      "<div><h2 style='margin:0 0 8px'>已完成安全退出</h2>" +
-      "<p style='color:#64748b'>WAL 已刷回主库、临时文件已清理，现在可以安全拔出 U 盘。</p></div></div>";
+      "<div><h2 style='margin:0 0 8px'>" + esc(t("已完成安全退出")) + "</h2>" +
+      "<p style='color:#64748b'>" + esc(t("WAL 已刷回主库、临时文件已清理，现在可以安全拔出 U 盘。")) + "</p></div></div>";
     setTimeout(() => window.close(), 1200);
-  } catch (e) { toast("退出请求失败：" + e.message); }
+  } catch (e) { toast(t("退出请求失败：{0}", e.message)); }
 };
 
+/* 语言切换：写入 localStorage 后整页 reload —— 不重渲染，避免丢掉对话/笔记状态 */
+$$("[data-lang]").forEach(b => b.onclick = () => {
+  const next = b.dataset.lang;
+  if (next === LANG) return;
+  try { localStorage.setItem("kavira.lang", next); } catch (e) { /* 存储不可用时仅本次生效 */ }
+  location.reload();
+});
+
 /* ---------------------------- 启动 ---------------------------- */
+applyI18n();          // 静态文案先就位：语言已在文件顶部确定，之后才是动态渲染
 initDropZone();
 loadImportFormats();
 loadConfig();

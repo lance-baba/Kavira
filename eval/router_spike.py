@@ -1,5 +1,7 @@
 """Kavira · Attribution Scope Router Spike V1
 
+⚠ 本脚本未含 T3.5 过滤（不过滤 match_mode=="semantic-only" 证据），**不得作为归因判据**。
+
 **只在 eval/ 内实现；不改 app/；不调用任何模型**（无 LLM / embedding / reranker / ONNX / 网络）。
 
 Router 的职责只有一个：**判断这个 query 是否存在事实归因风险。**

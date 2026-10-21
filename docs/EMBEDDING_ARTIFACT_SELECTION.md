@@ -372,3 +372,65 @@ $P tools/embedding_eval/agreement.py               # 1200 组量化影响
 未下载：PyTorch / CUDA / Optimum / Chat LLM / GGUF / Ollama runtime / 任何 >100MB 文件。
 未修改 release/runtime 正式代码；未改 dependency lock；未改 BUILD_INFO schema；未加模型 UI。
 模型与评测产物全部落在 gitignored 路径。
+
+---
+
+## 17. 更新：随包 artifact 换为 `multilingual-e5-small`（T07 集成 · 2026-10-16）
+
+> 嵌入模型评估阶段经四门槛评估后**放行** C1 `multilingual-e5-small`，随包 artifact 由
+> `bge-small-zh-v1.5` 换为它。原 artifact 备份于 `vendor/cache/embedding_bge_small_zh_v1.5_backup/`
+> （保留，便于回滚）。四门槛数字见 `docs/embedding-eval-PRD.md` §11 与 `eval/reports/embedding_eval/`。
+
+### 17.1 Provenance（§12 格式）
+
+```json
+{
+  "model_id": "multilingual-e5-small",
+  "artifact_source": "https://huggingface.co/Xenova/multilingual-e5-small",
+  "artifact_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+  "base_model": "intfloat/multilingual-e5-small",
+  "base_model_revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+  "filename": "onnx/model_quantized.onnx",
+  "precision": "int8",
+  "size": 118308185,
+  "sha256": "f80102d3f2a1229f387d3c81909990d8945513e347b0eab049f7de3c6f98c193",
+  "license": "MIT",
+  "license_note": "转换仓库 Xenova/multilingual-e5-small 未声明 license；权重来自 MIT 的 base model（intfloat/multilingual-e5-small），故按 MIT 记录并保留完整链路。MIT 原文取自上游 microsoft/unilm（pin commit 31c5b904…）。",
+  "tokenizer": {
+    "files": {
+      "tokenizer.json":          {"size": 17082730, "sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39"},
+      "tokenizer_config.json":   {"size": 443,      "sha256": "a1d6bc8734a6f635dc158508bef000f8e2e5a759c7d92f984b2c86e5ff53425b"},
+      "special_tokens_map.json": {"size": 167,      "sha256": "d05497f1da52c5e09554c0cd874037a083e1dc1b9cfd48034d1c717f1afc07a7"}
+    }
+  },
+  "pooling": "mean",
+  "normalization": "l2",
+  "dimension": 384,
+  "max_length": 512,
+  "query_prefix": "query: ",
+  "document_prefix": "passage: "
+}
+```
+
+### 17.2 与 `bge-small-zh-v1.5` 的差异
+
+| 项 | bge-small-zh-v1.5（旧） | multilingual-e5-small（新） |
+| :--- | :--- | :--- |
+| 维度 | 512 | **384**（≠512 → 库内 vec0 表自动重建） |
+| pooling | cls | **mean** |
+| 检索前缀 | 无 | **`query: ` / `passage: `**（e5 系官方要求） |
+| 语言 | 中文为主 | **多语言** |
+| 体积 | 22.8MB + 439KB | ≈ **118.3MB + 17MB**（≈135MB） |
+| license | MIT | MIT |
+| 速度（2 线程，相对旧） | 1.0× | 单条 **2.11×** / batch **1.45×** / 重建 **1.71×**（均 ≤3×） |
+
+### 17.3 合规文件
+
+`vendor/licenses/multilingual-e5-small/{LICENSE, PROVENANCE.json}`（比照 `bge-small-zh-v1.5/`）。
+LICENSE 取自 `microsoft/unilm`（MIT，`Copyright (c) Microsoft Corporation)`，commit `31c5b904ca1bf2afb4c234a6675c683a4e5fc7cd`，sha256 `904dc4d8…`）。
+
+### 17.4 配套代码变更
+
+- `EmbeddingResource` 增 `query_prefix` / `document_prefix`（默认空 = 现役零变化；**非空才纳入 signature**）。
+- 语义专用通道固定 floor 改为可配键 `[SEARCH] semantic_floor`（默认 **0.84**），常量兜底；
+  **闸门 `_is_grounded()` 的 `SEM_FLOOR=0.6` 未动**。依据：`channel_sweep.md`（T06 扫点）。
