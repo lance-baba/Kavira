@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import statistics
 import sys
@@ -29,6 +30,15 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
+
+# ⚠ 必须在 import 任何 app 模块**之前**设置：app/core/paths.py 的
+#    EMBEDDING_DIR 是模块级求值，晚一步就永远指向 resources/embedding（那里只有
+#    契约模板 default.json）→ 真实语义通道会静默失效。镜像 holdout_b_run.py /
+#    paraphrase/run_probe.py 的顶部做法。
+_EMBEDDING_DIR = (os.environ.get("KAVIRA_EMBEDDING_DIR") or "").strip() or str(
+    REPO / "vendor" / "cache" / "embedding")
+os.environ["KAVIRA_EMBEDDING_DIR"] = _EMBEDDING_DIR
+
 sys.path.insert(0, str(REPO))
 
 # ⚠ 必须在任何 `app.core.paths` 导入**之前**激活隔离测试库
@@ -36,7 +46,9 @@ from tests import test_env  # noqa: E402
 
 _LIB = test_env.activate_test_library(prefix="kavira-eval-")
 
+from app.core import config  # noqa: E402
 from app.core import db as db_mod, indexer, llm, paths, search as S  # noqa: E402
+from app.core import embedder as emb_mod  # noqa: E402
 from app.core.embedder import HashEmbedder  # noqa: E402
 
 DIM = 512
@@ -59,10 +71,9 @@ COVERAGE_CATS = {"list_coverage", "section_overview", "cross_section"}
 def build_library(fixtures_dir: Path | None = None, embedder=None):
     """在隔离库里建索引。
 
-    ``embedder`` 可选：**不传时行为与历史完全一致**（``HashEmbedder(DIM)``），
-    所以 DEV 72 / baseline 口径不受影响。需要**真实模型**口径的 harness
-    （如 ``holdout_b_run.py`` 的 local_onnx 基线）显式传入自己的嵌入器，
-    避免把「哈希伪向量」当成真实语义能力来验收。
+    ``embedder`` 可选；不传时保底行为仍是 ``HashEmbedder(DIM)``（供历史对照 /
+    旧调用方使用）。**正式的 run_baseline 一定显式传真实嵌入器**（见
+    ``resolve_real_embedder()``），避免把「哈希伪向量」当成真实语义能力。
     """
     global _DB
     fixtures_dir = fixtures_dir or FIXTURES
@@ -77,6 +88,33 @@ def build_library(fixtures_dir: Path | None = None, embedder=None):
         shutil.copyfile(src, dst)
         indexer.index_file(db, dst, emb)
     return db, emb
+
+
+def resolve_real_embedder() -> tuple[object, dict, str]:
+    """解析**生产**嵌入源（走 embedder.resolve 全链路，不做特殊照顾）。
+
+    历史问题：本 harness 曾固定使用 ``HashEmbedder(512)`` 生成伪向量，语义通道
+    结构性失效，DEV 72 的数字无法回答「真实模型召回多少」。现改为与
+    ``holdout_b_run.py`` / ``paraphrase/run_probe.py`` 同一口径。
+    """
+    resolved = emb_mod.resolve(config.get)
+    emb = resolved.embedder
+    res = getattr(emb, "resource", None)
+    meta = {
+        "tier": str(getattr(emb, "source", "") or "?"),
+        "model_id": str(getattr(emb, "model", "") or "?"),
+        "dimension": int(getattr(emb, "dim", 0) or 0),
+        "signature": str(getattr(emb, "signature", "") or ""),
+        "resource_id": str(getattr(res, "id", "") or ""),
+        "base_model": str(getattr(res, "base_model", "") or ""),
+        "precision": str(getattr(emb, "precision", "")
+                         or getattr(res, "precision", "") or ""),
+        "fallback_reason": str(resolved.fallback_reason or ""),
+        "resolve_notes": list(resolved.notes),
+        "resolve_warnings": list(resolved.warnings),
+        "embedding_dir": _EMBEDDING_DIR.replace("\\", "/"),
+    }
+    return emb, meta, str(resolved.source)
 
 
 def load_gold(path: Path | None = None) -> list[dict]:
@@ -253,7 +291,8 @@ def run_baseline(args) -> int:
     split = "holdout" if getattr(args, "holdout", False) else "dev"
     gold = HOLDOUT_GOLD if split == "holdout" else GOLD
     fixtures = FIXTURES_HOLDOUT if split == "holdout" else FIXTURES
-    report_name = "baseline_holdout" if split == "holdout" else "baseline"
+    report_name = getattr(args, "out", None) or (
+        "baseline_holdout" if split == "holdout" else "baseline")
     if split == "holdout":
         print("=" * 70)
         print("HOLDOUT RUN —— 仅用于阶段性 release decision。")
@@ -262,9 +301,39 @@ def run_baseline(args) -> int:
     if not gold.exists():
         print(f"缺少数据集 {gold}，先运行：python eval/build_gold.py")
         return 2
+
+    # ---- 嵌入器有效性闸门：必须是真实语义模型，否则不产出数字 ----
+    if getattr(args, "allow_hash_baseline", False):
+        emb = HashEmbedder(DIM)
+        emb_meta = {
+            "tier": "local_hash", "model_id": emb.model, "dimension": emb.dim,
+            "signature": emb.signature, "resource_id": "", "base_model": "",
+            "precision": "", "fallback_reason": "",
+            "resolve_notes": ["⚠ 显式 --allow-hash-baseline：历史哈希口径，仅用于对照"],
+            "resolve_warnings": [], "embedding_dir": _EMBEDDING_DIR.replace("\\", "/"),
+        }
+        source = "local_hash"
+        print("⚠⚠ --allow-hash-baseline：本次为哈希伪向量口径，数字不可用于验收。")
+    else:
+        emb, emb_meta, source = resolve_real_embedder()
+    if source != "local_onnx" and not getattr(args, "allow_hash_baseline", False):
+        print("=" * 72)
+        print("  ⛔ 有效性校验失败：本次生效的嵌入器不是真实 local_onnx")
+        print("=" * 72)
+        print(f"  实际 tier : {source}")
+        print(f"  fallback  : {emb_meta['fallback_reason'] or '（无）'}")
+        print(f"  notes     : {emb_meta['resolve_notes']}")
+        print(f"  warnings  : {emb_meta['resolve_warnings']}")
+        print(f"  嵌入资源目录 : {_EMBEDDING_DIR}")
+        print("  用哈希/纯词法跑出的 DEV 数字会掩盖语义通道的真实行为，故拒绝出数字。")
+        print("=" * 72)
+        return 5
+    print(f"[embedder] tier={source} model={emb_meta['model_id']} "
+          f"dim={emb_meta['dimension']}")
+
     cases = load_gold(gold)
     t0 = time.time()
-    db, emb = build_library(fixtures)
+    db, emb = build_library(fixtures, embedder=emb)
     docs = doc_map(db)
     parents = parent_index(db)
 
@@ -357,7 +426,12 @@ def run_baseline(args) -> int:
             "app_version": APP_VERSION,
             "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
             "split": split, "cases": len(cases), "top_k": TOP_K,
-            "embedder": f"local_hash({DIM})  # 离线可复现；不依赖 ollama",
+            "embedder": (f"{emb_meta['tier']}({emb_meta['model_id']},"
+                         f"{emb_meta['dimension']}d)"),
+            "embedder_meta": emb_meta,
+            "chunking": {"child_size": S.chunker.CHILD_SIZE,
+                         "child_overlap": S.chunker.CHILD_OVERLAP,
+                         "parent_size": S.chunker.PARENT_SIZE},
             "elapsed_s": round(time.time() - t0, 2),
             "library": str(paths.DATA_DIR),
         },
@@ -516,6 +590,11 @@ def main(argv=None) -> int:
                    help="额外抽 N 道题跑真实 provider 的 answer smoke（默认 0=不跑）")
     b.add_argument("--holdout", action="store_true",
                    help="跑 HOLDOUT 集（默认锁定；仅用于阶段性 release decision）")
+    b.add_argument("--out", default=None,
+                   help="报告输出基名（不含扩展名）。默认 baseline / baseline_holdout；"
+                        "归档新结果请改用新名，避免覆盖冻结报告。")
+    b.add_argument("--allow-hash-baseline", action="store_true",
+                   help="⚠ 显式回退到 HashEmbedder 伪向量口径（仅历史对照，不可验收）")
     c = sub.add_parser("compare", help="对比 baseline 与候选报告")
     c.add_argument("--baseline", default="baseline")
     c.add_argument("--candidate", default="reranker")

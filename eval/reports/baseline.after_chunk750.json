@@ -1,0 +1,229 @@
+{
+  "meta": {
+    "app_version": "1.3.0",
+    "generated_at": "2026-10-22 20:44:00",
+    "split": "dev",
+    "cases": 72,
+    "top_k": 5,
+    "embedder": "local_onnx(multilingual-e5-small-int8,384d)",
+    "embedder_meta": {
+      "tier": "local_onnx",
+      "model_id": "multilingual-e5-small-int8",
+      "dimension": 384,
+      "signature": "local_onnx:multilingual-e5-small-int8:384",
+      "resource_id": "multilingual-e5-small-int8",
+      "base_model": "intfloat/multilingual-e5-small",
+      "precision": "int8",
+      "fallback_reason": "",
+      "resolve_notes": [
+        "内置模型已启动：multilingual-e5-small-int8（384 维）"
+      ],
+      "resolve_warnings": [],
+      "embedding_dir": "F:/项目/USB-WIKI/vendor/cache/embedding"
+    },
+    "chunking": {
+      "child_size": 750,
+      "child_overlap": 90,
+      "parent_size": 2400
+    },
+    "elapsed_s": 4.91,
+    "library": "C:\\Users\\huqih\\AppData\\Local\\Temp\\kavira-eval-992zo2b8"
+  },
+  "counts_by_category": {
+    "attribution": 5,
+    "citation": 5,
+    "cross_section": 4,
+    "date_time": 5,
+    "direct_fact": 8,
+    "list_coverage": 5,
+    "location": 4,
+    "model_spec": 5,
+    "negative_no_answer": 5,
+    "person": 5,
+    "quantity": 6,
+    "section_overview": 5,
+    "similar_entity": 4,
+    "table_relation": 6
+  },
+  "metrics": {
+    "recall@1": 0.6818181818181818,
+    "recall@3": 0.9090909090909091,
+    "recall@5": 0.9242424242424242,
+    "mrr": 0.793885827976737,
+    "coverage_group_recall": 0.8285714285714285,
+    "coverage_full_rate": 0.7142857142857143,
+    "relation_accuracy": 1.0,
+    "wrong_document_rate": 0.015151515151515152,
+    "no_answer_fp_rate": 0.0,
+    "attribution_violation_rate": 0.0,
+    "citation_structural_rate": 1.0,
+    "citation_intersection_rate": 0.9242424242424242
+  },
+  "per_category": {
+    "attribution": {
+      "n": 5,
+      "recall@5": 1.0,
+      "pass": 5
+    },
+    "citation": {
+      "n": 5,
+      "recall@5": 1.0,
+      "pass": 5
+    },
+    "cross_section": {
+      "n": 4,
+      "recall@5": 1.0,
+      "pass": 4
+    },
+    "date_time": {
+      "n": 5,
+      "recall@5": 1.0,
+      "pass": 5
+    },
+    "direct_fact": {
+      "n": 8,
+      "recall@5": 0.875,
+      "pass": 7
+    },
+    "list_coverage": {
+      "n": 5,
+      "recall@5": 1.0,
+      "pass": 5
+    },
+    "location": {
+      "n": 4,
+      "recall@5": 0.75,
+      "pass": 3
+    },
+    "model_spec": {
+      "n": 5,
+      "recall@5": 1.0,
+      "pass": 5
+    },
+    "negative_no_answer": {
+      "n": 5,
+      "recall@5": null,
+      "pass": 5
+    },
+    "person": {
+      "n": 5,
+      "recall@5": 0.8,
+      "pass": 4
+    },
+    "quantity": {
+      "n": 6,
+      "recall@5": 1.0,
+      "pass": 6
+    },
+    "section_overview": {
+      "n": 5,
+      "recall@5": 0.6,
+      "pass": 3
+    },
+    "similar_entity": {
+      "n": 4,
+      "recall@5": 1.0,
+      "pass": 4
+    },
+    "table_relation": {
+      "n": 6,
+      "recall@5": 1.0,
+      "pass": 6
+    }
+  },
+  "failures": [
+    {
+      "id": "jkj_l_point_layout",
+      "category": "location",
+      "query": "观测点沿什么布设、间距多少？",
+      "class": "RECALL",
+      "answer_state": "answered",
+      "hit@5": false,
+      "n_refs": 1,
+      "coverage": null,
+      "trap": null
+    },
+    {
+      "id": "jkj_df_purpose",
+      "category": "direct_fact",
+      "query": "监测的目的是什么？",
+      "class": "RERANK",
+      "answer_state": "answered",
+      "hit@5": false,
+      "n_refs": 5,
+      "coverage": null,
+      "trap": null
+    },
+    {
+      "id": "jkj_p_list",
+      "category": "person",
+      "query": "观测人员有哪些？",
+      "class": "RERANK",
+      "answer_state": "answered",
+      "hit@5": false,
+      "n_refs": 10,
+      "coverage": 0.0,
+      "trap": null
+    },
+    {
+      "id": "jkj_so_device",
+      "category": "section_overview",
+      "query": "监测设备情况怎么样？",
+      "class": "RERANK",
+      "answer_state": "answered",
+      "hit@5": false,
+      "n_refs": 9,
+      "coverage": null,
+      "trap": null
+    },
+    {
+      "id": "jkj_so_person",
+      "category": "section_overview",
+      "query": "人员配置情况怎么样？",
+      "class": "RERANK",
+      "answer_state": "answered",
+      "hit@5": false,
+      "n_refs": 13,
+      "coverage": null,
+      "trap": null
+    },
+    {
+      "id": "jkj_so_freq",
+      "category": "section_overview",
+      "query": "监测频率是怎么样的？",
+      "class": "COVERAGE",
+      "answer_state": "answered",
+      "hit@5": true,
+      "n_refs": 14,
+      "coverage": 0.8,
+      "trap": null
+    }
+  ],
+  "highlights": {
+    "level_model_query": {
+      "query": "水准仪是什么型号的？",
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 0.333,
+      "route": "like"
+    },
+    "qwen_features": {
+      "query": "Qwen-Image-2.1 的功能有哪些？",
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 0.5,
+      "route": "fts"
+    },
+    "typhoon_attribution": {
+      "query": "冷空气影响了哪些地区？",
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "route": "like"
+    }
+  },
+  "llm_smoke": null
+}
