@@ -27,6 +27,21 @@ def _rebuild_worker(h: "Handler", recreate_vec: bool = False) -> None:
 
 
 def handle_get(h: "Handler", path: str) -> bool:
+    if path == "/api/index/status":
+        # 剪藏 / 导入后的索引进度（后台队列 + 目录增量同步）。
+        # 文案在**响应边界**才过 t()：后台线程没有请求语言上下文。
+        data = h.ctx.index_status()
+        pending = int(data.get("pending") or 0)
+        if pending <= 0:
+            message = t("索引已完成")
+        elif data.get("current"):
+            message = t("正在索引：{current}（剩余 {n} 个文件）",
+                        current=data["current"], n=pending)
+        else:
+            message = t("等待索引：剩余 {n} 个文件", n=pending)
+        data["message"] = message
+        h._send_json({"code": 200, "message": message, "data": data})
+        return True
     if path == "/api/status":
         # ?probe=1：绕过 60s 健康缓存现场重探（顶部「刷新」按钮专用）。
         # 不带 probe 时 ai_readiness 也会在缓存过期后自动重探（TTL 门控）。

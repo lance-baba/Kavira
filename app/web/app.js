@@ -244,6 +244,13 @@ const I18N_EN = {
   "标题：{0} · 字数：{1} · 文件：{2} · 抽取器：{3}":
     "Title: {0} · characters: {1} · file: {2} · extractor: {3}",
   "已入库并建立索引": "Indexed",
+  /* ---- 后台索引（剪藏 / 导入后请求立即返回，嵌入在后台跑）---- */
+  "已保存，后台索引中…": "Saved — indexing in the background…",
+  "后台索引中…": "indexing in the background…",
+  "已保存，后台索引中…（剩余 {0}）": "Saved — indexing in the background… ({0} left)",
+  "索引完成": "Indexing complete",
+  "索引完成，但有 {0} 个错误": "Indexing finished with {0} error(s)",
+  "后台索引仍在进行，可稍后刷新查看": "Indexing is still running — refresh later to see the result",
   "抓取失败": "Capture failed",
   "正文不能为空": "The body cannot be empty",
   "上一批还在导入，请等它完成": "The previous batch is still importing — please wait",
@@ -1015,6 +1022,47 @@ function handleFrame(f, bub) {
 }
 
   /* ---------------------------- 剪藏 ---------------------------- */
+  /* 后台索引进度：剪藏 / 导入只在服务端「落盘 + 入队」，嵌入在后台线程跑
+     （一篇长文可能要几分钟）。这里轮询 /api/index/status，pending 归零就刷新列表。
+     · 单一轮询器：多次操作只保留最新一个，避免多个 interval 互相抢着刷新；
+     · 有上限：索引卡住（比如嵌入模型异常）也不能无限刷下去；
+     · hintEl 可选：给了就把进度写在结果区，否则只弹 toast。 */
+  let indexPollTimer = null;
+  function stopIndexPoll() {
+    if (indexPollTimer) { clearInterval(indexPollTimer); indexPollTimer = null; }
+  }
+  function watchIndexStatus(hintEl) {
+    stopIndexPoll();
+    const deadline = Date.now() + 10 * 60 * 1000;
+    indexPollTimer = setInterval(async function () {
+      let d;
+      try {
+        const r = await api("/api/index/status");
+        d = r.data || {};
+      } catch (e) {
+        stopIndexPoll();          // 服务已停（启动窗口被关）：别再刷错误
+        return;
+      }
+      const pending = Number(d.pending || 0);
+      if (pending <= 0) {
+        stopIndexPoll();
+        const errs = (d.errors || []).length;
+        if (hintEl) hintEl.textContent = errs
+          ? "⚠ " + t("索引完成，但有 {0} 个错误", errs)
+          : "✅ " + t("索引完成");
+        toast(errs ? t("索引完成，但有 {0} 个错误", errs) : "✅ " + t("索引完成"), errs ? 5000 : 2600);
+        await loadNotes();        // 索引完成后才进 documents 表，此时刷新才看得到
+        return;
+      }
+      if (hintEl) hintEl.textContent = t("已保存，后台索引中…（剩余 {0}）", pending);
+      if (Date.now() > deadline) {
+        stopIndexPoll();
+        if (hintEl) hintEl.textContent = "⚠ " + t("后台索引仍在进行，可稍后刷新查看");
+        toast(t("后台索引仍在进行，可稍后刷新查看"), 5000);
+      }
+    }, 800);
+  }
+
   /* 抓取前先问后端「这个网页是不是已经保存过」。
      注意后端在真正抓取时**自己也会再查一次** —— 这里的预检只是为了让界面
      能在重复时给出选择，不是安全/正确性的依据。 */
@@ -1079,13 +1127,18 @@ function handleFrame(f, bub) {
       : "";
     if (r.status === "partial_fallback") {
       box.innerHTML = '<div class="alert">⚠ ' + esc(r.message) + "</div>" +
-        '<div class="hint">' + esc(t("已保存：{0} · 快照：{1}", d.file_path, d.snapshot_path || "—")) + "</div>" + notesHtml;
+        '<div class="hint">' + esc(t("已保存：{0} · 快照：{1}", d.file_path, d.snapshot_path || "—")) + "</div>" +
+        '<div class="hint" id="capIndexHint">' + esc(t("已保存，后台索引中…")) + "</div>" + notesHtml;
       toast(t("该页面为前端动态渲染，仅保留快照"), 4200);
+      if (d.pending) watchIndexStatus($("#capIndexHint"));
     } else if (r.code === 200) {
+      // 索引已移到后台：先明确告诉用户「已保存、正在索引」，再开始轮询进度
       box.innerHTML = '<div class="alert info">✅ ' + esc(r.message || t("抓取成功")) + "</div>" +
         '<div class="hint">' + esc(t("标题：{0} · 字数：{1} · 文件：{2} · 抽取器：{3}",
-          d.title, d.char_count, d.file_path, d.extractor || "—")) + "</div>" + notesHtml;
-      toast(t("已入库并建立索引"));
+          d.title, d.char_count, d.file_path, d.extractor || "—")) + "</div>" +
+        '<div class="hint" id="capIndexHint">' + esc(t("已保存，后台索引中…")) + "</div>" + notesHtml;
+      toast(t("已保存，后台索引中…"), 3000);
+      if (d.pending) watchIndexStatus($("#capIndexHint"));
     } else {
       box.innerHTML = '<div class="alert err">' + esc(r.message || t("抓取失败")) + "</div>";
     }
@@ -1103,8 +1156,16 @@ async function doSaveNote() {
   $("#btnSaveNote").disabled = true;
   try {
     const r = await api("/api/notes/save", { method: "POST", body: JSON.stringify({ title, content }) });
-    $("#saveHint").textContent = r.code === 200 ? "✅ " + r.message + " · " + (r.data.file_path || "") : "⚠ " + r.message;
-    if (r.code === 200) { $("#noteTitle").value = ""; $("#noteBody").value = ""; loadNotes(); }
+    const d = r.data || {};
+    $("#saveHint").textContent = r.code === 200
+      ? "✅ " + r.message + " · " + (d.file_path || "") + (d.pending ? " · " + t("已保存，后台索引中…") : "")
+      : "⚠ " + r.message;
+    if (r.code === 200) {
+      $("#noteTitle").value = ""; $("#noteBody").value = "";
+      // 索引在后台：等 pending 归零再刷新列表，否则刚保存的笔记不会出现
+      if (d.pending) watchIndexStatus($("#saveHint"));
+      else loadNotes();
+    }
   } finally { $("#btnSaveNote").disabled = false; }
 }
 
@@ -1203,7 +1264,7 @@ async function importFiles(files) {
 
   zone.classList.add("busy");
   const rows = [];
-  let okN = 0, failN = 0;
+  let okN = 0, failN = 0, pendingN = 0;
 
   const render = (headline) => {
     out.innerHTML = (headline ? "<b>" + esc(headline) + "</b><br>" : "")
@@ -1247,8 +1308,10 @@ async function importFiles(files) {
         const x = (((r.data || {}).results) || [])[0] || {};
         if (x.ok) {
           okN++;
+          if (x.pending) pendingN++;
           rows.push('<span class="ok">✅ ' + esc(f.name) + "</span>" + esc(t(" —— {0}{1}",
-            x.message || t("已入库"), t("（{0} 字）", x.char_count || 0))));
+            x.message || t("已入库"), t("（{0} 字）", x.char_count || 0))) +
+            (x.pending ? esc(" · " + t("后台索引中…")) : ""));
         } else {
           failN++;
           rows.push('<span class="bad">❌ ' + esc(f.name) + "</span>" + esc(t(" —— {0}",
@@ -1270,7 +1333,16 @@ async function importFiles(files) {
   render(summary);
   if (okN) toast("✅ " + summary);
   else toast(t("⚠ 全部导入失败，请看下方原因"), 4000);
-  await loadNotes();
+  /* 有文件进了后台索引队列：追加一行进度并开始轮询。
+     索引完成前 documents 表里还没有这些文档，所以列表要等 pending=0 才刷新；
+     否则用户会看到「导入成功却列表里没有」。 */
+  if (pendingN) {
+    out.insertAdjacentHTML("beforeend",
+      '<div class="hint" id="dzIndexHint">' + esc(t("已保存，后台索引中…")) + "</div>");
+    watchIndexStatus($("#dzIndexHint"));
+  } else {
+    await loadNotes();
+  }
 }
 
 function initDropZone() {

@@ -132,7 +132,13 @@ def purge_orphans(db: Database, valid_rel_paths: set[str]) -> list[str]:
 
 
 # --------------------------------------------------------------------------
-def _embed_in_batches(embedder, texts: list[str], batch: int = 16) -> list[list[float]]:
+def _embed_in_batches(embedder, texts: list[str], batch: int = 1) -> list[list[float]]:
+    """分批向量化。
+
+    ⚠ batch 默认 1（2026-10-22 实测修正）：tokenizer 会按批内最长序列 padding，
+    批越大越吃亏 —— 真实 374-token 块上测得 batch1=11ms / batch4=32ms / batch8=47ms
+    （8 线程）。旧默认 16 是负优化。
+    """
     out: list[list[float]] = []
     for i in range(0, len(texts), batch):
         chunk = texts[i:i + batch]
@@ -384,23 +390,16 @@ def rebuild_all(db: Database, embedder=None, recreate_vec: bool = False) -> dict
         # 显式要求重建向量表但无嵌入源：只重建表结构，不写签名（降级由上层处理）
         db.recreate_vec_table(db.embedding_dim)
 
-    # 全清
-    conn = db.conn()
-    with db._write_lock:  # noqa: SLF001
-        for table in ("chunks_fts", "chunks", "chunk_metadata", "parent_blocks", "documents"):
-            try:
-                conn.execute(f"DELETE FROM {table}")
-            except sqlite3.Error as exc:
-                log.debug("清空 %s 跳过: %s", table, exc)
-        if db.vec_table_ready:
-            try:
-                conn.execute("DELETE FROM chunks_vec")
-            except sqlite3.Error:
-                pass
-        conn.commit()
-
+    # 逐篇替换，**不再先全清**（2026-10-22 修）。
+    # 旧实现先 DELETE 掉 documents/chunks/parent_blocks/chunks_fts 再逐篇重建：
+    # 一旦中途被打断（用户关窗 / 进程被杀 / 大库重建耗时过长），库里只剩已写完的
+    # 那几篇 —— 用户看到的就是「重建后笔记全没了」（线上问题的直接成因）。
+    # 现在每篇由 index_parsed 自己「先删该篇、再插入」（原子到单篇），中断只会留下
+    # 新旧混合状态，重跑一次即可收敛，**不会清空**。
+    # 仅「向量维度/模型变化」时仍需整体重建向量表（旧维度向量一律不可用），保留。
     files = scan_notes()
     ok, failed, chunks = 0, 0, 0
+    failed_paths: list[str] = []
     for f in files:
         r = index_file(db, f, embedder)
         if r.get("ok"):
@@ -408,20 +407,46 @@ def rebuild_all(db: Database, embedder=None, recreate_vec: bool = False) -> dict
             chunks += int(r.get("chunks", 0))
         else:
             failed += 1
+            failed_paths.append(str(r.get("path") or f))
+
+    # 回收「磁盘上已不存在」的文档（旧实现靠全局清空隐式完成，现在显式做）
+    try:
+        purge_orphans(db, {paths.rel_to_data(f) for f in files})
+    except Exception as exc:  # noqa: BLE001
+        log.warning("重建后回收孤儿文档失败: %s", exc)
+
+    # 完整性校验：扫到几篇就必须进几篇，否则**显式报错**。
+    # 旧实现只有一行 info、失败静默 —— 用户以为重建成功，实际库里少了一大半。
+    try:
+        row = db.query_one("SELECT COUNT(*) AS c FROM documents")
+        doc_count = int(row["c"]) if row is not None else -1
+    except Exception:  # noqa: BLE001
+        doc_count = -1
+    complete = (failed == 0 and doc_count == len(files))
 
     elapsed = time.time() - started
     db.set_meta("last_rebuild", str(time.time()))
     report = {
         "ok": True,
+        "complete": complete,
         "files": len(files),
         "indexed": ok,
         "failed": failed,
+        "failed_paths": failed_paths[:20],
+        "documents": doc_count,
         "chunks": chunks,
         "elapsed": round(elapsed, 2),
         "vec_ready": bool(db.vec_table_ready and not db.signature_mismatch),
     }
-    log.info(
-        "全量索引重建完成: %d/%d 文件, %d 切片, 耗时 %.2fs",
-        ok, len(files), chunks, elapsed,
-    )
+    if not complete:
+        log.error(
+            "全量重建不完整：扫描 %d 篇 / 入库 %d 篇 / 失败 %d 篇%s",
+            len(files), doc_count, failed,
+            ("；失败项：" + ", ".join(failed_paths[:10])) if failed_paths else "",
+        )
+    else:
+        log.info(
+            "全量索引重建完成并已校验：%d/%d 篇, %d 切片, 耗时 %.2fs",
+            doc_count, len(files), chunks, elapsed,
+        )
     return report

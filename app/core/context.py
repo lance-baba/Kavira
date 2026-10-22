@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 
 from .db import SCHEMA_VERSION  # noqa: E402
 from . import migrations as migrations_mod  # noqa: E402
-from . import config, db as db_mod, embedder as embedder_mod, indexer, llm, net_util, ollama_runtime, paths, proc as proc_mod, sync
+from . import config, db as db_mod, embedder as embedder_mod, index_bg, indexer, llm, net_util, ollama_runtime, paths, proc as proc_mod, sync
 from .i18n import DeferredMsg, render, t
 from .log_util import get_logger
 
@@ -282,6 +282,12 @@ class AppContext:
         # 先置位：boot 线程可能在初始化中途，它据此提前收手，
         # 避免去操作马上要被置空的 gateway / db（实测会抛 AttributeError）。
         self._shutting_down = True
+        # 后台索引只是「尽快把文档变可检索」，不是数据本身：退出时立刻停手，
+        # 免得用户点了安全退出、拔盘时还有线程在写向量。
+        try:
+            index_bg.stop()
+        except Exception as exc:  # noqa: BLE001
+            log.debug("后台索引停止异常（可忽略）: %s", exc)
         if self.syncer is not None:
             try:
                 self.syncer.stop()
@@ -407,6 +413,27 @@ class AppContext:
                 self.gateway.ollama_status(force=True)
         except Exception as exc:  # noqa: BLE001
             log.debug("自启动后刷新状态失败: %s", exc)
+
+    def index_status(self) -> dict:
+        """索引进度快照（``GET /api/index/status`` 的数据源）。
+
+        剪藏 / 导入只做「落盘 + 入队」，嵌入在后台跑；前端靠这个接口判断
+        ``pending == 0`` 何时可以刷新列表。``--no-sync`` 启动时没有 syncer，
+        此时退化为「只看后台队列」—— 队列为空即视为完成，绝不报错中断轮询。
+        """
+        if self.syncer is not None:
+            return self.syncer.progress()
+        bg = index_bg.snapshot()
+        return {
+            "pending": bg["pending"],
+            "current": bg["current"],
+            "done": bg["done"],
+            "total": bg["done"] + bg["pending"],
+            "indexed": 0,
+            "updated": 0,
+            "cycles": 0,
+            "errors": bg["errors"],
+        }
 
     def status(self, probe: bool = False) -> dict:
         if self.db is None:

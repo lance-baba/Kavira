@@ -9,6 +9,7 @@ import html as html_mod
 import re
 import shutil
 import subprocess
+import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -17,7 +18,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from . import (analyzer, archiver, atomic_io, config, file_guard,
-                   net_guard as _net_guard, net_util, paths)
+                   net_guard as _net_guard, net_util, paths, urls as _urls)
 from .i18n import t
 from .log_util import get_logger
 
@@ -55,6 +56,11 @@ class CaptureResult:
     snapshot_path: str = ""
     original_path: str = ""
     used: str = "trafilatura"
+    # 索引状态：**请求线程绝不等嵌入**。落盘后一律先进后台队列，
+    # 调用方拿到 indexed=False / pending=True / chunks=0，靠 /api/index/status 跟进度。
+    indexed: bool = False
+    pending: bool = False
+    chunks: int = 0
     # 命中重复来源 URL 时，带上已存在笔记的信息，供前端给出「打开/更新/另存/取消」
     duplicate: dict | None = None
     # 系统自愈 / 自动降级的过程信息（按项目约定：这类信息不打扰用户，
@@ -73,6 +79,9 @@ class CaptureResult:
                 "snapshot_path": self.snapshot_path,
                 "original_path": self.original_path,
                 "extractor": self.used,
+                "indexed": self.indexed,
+                "pending": self.pending,
+                "chunks": self.chunks,
                 "notes": self.notes,
             },
         }
@@ -456,6 +465,83 @@ def save_snapshot(url: str, html_text: str, when: datetime | None = None) -> Pat
     return snap
 
 
+#: 刚剪藏、**索引还在后台队列里**的来源 URL → {rel_path, title, normalized_url}。
+#: ``indexer.find_by_normalized_url`` 读的是 doc_meta，索引落库后才有；没有这层内存
+#: 兜底的话，「连续抓同一个页面」会在索引完成的窗口里失去重复提示，白白多出一篇。
+_PENDING_CAPTURES: dict[str, dict] = {}
+_PENDING_LIMIT = 200
+_PENDING_GUARD = threading.Lock()
+
+
+def _remember_pending_capture(url: str, result: CaptureResult) -> None:
+    if not url or not result.file_path:
+        return
+    try:
+        norm = _urls.normalize_url(url)
+    except Exception:  # noqa: BLE001 - 规范化失败就当不重复，不影响主流程
+        return
+    if not norm:
+        return
+    with _PENDING_GUARD:
+        _PENDING_CAPTURES[norm] = {
+            "rel_path": result.file_path,
+            "title": result.title or url,
+            "normalized_url": norm,
+            "doc_id": "",
+        }
+        # 有界：长跑进程里不会因为抓了几万页而一直涨
+        while len(_PENDING_CAPTURES) > _PENDING_LIMIT:
+            _PENDING_CAPTURES.pop(next(iter(_PENDING_CAPTURES)))
+
+
+def _pending_duplicate(db, url: str) -> dict | None:
+    """后台索引还没落库的剪藏也算「已保存过」。"""
+    try:
+        norm = _urls.normalize_url(url)
+    except Exception:  # noqa: BLE001
+        return None
+    if not norm or db is None:
+        return None
+    with _PENDING_GUARD:
+        ent = _PENDING_CAPTURES.get(norm)
+    if not ent:
+        return None
+    # 索引已完成（DB 里已有这篇）→ 交给 DB 判定，清掉内存记录
+    try:
+        row = db.query_one("SELECT doc_id FROM documents WHERE rel_path = ?",
+                           (ent["rel_path"],))
+    except Exception:  # noqa: BLE001 - 表还没建出来（首启）
+        row = None
+    if row:
+        with _PENDING_GUARD:
+            _PENDING_CAPTURES.pop(norm, None)
+        return None
+    return dict(ent)
+
+
+def _queue_index(result: CaptureResult, db, embedder=None, source_url: str = "") -> None:
+    """把索引交给**后台队列**（请求线程不再等待嵌入）。
+
+    失败必须可见：入队异常会写 error 日志，并把原因拼进 ``message``，
+    同时把 ``pending`` 置 False（否则界面会一直等一个永远不会完成的任务）。
+    """
+    if db is None or not result.abs_path:
+        return
+    from . import index_bg  # noqa: PLC0415 - 避免导入期循环依赖
+
+    try:
+        index_bg.submit(db, Path(result.abs_path), embedder)
+        result.indexed = False
+        result.pending = True
+        result.chunks = 0
+        if source_url:
+            _remember_pending_capture(source_url, result)
+    except Exception as exc:  # noqa: BLE001
+        log.error("后台索引入队失败: %s", exc)
+        result.pending = False
+        result.message += t("（后台索引任务提交失败：{exc}）", exc=exc)
+
+
 # --------------------------------------------------------------------------
 def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -> CaptureResult:
     """抓取 -> 清洗 -> 阈值判定 -> 落盘（成功/降级）-> 索引。
@@ -482,6 +568,9 @@ def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -
             from . import indexer as _indexer  # noqa: PLC0415 - 避免循环导入
 
             existing = _indexer.find_by_normalized_url(db, url)
+            if not existing:
+                # 索引在后台、doc_meta 还没写 —— 用内存里的「刚剪藏」兜住这个窗口
+                existing = _pending_duplicate(db, url)
         except Exception as exc:  # noqa: BLE001 - 判重失败不应阻断抓取
             log.warning("来源 URL 判重失败（按未重复继续）: %s", exc)
             existing = None
@@ -603,17 +692,8 @@ def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -
     if _orig is not None:
         result.original_path = paths.rel_to_data(_orig)
 
-    # ---- 立即索引 ----
-    if db is not None and result.abs_path:
-        try:
-            from . import indexer  # 局部导入避免循环依赖
-
-            r = indexer.index_file(db, Path(result.abs_path), embedder)
-            if not r.get("ok"):
-                result.message += t("（索引写入失败：{exc}）", exc=r.get("error"))
-        except Exception as exc:  # noqa: BLE001
-            log.error("抓取后索引失败: %s", exc)
-            result.message += t("（索引异常：{exc}）", exc=exc)
+    # ---- 索引交给后台队列（长文嵌入可达数分钟，绝不阻塞请求线程）----
+    _queue_index(result, db, embedder, source_url=url)
 
     log.info("剪藏 [%s] %s -> %s (%d 字)", result.status, url, result.file_path, result.char_count)
     return result
@@ -647,12 +727,7 @@ def save_manual_note(title: str, body: str, db=None, embedder=None, source: str 
         used="manual",
     )
     if db is not None:
-        try:
-            from . import indexer  # noqa: PLC0415
-
-            indexer.index_file(db, target, embedder)
-        except Exception as exc:  # noqa: BLE001
-            result.message += t("（索引异常：{exc}）", exc=exc)
+        _queue_index(result, db, embedder)
     return result
 
 
@@ -865,15 +940,7 @@ def import_document(
     if conv.warnings:
         result.message += "；" + "；".join(conv.warnings[:2])
 
-    if db is not None:
-        try:
-            from . import indexer  # noqa: PLC0415
-
-            r = indexer.index_file(db, target, embedder)
-            if not r.get("ok"):
-                result.message += t("（索引写入失败：{exc}）", exc=r.get("error"))
-        except Exception as exc:  # noqa: BLE001
-            result.message += t("（索引异常：{exc}）", exc=exc)
+    _queue_index(result, db, embedder)
     log.info("导入 [%s] %s (%d 字)", result.status, result.file_path, result.char_count)
     return result
 

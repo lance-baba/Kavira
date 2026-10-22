@@ -3250,11 +3250,20 @@ def test_duplicate_url_detection(ctx) -> None:
     def n_notes() -> int:
         return len(list(paths.NOTES_DIR.glob("*.md")))
 
+    # 剪藏 / 导入的索引在**后台队列**里跑（请求线程只落盘 + 入队）。凡是「抓取完
+    # 立刻查 documents / doc_meta」的断言，必须先等索引落库；超时即断言失败。
+    def _await_index(tag: str) -> None:
+        idle, snap = test_env.wait_for_index_idle(
+            ctx.db, syncer=getattr(ctx, "syncer", None), timeout=120)
+        check(f"★ {tag}：后台索引在超时前完成", idle, f"pending snapshot={snap}")
+
     try:
         before = n_notes()
         r1 = crawler.capture_url(url, db=ctx.db, embedder=ctx.embedder)
         check("首次抓取成功", r1.ok, f"status={r1.status} msg={r1.message}")
         check("首次抓取后多了一篇笔记", n_notes() == before + 1)
+        # 判重读的是 doc_meta（索引产物）——先等这批索引入库，再走后面的分支
+        _await_index("首篇剪藏")
 
         # ---------- ② 默认 abort：不发网络请求，返回 duplicate ----------
         r2 = crawler.capture_url(canonical, db=ctx.db, embedder=ctx.embedder)
@@ -3270,6 +3279,7 @@ def test_duplicate_url_detection(ctx) -> None:
                                  on_duplicate="new")
         check("显式 new → 另存为新笔记（网页会更新，这是正当需求）",
               r3.ok and n_notes() == before + 2, f"status={r3.status} n={n_notes()}")
+        _await_index("另存为新版本")
 
         # ---------- ④ 显式 update：覆盖已有那篇，不新增 ----------
         n_now = n_notes()
@@ -3279,6 +3289,9 @@ def test_duplicate_url_detection(ctx) -> None:
               f"status={r4.status} before={n_now} after={n_notes()}")
 
         # ---------- ⑤ 后端自查（不依赖前端）----------
+        # update 分支也会重排索引（后台）。这条断言直接查 doc_meta，必须先等它落库；
+        # 超时即失败 —— 绝不用「查不到就跳过」掩盖异步时序问题。
+        _await_index("更新已有")
         found = indexer.find_by_normalized_url(
             ctx.db, f"http://127.0.0.1:{port}/article/?utm_campaign=x#top")
         check("按 URL 变体也能查到已存在笔记（归一化生效）",

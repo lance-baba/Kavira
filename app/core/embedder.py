@@ -22,6 +22,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import platform
 import re
 import subprocess
@@ -32,6 +33,26 @@ from pathlib import Path
 
 from . import net_util, paths, proc as proc_mod
 from .log_util import get_logger
+
+
+def _onnx_threads() -> int:
+    """ONNX 推理线程数。
+
+    旧实现硬编码 ``intra_op_num_threads = 2``：在 24 逻辑核的机器上只用到约 8% 算力，
+    实测 275ms/块（374 token），比同模型应有速度慢 10~15 倍 —— 直接表现为
+    「剪藏慢 / 重建索引要几十分钟」。
+
+    默认取 ``min(8, cpu//2)``：既吃满常见 8 核以上机器，又不在低功耗本上开太多线程
+    抢 UI；需要微调时用环境变量 ``KAVIRA_ONNX_THREADS`` 覆盖（设 1 可复现旧行为）。
+    """
+    raw = (os.environ.get("KAVIRA_ONNX_THREADS") or "").strip()
+    if raw.isdigit() and int(raw) > 0:
+        return int(raw)
+    try:
+        n = os.cpu_count() or 4
+    except Exception:  # noqa: BLE001
+        n = 4
+    return max(2, min(8, n // 2))
 
 log = get_logger()
 
@@ -644,7 +665,7 @@ class OnnxEmbedder(BaseEmbedder):
                            pad_token="[PAD]")
 
         so = ort.SessionOptions()
-        so.intra_op_num_threads = 2
+        so.intra_op_num_threads = _onnx_threads()
         so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         sess = ort.InferenceSession(str(self.resource.model_path), sess_options=so,
                                     providers=["CPUExecutionProvider"])

@@ -12,10 +12,14 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 
-CHILD_SIZE = 200
-CHILD_OVERLAP = 30
-PARENT_SIZE = 800
-PARENT_HARD_LIMIT = 1200  # 单块超长时强制硬切，防止异常文档撑爆
+# 切片粒度（2026-10-22 修）：原 200/30/800 过细 —— 实测 253KB 的资讯日报被切成
+# 1,976 个子块、库内平均块长仅 154 字节（约 50 汉字），导致：
+#   ① 索引/重建要嵌上千块（慢）② 单块只剩半句话、检索精度差 ③ vec0 扫描块数暴涨。
+# 750 字符 + 12% 重叠 ≈ 300~500 token，块内保留完整语义；父块放大到 3 倍供引用展开。
+CHILD_SIZE = 750
+CHILD_OVERLAP = 90
+PARENT_SIZE = 2400
+PARENT_HARD_LIMIT = 3600  # 单块超长时强制硬切，防止异常文档撑爆
 
 _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n?", re.DOTALL)
 _WIKILINK_RE = re.compile(r"\[\[([^\[\]|]+?)(?:\|[^\[\]]*)?\]\]")

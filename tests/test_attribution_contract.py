@@ -64,34 +64,39 @@ def run(ctx, check, section, skip) -> None:
     section("B：证据跳转（/api/notes/evidence）")
 
     # ---- 造一篇可检索的文档，拿一个真实 parent_id ----
-    # 优先 PDF（真机语料形态）；转换器缺失时退 Markdown（导入逻辑同链路）
+    # 优先 PDF（真机语料形态）；转换器缺失时退 Markdown（导入逻辑同链路）——
+    # 两者都是**导入链路**，索引一律在后台队列里跑，所以查索引表之前必须等它落库。
     rel_path, parent_id = "", ""
+    made = None
     try:
         from tests.test_converters import make_pdf as _make_pdf
-        r = crawler.import_document("证据跳转验证.pdf", base64.b64decode(_make_pdf()),
-                                    db=ctx.db, embedder=ctx.embedder)
-        if r.ok:
-            row = ctx.db.query_one(
-                "SELECT pb.parent_id, d.rel_path FROM parent_blocks pb "
-                "JOIN documents d ON d.doc_id = pb.doc_id ORDER BY pb.ord LIMIT 1")
-            if row:
-                parent_id, rel_path = row["parent_id"], row["rel_path"]
+        made = crawler.import_document("证据跳转验证.pdf", base64.b64decode(_make_pdf()),
+                                       db=ctx.db, embedder=ctx.embedder)
     except ImportError:
-        pass
-    if not parent_id:
-        r = crawler.import_markdown("证据跳转验证.md",
-                                    "# 观测内容\n\n沉降观测点8个，点号CJ1-CJ8。\n",
-                                    db=ctx.db, embedder=ctx.embedder)
-        if not r.ok:
-            skip("证据跳转（文档导入失败）")
-            return
-        row = ctx.db.query_one(
-            "SELECT pb.parent_id, d.rel_path FROM parent_blocks pb "
-            "JOIN documents d ON d.doc_id = pb.doc_id ORDER BY pb.ord LIMIT 1")
-        if row is None:
-            skip("证据跳转（无 parent 块）")
-            return
-        parent_id, rel_path = row["parent_id"], row["rel_path"]
+        made = None          # 没有 PDF 后端 → 走下面的 Markdown 同链路
+    if made is None or not made.ok:
+        made = crawler.import_markdown("证据跳转验证.md",
+                                       "# 观测内容\n\n沉降观测点8个，点号CJ1-CJ8。\n",
+                                       db=ctx.db, embedder=ctx.embedder)
+    check("B 证据跳转用的文档导入成功", made.ok, made.message)
+    if not made.ok:
+        return               # 已显式失败；后续断言全部依赖这篇文档
+
+    from tests import test_env
+    idle, snap = test_env.wait_for_index_idle(
+        ctx.db, syncer=getattr(ctx, "syncer", None), timeout=120)
+    check("B 导入后的后台索引在超时前完成", idle, f"pending snapshot={snap}")
+
+    row = ctx.db.query_one(
+        "SELECT pb.parent_id, d.rel_path FROM parent_blocks pb "
+        "JOIN documents d ON d.doc_id = pb.doc_id "
+        "WHERE d.rel_path = ? ORDER BY pb.ord LIMIT 1",
+        (made.file_path,))
+    check("B 索引落库后能取到真实 parent_blocks", row is not None,
+          f"{made.file_path} / docs={ctx.db.query_one('SELECT COUNT(*) AS n FROM documents')['n']}")
+    if row is None:
+        return               # 同上：失败已经记下，继续只会产生误导性的连带错误
+    parent_id, rel_path = row["parent_id"], row["rel_path"]
 
     # ---- Handler 桩：捕获 _send_json 输出 ----
     class _StubHandler:                                   # noqa: D401

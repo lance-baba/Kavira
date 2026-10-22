@@ -242,6 +242,8 @@ def import_notes(h: "Handler") -> None:
             "ok": r.ok, "filename": fname, "message": r.message,
             "file_path": r.file_path, "title": r.title, "char_count": r.char_count,
             "extractor": r.used,
+            # 索引已改为后台执行：前端据此决定要不要轮询 /api/index/status
+            "indexed": r.indexed, "pending": r.pending, "chunks": r.chunks,
         })
 
     ok_n = sum(1 for r in results if r["ok"])

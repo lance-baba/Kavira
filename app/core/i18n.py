@@ -318,6 +318,14 @@ EN: dict[str, str] = {
         "Resource localization failed; styles and images may be incomplete offline",
     "（索引写入失败：{exc}）": " (index write failed: {exc})",
     "（索引异常：{exc}）": " (index error: {exc})",
+    "（后台索引任务提交失败：{exc}）":
+        " (failed to queue the background index job: {exc})",
+
+    # ---- 后台索引进度（/api/index/status）----
+    "索引已完成": "Indexing complete",
+    "正在索引：{current}（剩余 {n} 个文件）":
+        "Indexing {current} ({n} files left)",
+    "等待索引：剩余 {n} 个文件": "Waiting to index: {n} files left",
     "内容为空，未保存": "Content is empty; nothing was saved",
     "笔记已保存": "Note saved",
     "缺少文件名": "Missing file name",

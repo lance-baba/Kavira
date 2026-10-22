@@ -18,7 +18,7 @@ import threading
 import time
 from pathlib import Path
 
-from . import chunker, config, indexer, paths
+from . import chunker, config, index_bg, indexer, paths
 from .db import Database
 from .log_util import get_logger
 
@@ -62,6 +62,14 @@ class NoteSyncer:
         self._lock = threading.Lock()
         # rel_path -> {"mtime","size","prefix"}
         self._state: dict[str, dict] = {}
+        #: 进度快照（/api/index/status 用）：只记录「本轮扫描」的推进情况。
+        #   Done/Total 以**文件数**计，pending 由「本轮剩余 + 后台队列」算出。
+        self._prog_lock = threading.Lock()
+        self._scanning = False
+        self._cycle_total = 0
+        self._cycle_done = 0
+        self._current = ""
+        self._errors: list[str] = []
         self.stats = {
             "cycles": 0,
             "indexed": 0,
@@ -127,7 +135,24 @@ class NoteSyncer:
 
     # ------------------------------------------------------------------
     def scan_once(self) -> dict:
-        """执行一轮扫描，返回本轮报告。"""
+        """执行一轮扫描，返回本轮报告（外层只负责进度标记，见 :meth:`_scan_body`）。"""
+        with self._prog_lock:
+            self._scanning = True
+            self._cycle_total = 0
+            self._cycle_done = 0
+            self._current = ""
+            self._errors = []
+        try:
+            return self._scan_body()
+        finally:
+            # 无论扫描怎么结束（含异常），都必须收起「扫描中」，
+            # 否则 progress().pending 会永远挂着一个不存在的剩余量。
+            with self._prog_lock:
+                self._scanning = False
+                self._current = ""
+
+    def _scan_body(self) -> dict:
+        """一轮扫描的实际工作。"""
         if not paths.NOTES_DIR.exists():
             paths.NOTES_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -139,38 +164,68 @@ class NoteSyncer:
             except OSError:
                 continue
 
+        with self._prog_lock:
+            self._cycle_total = len(disk)
+
         report = {"indexed": 0, "updated": 0, "unchanged": 0, "removed": [],
-                  "errors": [], "notes": [], "disk": len(disk)}
+                  "errors": [], "notes": [], "disk": len(disk),
+                  "deferred": 0, "already": 0}
 
         for rel, p in sorted(disk.items()):
             try:
                 st = p.stat()
             except OSError as exc:
                 report["errors"].append(f"{rel}: {exc}")
+                self._note_error(f"{rel}: {exc}")
+                self._tick()
                 continue
 
             base = self._state.get(rel)
             need, reason, cur_prefix = self._decide(p, st, base)
             if not need:
                 report["unchanged"] += 1
+                self._tick()
                 continue
 
-            result = indexer.index_file(self.db, p, self.embedder)
-            if result.get("ok"):
-                if not cur_prefix:
-                    cur_prefix = prefix_hash(p)
-                self._state[rel] = {
-                    "mtime": float(st.st_mtime),
-                    "size": int(st.st_size),
-                    "prefix": cur_prefix,
-                }
-                if reason == "new":
-                    report["indexed"] += 1
+            # 与后台索引队列（剪藏 / 导入的落点）互斥：两个线程同时对同一文件
+            # purge + 重写会撕裂 chunks / 向量表。锁内先看「已索引」再决定要不要嵌。
+            with index_bg.file_lock(p):
+                if index_bg.is_queued(p):
+                    # 后台正要索引它 —— 让后台干，本轮不要重复嵌入（长文要几分钟）
+                    report["deferred"] += 1
+                    log.info("增量同步跳过（后台索引中）: %s", rel)
+                    self._tick()
+                    continue
+
+                already = index_bg.fingerprint(self.db, p)
+                if already is not None:
+                    # DB 里的 (size, 前 4KB 哈希) 与磁盘一致 → 内容没变，只是内存基线
+                    # 落后（典型：刚剪藏/导入完，后台已经索引过）。补基线即可，不重嵌。
+                    self._state[rel] = already
+                    report["already"] += 1
+                    log.info("增量同步跳过（已索引）: %s", rel)
+                    self._tick()
+                    continue
+
+                self._set_current(rel)
+                result = indexer.index_file(self.db, p, self.embedder)
+                if result.get("ok"):
+                    if not cur_prefix:
+                        cur_prefix = prefix_hash(p)
+                    self._state[rel] = {
+                        "mtime": float(st.st_mtime),
+                        "size": int(st.st_size),
+                        "prefix": cur_prefix,
+                    }
+                    if reason == "new":
+                        report["indexed"] += 1
+                    else:
+                        report["updated"] += 1
+                    log.info("增量同步 [%s] %s (%d 切片)", reason, rel, result.get("chunks", 0))
                 else:
-                    report["updated"] += 1
-                log.info("增量同步 [%s] %s (%d 切片)", reason, rel, result.get("chunks", 0))
-            else:
-                report["errors"].append(f"{rel}: {result.get('error')}")
+                    report["errors"].append(f"{rel}: {result.get('error')}")
+                    self._note_error(f"{rel}: {result.get('error')}")
+            self._tick()
 
         # ---- 重命名 / 删除 -> 孤儿切片回收 ----
         known = set(self._state.keys())
@@ -204,6 +259,7 @@ class NoteSyncer:
                     report["removed"].append({"path": s, "chunks": -1})
             except Exception as exc:  # noqa: BLE001
                 report["errors"].append(f"orphan-sweep: {exc}")
+                self._note_error(f"orphan-sweep: {exc}")
         self._first_scan_done = True
 
         # 原件安全（Pilot D1）：**永不自动删除** originals/ —— 它们是用户原始资料。
@@ -217,6 +273,7 @@ class NoteSyncer:
                     f"发现 {len(kept)} 份暂未关联原件，已保留（不自动删除用户原件）")
         except Exception as exc:  # noqa: BLE001
             report["errors"].append(f"original-sweep: {exc}")
+            self._note_error(f"original-sweep: {exc}")
 
         self.stats["cycles"] += 1
         self.stats["indexed"] += report["indexed"]
@@ -225,6 +282,47 @@ class NoteSyncer:
         self.stats["last_run"] = time.time()
         self.stats["last_report"] = report
         return report
+
+    # ------------------------------------------------------------------
+    def _tick(self) -> None:
+        """本轮扫描每处理完一个文件就前进一格（/api/index/status 的 done）。"""
+        with self._prog_lock:
+            self._cycle_done += 1
+
+    def _set_current(self, rel: str) -> None:
+        with self._prog_lock:
+            self._current = rel
+
+    def _note_error(self, message: str) -> None:
+        with self._prog_lock:
+            self._errors.append(str(message))
+            del self._errors[:-20]
+
+    def progress(self) -> dict:
+        """索引进度快照（供 ``GET /api/index/status``）。
+
+        ``pending`` = 后台队列里还没跑完的文件 + 本轮扫描尚未处理的文件。
+        界面只要看到 ``pending == 0`` 就可以刷新列表并收掉「后台索引中…」。
+        """
+        bg = index_bg.snapshot()
+        with self._prog_lock:
+            scan_pending = max(0, self._cycle_total - self._cycle_done) if self._scanning else 0
+            current = self._current
+            done = self._cycle_done
+            total = self._cycle_total
+            errors = list(self._errors)
+        errors.extend(bg["errors"])
+        return {
+            "pending": int(bg["pending"]) + scan_pending,
+            "current": current or bg["current"],
+            "done": done,
+            "total": total,
+            # indexed = 本轮同步器入库 + 后台队列入库（两者互斥，不会重复计数）
+            "indexed": int(self.stats.get("indexed", 0)) + int(bg["done"]),
+            "updated": int(self.stats.get("updated", 0)),
+            "cycles": int(self.stats.get("cycles", 0)),
+            "errors": errors[-20:],
+        }
 
     # ------------------------------------------------------------------
     def _next_interval(self, report: dict) -> int:

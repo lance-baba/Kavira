@@ -22,6 +22,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -139,3 +140,53 @@ def is_test_library(library: str | os.PathLike | None = None) -> bool:
         return True
     except RuntimeError:
         return False
+
+
+# --------------------------------------------------------------------------- 索引等待
+# 剪藏 / 导入的索引已移到**后台队列**（请求线程只落盘 + 入队）。因此「导入后立刻
+# 查 documents / parent_blocks / doc_meta」的断言必须先等索引落库。
+#
+# ⚠ 这个等待只属于「异步完成时机的适配」，**不是放宽断言**：
+#   超时返回 ``False``，调用方必须用 ``check(...)`` 显式断言失败 —— 本项目的铁律是
+#   测试不许 SKIP、不许写 probe、不许造假数据，所以这里既不跳过也不伪造。
+def index_pending(db=None, syncer=None) -> int:
+    """当前还有多少文件没索引完（后台队列 + 正在跑的目录扫描）。"""
+    from app.core import index_bg  # noqa: PLC0415 - 测试运行期才导入（paths 已隔离）
+
+    pending = int(index_bg.snapshot()["pending"])
+    if syncer is not None:
+        try:
+            pending = max(pending, int((syncer.progress() or {}).get("pending") or 0))
+        except Exception:  # noqa: BLE001 - 观测失败按队列口径算，不影响主流程
+            pass
+    return pending
+
+
+def wait_for_index_idle(
+    db=None,
+    syncer=None,
+    timeout: float = 120.0,
+    interval: float = 0.05,
+) -> tuple[bool, dict]:
+    """等后台索引跑完，返回 ``(是否空闲, 最后一次队列快照)``。
+
+    超时**不抛异常也不跳过** —— 返回 ``(False, snapshot)`` 让调用方把它写成一条
+    失败的 check（失败原因里带上队列快照，便于定位是「卡住」还是「崩溃」）。
+    """
+    from app.core import index_bg  # noqa: PLC0415
+
+    deadline = time.monotonic() + max(0.0, float(timeout))
+    while True:
+        snap = dict(index_bg.snapshot())
+        pending = int(snap["pending"])
+        if syncer is not None:
+            try:
+                pending = max(pending, int((syncer.progress() or {}).get("pending") or 0))
+            except Exception:  # noqa: BLE001
+                pass
+        snap["pending"] = pending
+        if pending <= 0:
+            return True, snap
+        if time.monotonic() >= deadline:
+            return False, snap
+        time.sleep(interval)
