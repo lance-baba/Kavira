@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from . import chunker
 from . import config
 from .db import Database
+from .i18n import t
 from .log_util import get_logger
 
 log = get_logger()
@@ -1496,7 +1497,7 @@ def hybrid_search(
     if not content_term_sets(query):
         result.route = "empty"
         result.counts = {"fts_candidates": 0, "vec_candidates": 0, "fused": 0, "parents": 0}
-        result.warnings.append("查询词均为虚词或语气词，请补充实词（人名 / 术语 / 关键词）后再试")
+        result.warnings.append(t("查询词均为虚词或语气词，请补充实词（人名 / 术语 / 关键词）后再试"))
         return result
 
     ana = analyze_query(query)
@@ -1551,8 +1552,8 @@ def hybrid_search(
         sim = _sim_from_distance(entry.get("distance"))
         did = ci.get("doc_id") or ""
         if did and did not in doc_cache:
-            t, rel, disp = _doc_row(db, did)
-            doc_cache[did] = " ".join(x for x in (t, disp, rel) if x)
+            ttl, rel, disp = _doc_row(db, did)
+            doc_cache[did] = " ".join(x for x in (ttl, disp, rel) if x)
         is_lex = cid in lex_set
         ok, reason = _is_grounded(ci, target_res, scope_res, sim, doc_cache.get(did, ""),
                                   is_lex=is_lex)
@@ -1648,9 +1649,9 @@ def hybrid_search(
         result.route = f"{route}+no-lexical-hit"
         result.counts = {"fts_candidates": len(lex_ids), "vec_candidates": len(vec_ids),
                          "fused": len(fused), "parents": 0}
-        result.warnings.append(
+        result.warnings.append(t(
             "未找到字面匹配：知识库中没有出现查询实词的内容"
-            "（已避免用语义相近但无关的文档冒充引用来源）")
+            "（已避免用语义相近但无关的文档冒充引用来源）"))
         return result
 
     # 父块聚合（P0-8）：max 之外还看**多块一致命中**，避免一个偶然高分 child 压过
@@ -1767,8 +1768,8 @@ def hybrid_search(
     for idx, (pid, acc, pr, score) in enumerate(ranked, start=1):
         did = pr["doc_id"]
         if did not in doc_cache:
-            t, rel, disp = _doc_row(db, did)
-            doc_cache[did] = " ".join(x for x in (t, disp, rel) if x)
+            ttl, rel, disp = _doc_row(db, did)
+            doc_cache[did] = " ".join(x for x in (ttl, disp, rel) if x)
         title, rel_path, display_source = _doc_row(db, did)
         title = title or did
         # ⚠ 不变量：**片段编号 [i] 必须与引用 id i 一一对应**。
@@ -1816,7 +1817,7 @@ def hybrid_search(
         "parents": len(parents),
     }
     if embedder is None or not db.vec_table_ready or db.signature_mismatch:
-        result.warnings.append("向量召回路未启用，本次为纯 FTS5 词法检索")
+        result.warnings.append(t("向量召回路未启用，本次为纯 FTS5 词法检索"))
     return result
 
 

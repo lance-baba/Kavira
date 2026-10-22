@@ -48,6 +48,7 @@ from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
 from . import config, net_guard as _net_guard, net_util, paths
+from .i18n import t
 
 # 前端与服务器约定的本地资源路径前缀（根相对 → 指向本服务）
 ASSET_URL_PREFIX = "/api/assets/"
@@ -383,7 +384,8 @@ def localize(html_text: str, page_url: str) -> tuple[str, LocalizeStats]:
     if not html_text or not page_url:
         return html_text, stats
     if not config.get_bool("CRAWLER", "save_assets", True):
-        stats.notes.append("未启用资源本地化 → 该页离线时样式与图片不可用（可在 config.ini 打开 save_assets）")
+        stats.notes.append(t(
+            "未启用资源本地化 → 该页离线时样式与图片不可用（可在 config.ini 打开 save_assets）"))
         return html_text, stats
 
     t0 = time.monotonic()
@@ -551,31 +553,43 @@ def localize(html_text: str, page_url: str) -> tuple[str, LocalizeStats]:
 
     # ---------------- 结果说明 ----------------
     if stats.assets:
-        stats.notes.append(
-            f"已把 {stats.assets} 个资源存档到本地（{stats.bytes / 1024:.0f} KB"
-            + (f"，{stats.reused} 个复用已有" if stats.reused else "")
-            + f"，用时 {stats.seconds:.0f}s），原版预览可离线还原"
-        )
+        stats.notes.append(t(
+            "已把 {n} 个资源存档到本地（{kb} KB{reuse}，用时 {s}s），原版预览可离线还原",
+            n=stats.assets,
+            kb=f"{stats.bytes / 1024:.0f}",
+            reuse=(t("，{n} 个复用已有", n=stats.reused) if stats.reused else ""),
+            s=f"{stats.seconds:.0f}",
+        ))
     if stats.placeholder:
-        stats.notes.append(
-            f"{stats.placeholder} 个资源未能存档（超限 {stats.skipped_large}、"
-            f"预算用尽 {stats.skipped_budget}、类型不适 {stats.skipped_type}、"
-            f"抓取失败 {stats.failed}），已用占位代替以保证离线时不发起任何外部请求"
-        )
+        stats.notes.append(t(
+            "{n} 个资源未能存档（超限 {large}、"
+            "预算用尽 {budget}、类型不适 {kind}、"
+            "抓取失败 {failed}），已用占位代替以保证离线时不发起任何外部请求",
+            n=stats.placeholder,
+            large=stats.skipped_large,
+            budget=stats.skipped_budget,
+            kind=stats.skipped_type,
+            failed=stats.failed,
+        ))
     if stats.sheets_dropped:
-        stats.notes.append(f"{stats.sheets_dropped} 个样式表未能存档，该页版式可能不完整")
+        stats.notes.append(t("{n} 个样式表未能存档，该页版式可能不完整",
+                             n=stats.sheets_dropped))
     if stats.icons_dropped:
-        stats.notes.append(
-            f"{stats.icons_dropped} 个图标（favicon 等）未能存档，已删除以避免浏览时外发请求")
+        stats.notes.append(t(
+            "{n} 个图标（favicon 等）未能存档，已删除以避免浏览时外发请求",
+            n=stats.icons_dropped))
     if stats.scripts:
-        stats.notes.append(f"已省略 {stats.scripts} 个外部脚本（预览沙箱禁用脚本，存档中不再保留）")
+        stats.notes.append(t("已省略 {n} 个外部脚本（预览沙箱禁用脚本，存档中不再保留）",
+                             n=stats.scripts))
     if stats.skipped_blocked:
         # 只给 URL 与原因码：不记录响应内容，也不把外部 URL 留在文档里
         sample = "、".join(u[:80] for u, _ in pool.blocked[:3]) if pool is not None else ""
-        stats.notes.append(
-            f"{stats.skipped_blocked} 个资源被安全策略拦下（非公网地址或非法协议），"
-            f"已用占位符替代{('：' + sample) if sample else ''}"
-        )
+        stats.notes.append(t(
+            "{n} 个资源被安全策略拦下（非公网地址或非法协议），"
+            "已用占位符替代{sample}",
+            n=stats.skipped_blocked,
+            sample=t("：{list}", list=sample) if sample else "",
+        ))
 
     return html_text, stats
 

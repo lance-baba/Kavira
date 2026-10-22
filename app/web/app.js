@@ -647,7 +647,11 @@ function attrEsc(v) {
   return String(v == null ? "" : v).replace(/[&"]/g, c => ({ "&": "&amp;", '"': "&quot;" }[c]));
 }
 function api(path, opts) {
-  return fetch(path, Object.assign({ headers: { "Content-Type": "application/json" } }, opts || {}))
+  // 后端按 X-Kavira-Lang 决定 message/warnings 等**用户可见文案**的语言；
+  // 调用方自定义 headers 时也保留该头（合并而非覆盖）。
+  const options = Object.assign({ headers: { "Content-Type": "application/json" } }, opts || {});
+  options.headers = Object.assign({ "X-Kavira-Lang": LANG }, options.headers || {});
+  return fetch(path, options)
     .then(r => r.json())
     // 把「连不上本地服务」翻译成人话 —— 典型场景：用户把启动窗口关掉了，
     // 后端进程随之结束，页面还留在浏览器里。没有这层包装时 fetch 只会静默 reject，
@@ -918,7 +922,7 @@ async function send() {
   try {
     const resp = await fetch("/api/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Kavira-Lang": LANG },
       body: JSON.stringify({ query: q, history: [] }),
     });
     if (!resp.ok || !resp.body) throw new Error("HTTP " + resp.status);

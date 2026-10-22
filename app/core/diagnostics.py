@@ -50,6 +50,7 @@ import sys
 from pathlib import Path
 
 from . import redact
+from .i18n import t
 from .log_util import get_logger
 
 log = get_logger()
@@ -122,7 +123,7 @@ def _library_probe(root: Path, issues: list) -> dict:
         out["status"] = UNKNOWN
         out["code"] = "LIBRARY_NOT_FOUND"
         issues.append(_issue("LIBRARY_NOT_FOUND", "UNKNOWN", False, "library",
-                             "资料库目录不存在"))
+                             t("资料库目录不存在")))
         return out
 
     manifest_path = root / MANIFEST_NAME
@@ -131,14 +132,15 @@ def _library_probe(root: Path, issues: list) -> dict:
         try:
             m = json.loads(manifest_path.read_text(encoding="utf-8"))
             if not isinstance(m, dict):
-                raise ValueError("顶层不是 JSON 对象")
+                raise ValueError(t("顶层不是 JSON 对象"))
             out["fingerprint"] = _sha_file(manifest_path)[:12]
         except (OSError, ValueError) as exc:
             # 损坏：绝不自动改写（Data Contract），标记 ERROR 交由显式修复
             out["status"] = ERROR
             out["code"] = MANIFEST_CORRUPTED
             issues.append(_issue(MANIFEST_CORRUPTED, ERROR, True, "library",
-                                 f"library.json 损坏：{exc}；可用修复功能显式重建该文件"))
+                                 t("library.json 损坏：{exc}；可用修复功能显式重建该文件",
+                                   exc=exc)))
             out["counts"] = _counts_all(root)
             return out
     else:
@@ -153,8 +155,8 @@ def _library_probe(root: Path, issues: list) -> dict:
             out["status"] = WARN
             out["code"] = LEGACY_V0
             issues.append(_issue(LEGACY_V0, WARN, True, "library",
-                                 "检测到旧版资料库（无 manifest），程序已按 Data Format 0 识别，"
-                                 "打开时会自动接管为 V1"))
+                                 t("检测到旧版资料库（无 manifest），程序已按 Data Format 0 识别，"
+                                   "打开时会自动接管为 V1")))
         else:
             out["status"] = OK
             out["code"] = NEW_LIBRARY
@@ -165,12 +167,12 @@ def _library_probe(root: Path, issues: list) -> dict:
         out["status"] = ERROR
         out["code"] = INVALID_LIBRARY
         issues.append(_issue(INVALID_LIBRARY, ERROR, False, "library",
-                             "该目录不是 Kavira 资料库，程序不会改动它"))
+                             t("该目录不是 Kavira 资料库，程序不会改动它")))
     elif isinstance(dv, int) and dv > 1:
         out["status"] = WARN
         out["code"] = DATA_FORMAT_TOO_NEW
         issues.append(_issue(DATA_FORMAT_TOO_NEW, WARN, False, "library",
-                             f"资料格式版本 {dv} 高于当前程序支持的 1，请升级程序"))
+                             t("资料格式版本 {dv} 高于当前程序支持的 1，请升级程序", dv=dv)))
     else:
         out["status"] = OK
         out["code"] = V1_OK
@@ -225,7 +227,7 @@ def _db_probe(root: Path, issues: list) -> dict:
         out["status"] = WARN
         out["code"] = "CACHE_MISSING"
         issues.append(_issue("CACHE_MISSING", WARN, True, "database",
-                             "索引数据库不存在，可从资料库重新建立索引"))
+                             t("索引数据库不存在，可从资料库重新建立索引")))
         return out
 
     # ⚠ 只读打开：mode=ro 从根上保证不会产生 WAL/锁文件、不会修改任何内容
@@ -235,7 +237,7 @@ def _db_probe(root: Path, issues: list) -> dict:
         out["status"] = WARN
         out["code"] = "CACHE_CORRUPTED"
         issues.append(_issue("CACHE_CORRUPTED", WARN, True, "database",
-                             f"索引数据库无法打开（可整库重建）：{exc}"))
+                             t("索引数据库无法打开（可整库重建）：{exc}", exc=exc)))
         return out
 
     try:
@@ -251,18 +253,18 @@ def _db_probe(root: Path, issues: list) -> dict:
         except sqlite3.Error:
             pass
 
-        for t in _EXPECTED_TABLES:
-            if t not in tables:
-                issues.append(_issue(f"{t.upper()}_MISSING", WARN, True, "database",
-                                     f"索引表 {t} 缺失，可从资料库重建"))
+        for tbl in _EXPECTED_TABLES:
+            if tbl not in tables:
+                issues.append(_issue(f"{tbl.upper()}_MISSING", WARN, True, "database",
+                                     t("索引表 {table} 缺失，可从资料库重建", table=tbl)))
                 out["status"] = WARN
                 out["code"] = "CACHE_INCOMPLETE"
         if "chunks_fts" not in tables:
             issues.append(_issue("FTS_MISSING", WARN, True, "search",
-                                 "全文索引缺失，可从资料库重建"))
+                                 t("全文索引缺失，可从资料库重建")))
         if "chunks_vec" not in tables:
             issues.append(_issue("VECTOR_INDEX_MISSING", WARN, True, "search",
-                                 "向量索引缺失，可从资料库重建"))
+                                 t("向量索引缺失，可从资料库重建")))
 
         if "documents" in tables:
             out["documents"] = con.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
@@ -277,21 +279,22 @@ def _db_probe(root: Path, issues: list) -> dict:
                 out["status"] = WARN
                 out["code"] = "CACHE_CORRUPTED"
                 issues.append(_issue("CACHE_CORRUPTED", WARN, True, "database",
-                                     f"索引完整性检查未通过：{qc[0] if qc else '无结果'}"))
+                                     t("索引完整性检查未通过：{qc}",
+                                       qc=qc[0] if qc else t("无结果"))))
             elif out["status"] == UNKNOWN:
                 out["status"] = OK
         except sqlite3.Error as exc:
             out["status"] = WARN
             out["code"] = "CACHE_CORRUPTED"
             issues.append(_issue("CACHE_CORRUPTED", WARN, True, "database",
-                                 f"索引完整性检查失败：{exc}"))
+                                 t("索引完整性检查失败：{exc}", exc=exc)))
         return out
     except sqlite3.DatabaseError as exc:
         # 连接成功但读不了（文件不是数据库 / 页损坏）——仍属 B 类可重建
         out["status"] = WARN
         out["code"] = "CACHE_CORRUPTED"
         issues.append(_issue("CACHE_CORRUPTED", WARN, True, "database",
-                             f"索引数据库无法读取（可整库重建）：{exc}"))
+                             t("索引数据库无法读取（可整库重建）：{exc}", exc=exc)))
         return out
     finally:
         con.close()
@@ -355,7 +358,7 @@ def _ai_probe(get_cfg, ollama_probe, issues: list, runtime_ai=None) -> dict:
         except Exception as exc:  # noqa: BLE001 - 探测失败不阻塞诊断
             live = {}
             issues.append(_issue("AI_RUNTIME_PROBE_FAILED", WARN, False, "ai",
-                                 f"运行时 AI 状态读取失败（不影响诊断）：{exc}"))
+                                 t("运行时 AI 状态读取失败（不影响诊断）：{exc}", exc=exc)))
         emb = live.get("embedding") or {}
         for key in ("source", "ready", "fallback_reason"):
             if key in emb:
@@ -374,7 +377,7 @@ def _ai_probe(get_cfg, ollama_probe, issues: list, runtime_ai=None) -> dict:
         except Exception as exc:  # noqa: BLE001 - 探测失败不阻塞诊断
             out["ollama_reachable"] = False
             issues.append(_issue("OLLAMA_PROBE_FAILED", WARN, False, "ai",
-                                 f"Ollama 探测失败（不影响诊断）：{exc}"))
+                                 t("Ollama 探测失败（不影响诊断）：{exc}", exc=exc)))
 
     # 兜底：没有运行时信息时，至少让 chat 段自洽（不让 ready/reason 空着）
     if out["chat"]["ollama_available"] is None and out["ollama_reachable"] is not None:
@@ -382,8 +385,8 @@ def _ai_probe(get_cfg, ollama_probe, issues: list, runtime_ai=None) -> dict:
     if out["chat"]["ready"] is None:
         out["chat"]["ready"] = False
         out["chat"]["reason"] = out["chat"]["reason"] or (
-            "未探测到可用的本地对话模型" if out["chat"]["ollama_available"] is False
-            else "未提供运行时状态（静态诊断）"
+            t("未探测到可用的本地对话模型") if out["chat"]["ollama_available"] is False
+            else t("未提供运行时状态（静态诊断）")
         )
     return out
 
@@ -456,7 +459,7 @@ def collect(*, library_root: Path | None = None, ollama_probe=None,
         report["app"] = _app_probe()
     except Exception as exc:  # noqa: BLE001
         issues.append(_issue("APP_PROBE_FAILED", ERROR, False, "app",
-                             f"版本信息读取失败：{exc}"))
+                             t("版本信息读取失败：{exc}", exc=exc)))
         report["app"] = {"status": UNKNOWN}
 
     # --- Library ---
@@ -465,7 +468,7 @@ def collect(*, library_root: Path | None = None, ollama_probe=None,
         report["library"] = _library_probe(root, issues)
     except Exception as exc:  # noqa: BLE001
         issues.append(_issue("LIBRARY_PROBE_FAILED", ERROR, False, "library",
-                             f"资料库诊断失败：{exc}"))
+                             t("资料库诊断失败：{exc}", exc=exc)))
         report["library"] = {"status": UNKNOWN}
 
     # --- Database ---
@@ -474,7 +477,7 @@ def collect(*, library_root: Path | None = None, ollama_probe=None,
         report["database"] = _db_probe(root, issues)
     except Exception as exc:  # noqa: BLE001
         issues.append(_issue("DB_PROBE_FAILED", ERROR, False, "database",
-                             f"数据库诊断失败：{exc}"))
+                             t("数据库诊断失败：{exc}", exc=exc)))
         report["database"] = {"status": UNKNOWN}
 
     # --- Search（索引层一致性概览；细项已在 db probe）---
@@ -496,7 +499,7 @@ def collect(*, library_root: Path | None = None, ollama_probe=None,
         report["ai"] = _ai_probe(_cfg_get, ollama_probe, issues, runtime_ai)
     except Exception as exc:  # noqa: BLE001
         issues.append(_issue("AI_PROBE_FAILED", WARN, False, "ai",
-                             f"AI 配置读取失败：{exc}"))
+                             t("AI 配置读取失败：{exc}", exc=exc)))
         report["ai"] = {"status": UNKNOWN}
 
     # --- Runtime ---

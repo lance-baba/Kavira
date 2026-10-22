@@ -25,6 +25,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 from . import config, file_guard
+from .i18n import t
 from .log_util import get_logger
 
 log = get_logger()
@@ -99,7 +100,8 @@ def _decode(data: bytes) -> tuple[str, str]:
 
 def _clip(text: str, warnings: list[str]) -> str:
     if len(text) > MAX_OUTPUT_CHARS:
-        warnings.append(f"内容超过 {MAX_OUTPUT_CHARS // 10000} 万字，已截断")
+        warnings.append(t("内容超过 {n} 万字，已截断",
+                           n=MAX_OUTPUT_CHARS // 10000))
         return text[:MAX_OUTPUT_CHARS] + "\n\n> ⚠️ 内容过长已截断"
     return text
 
@@ -124,14 +126,14 @@ def _clean_title(name: str) -> str:
 def _h_plain(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
     text, enc = _decode(data)
     if enc not in ("utf-8", "utf-8-bom"):
-        warnings.append(f"按 {enc} 解码")
+        warnings.append(t("按 {enc} 解码", enc=enc))
     return ConversionResult(True, _clip(text, warnings), _clean_title(name), "text")
 
 
 def _h_markdown(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
     text, enc = _decode(data)
     if enc not in ("utf-8", "utf-8-bom"):
-        warnings.append(f"按 {enc} 解码")
+        warnings.append(t("按 {enc} 解码", enc=enc))
     return ConversionResult(True, _clip(text, warnings), _clean_title(name), "markdown")
 
 
@@ -155,7 +157,7 @@ def _h_json(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
         else:
             pretty = json.dumps(json.loads(text), ensure_ascii=False, indent=2)
     except (ValueError, TypeError) as exc:
-        warnings.append(f"JSON 解析失败，按原文保存（{exc}）")
+        warnings.append(t("JSON 解析失败，按原文保存（{exc}）", exc=exc))
     body = f"# {_clean_title(name)}\n\n{_fence(pretty, 'json')}"
     return ConversionResult(True, _clip(body, warnings), _clean_title(name), "json")
 
@@ -191,7 +193,7 @@ def _h_xml(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
         body = f"# {_clean_title(name)}\n\n" + "\n".join(lines)
         return ConversionResult(True, _clip(body, warnings), _clean_title(name), "xml")
     except ET.ParseError as exc:
-        warnings.append(f"XML 结构异常，按原文保存（{exc}）")
+        warnings.append(t("XML 结构异常，按原文保存（{exc}）", exc=exc))
         return ConversionResult(True, _clip(text, warnings), _clean_title(name), "xml")
 
 
@@ -207,12 +209,12 @@ def _h_csv(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
     rows = list(csv.reader(io.StringIO(text), delimiter=delim))
     rows = [r for r in rows if any((c or "").strip() for c in r)]
     if not rows:
-        return ConversionResult(False, error=f"{name} 内容为空")
+        return ConversionResult(False, error=t("{name} 内容为空", name=name))
 
     width = max(len(r) for r in rows)
     rows = [r + [""] * (width - len(r)) for r in rows]
     if len(rows) > 3000:
-        warnings.append(f"表格超过 3000 行，仅保留前 3000 行")
+        warnings.append(t("表格超过 3000 行，仅保留前 3000 行"))
         rows = rows[:3000]
 
     def esc_cell(s: str) -> str:
@@ -247,14 +249,14 @@ def _h_subtitle(data: bytes, name: str, warnings: list[str]) -> ConversionResult
 def _h_rtf(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
     text, _ = _decode(data)
     # 粗粒度剥离 RTF 控制字（有损，但足以检索与阅读）
-    t = re.sub(r"\\'([0-9a-fA-F]{2})", lambda m: chr(int(m.group(1), 16)), text)
-    t = re.sub(r"\\u(-?\d+)\s?\??", lambda m: chr(int(m.group(1)) % 65536), t)
-    t = t.replace("\\par", "\n").replace("\\line", "\n").replace("\\tab", "\t")
-    t = re.sub(r"\\[a-zA-Z]+-?\d*\s?", "", t)
-    t = t.replace("{", "").replace("}", "")
-    t = re.sub(r"\n{3,}", "\n\n", t).strip()
-    warnings.append("RTF 为有损转换（仅提取可见文字，不保留样式）")
-    return ConversionResult(True, _clip(t, warnings), _clean_title(name), "rtf")
+    txt = re.sub(r"\\'([0-9a-fA-F]{2})", lambda m: chr(int(m.group(1), 16)), text)
+    txt = re.sub(r"\\u(-?\d+)\s?\??", lambda m: chr(int(m.group(1)) % 65536), txt)
+    txt = txt.replace("\\par", "\n").replace("\\line", "\n").replace("\\tab", "\t")
+    txt = re.sub(r"\\[a-zA-Z]+-?\d*\s?", "", txt)
+    txt = txt.replace("{", "").replace("}", "")
+    txt = re.sub(r"\n{3,}", "\n\n", txt).strip()
+    warnings.append(t("RTF 为有损转换（仅提取可见文字，不保留样式）"))
+    return ConversionResult(True, _clip(txt, warnings), _clean_title(name), "rtf")
 
 
 # ==========================================================================
@@ -266,9 +268,9 @@ def _html_to_md(html_text: str, name: str, warnings: list[str]) -> ConversionRes
     body, meta, extractor = crawler.extract_body(html_text, "")
     title = str(meta.get("title") or "").strip() or _clean_title(name)
     if not body.strip():
-        return ConversionResult(False, error=f"{name} 中未抽取到正文")
+        return ConversionResult(False, error=t("{name} 中未抽取到正文", name=name))
     if extractor != "trafilatura":
-        warnings.append(f"正文抽取降级为 {extractor}")
+        warnings.append(t("正文抽取降级为 {extractor}", extractor=extractor))
     head = f"# {title}\n"
     if meta.get("author"):
         head += f"\n作者：{meta['author']}"
@@ -281,7 +283,7 @@ def _html_to_md(html_text: str, name: str, warnings: list[str]) -> ConversionRes
 def _h_html(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
     text, enc = _decode(data)
     if enc not in ("utf-8", "utf-8-bom"):
-        warnings.append(f"按 {enc} 解码")
+        warnings.append(t("按 {enc} 解码", enc=enc))
     return _html_to_md(text, name, warnings)
 
 
@@ -310,7 +312,7 @@ def _h_mhtml(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
     if text_parts:
         return ConversionResult(True, _clip("\n".join(text_parts), warnings),
                                 _clean_title(name), "mhtml")
-    return ConversionResult(False, error=f"{name} 中未找到可读正文")
+    return ConversionResult(False, error=t("{name} 中未找到可读正文", name=name))
 
 
 def _h_eml(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
@@ -342,7 +344,7 @@ def _h_eml(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
                 r = _html_to_md(payload, name, [])
                 best = r.markdown if r.ok else payload
     if not best.strip():
-        return ConversionResult(False, error=f"{name} 邮件正文为空")
+        return ConversionResult(False, error=t("{name} 邮件正文为空", name=name))
     return ConversionResult(True, _clip("\n".join(head) + best.strip(), warnings),
                             subject, "eml")
 
@@ -525,18 +527,18 @@ def _h_docx(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
             styles = _docx_styles(z)
             title = _docx_props(z) or _clean_title(name)
     except zipfile.BadZipFile:
-        return ConversionResult(False, error=f"{name} 不是有效的 .docx（可能后缀被改过）")
+        return ConversionResult(False, error=t("{name} 不是有效的 .docx（可能后缀被改过）", name=name))
 
     if not xml:
-        return ConversionResult(False, error=f"{name} 中找不到 word/document.xml")
+        return ConversionResult(False, error=t("{name} 中找不到 word/document.xml", name=name))
     try:
         root = ET.fromstring(xml)
     except ET.ParseError as exc:
-        return ConversionResult(False, error=f"document.xml 解析失败：{exc}")
+        return ConversionResult(False, error=t("document.xml 解析失败：{exc}", exc=exc))
 
     body = root.find(f"{W}body")
     if body is None:
-        return ConversionResult(False, error="文档结构异常（缺少 body）")
+        return ConversionResult(False, error=t("文档结构异常（缺少 body）"))
 
     # 把「标题 + 紧随其后的表格」合并进同一个逻辑块（P0-D）：
     # 切片器以空行为块边界、且标题起新块。若标题与表格间有空行，表格会被切到
@@ -576,7 +578,7 @@ def _h_docx(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
 
     md = "\n\n".join(x.strip("\n") for x in out if x.strip())
     if not md.strip():
-        return ConversionResult(False, error=f"{name} 未提取到文字（可能是纯图片文档，需 OCR）")
+        return ConversionResult(False, error=t("{name} 未提取到文字（可能是纯图片文档，需 OCR）", name=name))
     md = f"# {title}\n\n{md}"
     return ConversionResult(True, _clip(md, warnings), title, "docx")
 
@@ -586,7 +588,7 @@ def _h_pptx(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
         with _open_zip(data) as z:
             names = [n for n in z.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", n)]
             if not names:
-                return ConversionResult(False, error=f"{name} 中没有幻灯片")
+                return ConversionResult(False, error=t("{name} 中没有幻灯片", name=name))
             names.sort(key=lambda n: int(re.search(r"(\d+)", Path(n).stem).group(1)))
             title = _docx_props(z) or _clean_title(name)
 
@@ -612,7 +614,7 @@ def _h_pptx(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
 
             notes = [n for n in z.namelist() if re.fullmatch(r"ppt/notesSlides/notesSlide\d+\.xml", n)]
             if notes:
-                warnings.append(f"演示稿含 {len(notes)} 页备注，已一并提取")
+                warnings.append(t("演示稿含 {n} 页备注，已一并提取", n=len(notes)))
                 for idx, note in enumerate(sorted(notes), start=1):
                     raw = _zip_read(z, note)
                     if not raw:
@@ -626,10 +628,10 @@ def _h_pptx(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
                     if texts:
                         sections.append(f"### 备注 {idx}\n\n" + "\n".join(texts))
     except zipfile.BadZipFile:
-        return ConversionResult(False, error=f"{name} 不是有效的 .pptx（可能后缀被改过）")
+        return ConversionResult(False, error=t("{name} 不是有效的 .pptx（可能后缀被改过）", name=name))
 
     if not sections:
-        return ConversionResult(False, error=f"{name} 未提取到文字（可能是纯图片幻灯片，需 OCR）")
+        return ConversionResult(False, error=t("{name} 未提取到文字（可能是纯图片幻灯片，需 OCR）", name=name))
     md = f"# {title}\n\n共 {len(names)} 页\n\n" + "\n\n".join(sections)
     return ConversionResult(True, _clip(md, warnings), title, "pptx")
 
@@ -688,7 +690,7 @@ def _h_xlsx(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
 
             sheets = sorted(n for n in z.namelist() if re.fullmatch(r"xl/worksheets/sheet\d+\.xml", n))
             if not sheets:
-                return ConversionResult(False, error=f"{name} 中没有工作表")
+                return ConversionResult(False, error=t("{name} 中没有工作表", name=name))
 
             title = _docx_props(z) or _clean_title(name)
             blocks: list[str] = []
@@ -758,13 +760,15 @@ def _h_xlsx(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
                         continue
                     table.append("| " + " | ".join(cells) + " |")
                 if max_row > MAX_SHEET_ROWS:
-                    warnings.append(f"「{display}」超过 {MAX_SHEET_ROWS} 行，仅保留前 {MAX_SHEET_ROWS} 行")
+                    warnings.append(
+                        t("「{display}」超过 {limit} 行，仅保留前 {limit} 行",
+                          display=display, limit=MAX_SHEET_ROWS))
                 blocks.append(f"## {display}\n\n" + "\n".join(table))
 
             if not blocks:
-                return ConversionResult(False, error=f"{name} 未提取到数据（可能全是空表）")
+                return ConversionResult(False, error=t("{name} 未提取到数据（可能全是空表）", name=name))
     except zipfile.BadZipFile:
-        return ConversionResult(False, error=f"{name} 不是有效的 .xlsx（可能后缀被改过）")
+        return ConversionResult(False, error=t("{name} 不是有效的 .xlsx（可能后缀被改过）", name=name))
 
     md = f"# {title}\n\n共 {len(blocks)} 个工作表\n\n" + "\n\n".join(blocks)
     return ConversionResult(True, _clip(md, warnings), title, "xlsx")
@@ -793,7 +797,7 @@ def _h_epub(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
 
             opf_raw = _zip_read(z, opf_path) if opf_path else None
             if not opf_raw:
-                return ConversionResult(False, error=f"{name} 中找不到 OPF 清单")
+                return ConversionResult(False, error=t("{name} 中找不到 OPF 清单", name=name))
 
             opf = ET.fromstring(opf_raw)
             base = str(Path(opf_path).parent).replace("\\", "/")
@@ -828,12 +832,12 @@ def _h_epub(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
                 if r.ok and r.markdown.strip():
                     chapters.append(r.markdown.strip())
     except zipfile.BadZipFile:
-        return ConversionResult(False, error=f"{name} 不是有效的 .epub")
+        return ConversionResult(False, error=t("{name} 不是有效的 .epub", name=name))
     except ET.ParseError as exc:
-        return ConversionResult(False, error=f"EPUB 清单解析失败：{exc}")
+        return ConversionResult(False, error=t("EPUB 清单解析失败：{exc}", exc=exc))
 
     if not chapters:
-        return ConversionResult(False, error=f"{name} 未提取到章节正文")
+        return ConversionResult(False, error=t("{name} 未提取到章节正文", name=name))
     md = f"# {title}\n\n" + "\n\n---\n\n".join(chapters)
     return ConversionResult(True, _clip(md, warnings), title, "epub")
 
@@ -859,10 +863,11 @@ def _h_pdf(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
     if not backend:
         return ConversionResult(
             False,
-            error=(
-                f"未安装 PDF 解析库，无法读取 {name}。请在 U 盘根目录执行："
-                "runtime\\python-3.11-embed\\python.exe -m pip install pypdf"
-                "（或重新执行 python setup_runtime_windows.py）"
+            error=t(
+                "未安装 PDF 解析库，无法读取 {name}。请在 U 盘根目录执行：{cmd}"
+                "（或重新执行 python setup_runtime_windows.py）",
+                name=name,
+                cmd="runtime\\python-3.11-embed\\python.exe -m pip install pypdf",
             ),
         )
     text = ""
@@ -878,28 +883,33 @@ def _h_pdf(data: bytes, name: str, warnings: list[str]) -> ConversionResult:
                 try:
                     reader.decrypt("")
                 except Exception:  # noqa: BLE001
-                    return ConversionResult(False, error=f"{name} 是加密 PDF，无法解析")
+                    return ConversionResult(False, error=t("{name} 是加密 PDF，无法解析", name=name))
             pages = []
             for i, page in enumerate(reader.pages, start=1):
                 try:
                     pages.append(page.extract_text() or "")
                 except Exception as exc:  # noqa: BLE001
-                    warnings.append(f"第 {i} 页解析失败（{type(exc).__name__}）")
+                    warnings.append(t("第 {i} 页解析失败（{exc}）", i=i,
+                                      exc=type(exc).__name__))
             text = "\n\n".join(p for p in pages if p.strip())
     except Exception as exc:  # noqa: BLE001
-        return ConversionResult(False, error=f"PDF 解析失败：{type(exc).__name__}: {exc}")
+        return ConversionResult(
+            False, error=t("PDF 解析失败：{exc}",
+                           exc=f"{type(exc).__name__}: {exc}"))
 
     if len(text.strip()) < 20:
         return ConversionResult(
             False,
-            error=f"{name} 未提取到文字 —— 大概率是扫描件/图片型 PDF，需要 OCR（本项目不含该能力）",
+            error=t("{name} 未提取到文字 —— 大概率是扫描件/图片型 PDF，需要 OCR"
+                    "（本项目不含该能力）", name=name),
         )
 
     text = re.sub(r"[ \t]+\n", "\n", text)
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
     if backend != "pdfminer.six":
         warnings.append(
-            f"使用 {backend} 提取（段落结构会丢失；装 pdfminer.six 可保留段落空行）"
+            t("使用 {backend} 提取（段落结构会丢失；装 pdfminer.six 可保留段落空行）",
+              backend=backend)
         )
     body = f"# {_clean_title(name)}\n\n> 由 PDF 转换（{backend}），复杂排版可能有损\n\n{text}"
     return ConversionResult(True, _clip(body, warnings), _clean_title(name), "pdf")
@@ -974,22 +984,23 @@ def convert(data: bytes, filename: str) -> ConversionResult:
     """把任意受支持的文件字节转成 Markdown。"""
     ext = Path(filename).suffix.lower()
     if not data:
-        return ConversionResult(False, error=f"{filename} 是空文件")
+        return ConversionResult(False, error=t("{name} 是空文件", name=filename))
 
     handler = HANDLERS.get(ext)
     if handler is None:
         if ext in LEGACY_OFFICE:
             return ConversionResult(
                 False,
-                error=f"{filename}：旧版二进制 Office 格式无法解析，请用 Office/WPS 另存为 "
-                      f"{ext}x 后再导入",
+                error=t("{name}：旧版二进制 Office 格式无法解析，请用 Office/WPS 另存为 "
+                        "{ext} 后再导入", name=filename, ext=f"{ext}x"),
             )
         if ext in IMAGE_EXTS:
-            return ConversionResult(False, error=f"{filename}：图片需要 OCR，本项目不含该能力")
+            return ConversionResult(False, error=t("{name}：图片需要 OCR，本项目不含该能力", name=filename))
         if ext in AV_EXTS:
-            return ConversionResult(False, error=f"{filename}：音视频需要语音转写，本项目不含该能力")
+            return ConversionResult(False, error=t("{name}：音视频需要语音转写，本项目不含该能力", name=filename))
         return ConversionResult(
-            False, error=f"{filename}：暂不支持 {ext or '无扩展名'} 格式"
+            False, error=t("{name}：暂不支持 {ext} 格式", name=filename,
+                           ext=ext or t("无扩展名")),
         )
 
     warnings: list[str] = []
@@ -997,7 +1008,9 @@ def convert(data: bytes, filename: str) -> ConversionResult:
         result: ConversionResult = handler(data, filename, warnings)  # type: ignore[operator]
     except Exception as exc:  # noqa: BLE001 - 单个文件失败不得影响批量导入
         log.error("转换失败 %s: %s", filename, exc)
-        return ConversionResult(False, error=f"{filename} 转换异常：{type(exc).__name__}: {exc}")
+        return ConversionResult(
+            False, error=t("{name} 转换异常：{exc}", name=filename,
+                           exc=f"{type(exc).__name__}: {exc}"))
 
     result.warnings = warnings + result.warnings
     if result.ok and not result.title:

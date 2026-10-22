@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from .db import SCHEMA_VERSION  # noqa: E402
 from . import migrations as migrations_mod  # noqa: E402
 from . import config, db as db_mod, embedder as embedder_mod, indexer, llm, net_util, ollama_runtime, paths, proc as proc_mod, sync
+from .i18n import DeferredMsg, render, t
 from .log_util import get_logger
 
 log = get_logger()
@@ -33,16 +34,17 @@ def describe_capacity(chunks: int) -> dict:
     except (TypeError, ValueError):
         n = 0
     if n <= 0:
-        return {"level": "empty", "message": "暂无索引内容"}
+        return {"level": "empty", "message": t("暂无索引内容")}
     if n <= CAPACITY_AMPLE_CHUNKS:
         return {"level": "ample",
-                "message": f"余量充足（{n:,} 切片，检索通常快于 0.3 秒）"}
+                "message": t("余量充足（{n} 切片，检索通常快于 0.3 秒）", n=f"{n:,}")}
     if n <= CAPACITY_LARGE_CHUNKS:
         return {"level": "large",
-                "message": f"规模较大（{n:,} 切片，问答检索约 0.3~1.5 秒）"}
+                "message": t("规模较大（{n} 切片，问答检索约 0.3~1.5 秒）", n=f"{n:,}")}
     return {"level": "near_limit",
-            "message": f"接近上限（{n:,} 切片，检索可能要数秒）。"
-                       f"建议按主题拆分多个资料库，或优先使用关键词搜索"}
+            "message": t("接近上限（{n} 切片，检索可能要数秒）。"
+                         "建议按主题拆分多个资料库，或优先使用关键词搜索",
+                         n=f"{n:,}")}
 
 
 @dataclass
@@ -155,10 +157,10 @@ class AppContext:
 
                     rep = _indexer.rebuild_all(self.db, self.embedder)
                     log.info("结构升级后全量重建完成: %s", rep)
-                    self.notes.append(
-                        f"索引已按新结构重建：{rep.get('indexed', 0)} 篇 / "
-                        f"{rep.get('chunks', 0)} 切片"
-                    )
+                    self.notes.append(DeferredMsg(
+                        "索引已按新结构重建：{indexed} 篇 / {chunks} 切片",
+                        indexed=rep.get("indexed", 0), chunks=rep.get("chunks", 0),
+                    ))
                 except Exception as exc:  # noqa: BLE001 - 重建失败不阻断启动，但必须明示
                     log.error("结构升级后全量重建失败: %s", exc)
                     self.warnings.append(
@@ -314,9 +316,9 @@ class AppContext:
                 self.warnings.append(
                     "向量索引自愈未生效，请到「设置」点一次「全量重建索引」")
             else:
-                self.notes.append(
-                    f"索引已自动重建：{rep.get('indexed', 0)} 篇 / "
-                    f"{rep.get('chunks', 0)} 切片")
+                self.notes.append(DeferredMsg(
+                    "索引已自动重建：{indexed} 篇 / {chunks} 切片",
+                    indexed=rep.get("indexed", 0), chunks=rep.get("chunks", 0)))
         except Exception as exc:  # noqa: BLE001 - 自愈失败不得影响应用
             log.error("向量索引自愈失败: %s", exc)
             self.warnings.append(
@@ -344,7 +346,7 @@ class AppContext:
         """
         if self.gateway is None:
             return {
-                "state": llm.STATE_NO_RUNTIME, "reason": "服务尚未初始化完成",
+                "state": llm.STATE_NO_RUNTIME, "reason": t("服务尚未初始化完成"),
                 "chat_ready": False, "ollama_available": False, "ollama_probed": False,
                 "installed_models": [], "installed_model_count": 0,
                 "selected_model": None, "selected_model_installed": False,
@@ -393,11 +395,13 @@ class AppContext:
             return
         try:
             if res.get("started"):
-                self.notes.append(
-                    f"已自动启动本地 Ollama（等待 {res.get('waited_s')}s 后就绪）")
+                self.notes.append(DeferredMsg(
+                    "已自动启动本地 Ollama（等待 {s}s 后就绪）", s=res.get("waited_s")))
             elif enabled and not res.get("already"):
                 # 如实告知「没拉起」，用户才有线索去自查（比如没装 Ollama）
-                self.notes.append(f"未能自动启动本地 Ollama：{res.get('reason')}")
+                self.notes.append(DeferredMsg(
+                    "未能自动启动本地 Ollama：{reason}",
+                    reason=res.get("reason_msg") or res.get("reason")))
             # 刷新健康与模型缓存 —— 否则前端轮询拿到的还是启动时的「未在线」
             if self.gateway is not None:
                 self.gateway.ollama_status(force=True)
@@ -450,7 +454,7 @@ class AppContext:
                 # ⚠ ollama_healthy 只表示「/api/tags 可访问」，不代表能对话；
                 #   能否对话看 state / chat_ready（A4.1 契约）。
                 "ollama_healthy": bool(gw_state and gw_state.ollama_healthy),
-                "ollama_detail": gw_state.ollama_detail if gw_state else "",
+                "ollama_detail": render(gw_state.ollama_detail) if gw_state else "",
                 "api_key_configured": bool(config.get_str("AI", "api_key", "")),
                 # 「AI 对话」顶栏标签必须是**按当前配置与就绪状态实时算**的结果。
                 # 早先直接透传 last_provider（=「上次实际解析结果」），用户改完设置后

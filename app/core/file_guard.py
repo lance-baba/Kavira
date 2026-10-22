@@ -41,6 +41,8 @@ import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .i18n import t
+
 # --------------------------------------------------------------------------
 # 错误码（前端据此给人话，日志不 dump 文件内容）
 # --------------------------------------------------------------------------
@@ -75,7 +77,8 @@ class FileGuardError(Exception):
     def __init__(self, code: str, detail: str = "") -> None:
         self.code = code
         self.detail = detail
-        super().__init__(REASON_TEXT.get(code, "文件不合法") + (f"（{detail}）" if detail else ""))
+        super().__init__(t(REASON_TEXT.get(code, "文件不合法"))
+                         + (t("（{detail}）", detail=detail) if detail else ""))
 
 
 # --------------------------------------------------------------------------

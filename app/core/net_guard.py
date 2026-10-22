@@ -60,6 +60,7 @@ import ssl
 from dataclasses import dataclass, field
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
+from .i18n import t
 from .log_util import get_logger
 
 log = get_logger()
@@ -101,7 +102,7 @@ REASON_TEXT = {
     R_REQUEST: "请求失败",
     R_NOT_PUBLIC: "该地址不是公网地址，已拒绝访问（如需抓取内网请显式开启 allow_private_network）",
     R_MIXED: "该域名同时解析出公网与内网地址，出于安全考虑已拒绝",
-    R_TOO_MANY_REDIRECTS: f"重定向次数超过 {MAX_REDIRECTS} 次",
+    R_TOO_MANY_REDIRECTS: "重定向次数超过 {max} 次",
     R_REDIRECT_LOOP: "检测到重定向环路",
     R_NO_LOCATION: "重定向响应缺少 Location",
 }
@@ -121,7 +122,8 @@ class SSRFBlocked(Exception):
     def __init__(self, reason: str, detail: str = "") -> None:
         self.reason = reason
         self.detail = detail
-        super().__init__(f"{REASON_TEXT.get(reason, '已拒绝')}" + (f"（{detail}）" if detail else ""))
+        super().__init__(t(REASON_TEXT.get(reason, "已拒绝"))
+                         + (t("（{detail}）", detail=detail) if detail else ""))
 
 
 # --------------------------------------------------------------------------
@@ -506,7 +508,7 @@ def safe_fetch(
         key = v.url
         if key in seen:
             return FetchResult(False, hops=hop, reason=R_REDIRECT_LOOP,
-                               message=REASON_TEXT[R_REDIRECT_LOOP], proxy=use_proxy,
+                               message=t(REASON_TEXT[R_REDIRECT_LOOP]), proxy=use_proxy,
                                final_url=current)
         seen.add(key)
 
@@ -516,13 +518,14 @@ def safe_fetch(
             )
         except Exception as exc:  # noqa: BLE001 - 网络异常统一成结果，不抛给上层
             return FetchResult(False, hops=hop, reason=R_REQUEST,
-                               message=f"请求失败：{exc}", proxy=use_proxy, final_url=current)
+                               message=t("请求失败：{exc}", exc=exc), proxy=use_proxy,
+                               final_url=current)
 
         if status in (301, 302, 303, 307, 308):
             loc = rh.get("Location") or rh.get("location") or ""
             if not loc:
                 return FetchResult(False, status=status, hops=hop, reason=R_NO_LOCATION,
-                                   message=REASON_TEXT[R_NO_LOCATION], proxy=use_proxy,
+                                   message=t(REASON_TEXT[R_NO_LOCATION]), proxy=use_proxy,
                                    final_url=current)
             current = urljoin(v.url, loc)      # 相对 Location 也要处理
             continue
@@ -531,5 +534,6 @@ def safe_fetch(
                            final_url=final_url, hops=hop, proxy=use_proxy)
 
     return FetchResult(False, hops=max_redirects, reason=R_TOO_MANY_REDIRECTS,
-                       message=REASON_TEXT[R_TOO_MANY_REDIRECTS], proxy=use_proxy,
+                       message=t(REASON_TEXT[R_TOO_MANY_REDIRECTS], max=MAX_REDIRECTS),
+                       proxy=use_proxy,
                        final_url=current)

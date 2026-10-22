@@ -31,6 +31,7 @@ from typing import Iterator
 
 from . import config, net_util, search as search_mod
 from .db import Database
+from .i18n import DeferredMsg, render, t
 from .log_util import get_logger
 from .relation_guard import (ROUTE_GUARD, ROUTE_PASS, analyze_relation,  # noqa: F401
                              blocked_message, evaluate_relation, evidence_hint)
@@ -97,7 +98,8 @@ SYSTEM_PROMPT = (
 class GatewayState:
     ollama_healthy: bool = False
     ollama_checked_at: float = 0.0
-    ollama_detail: str = "未探测"
+    #: 可能是 DeferredMsg（探测发生在后台线程，语言在**请求时**才定）
+    ollama_detail: str | DeferredMsg = "未探测"
     #: 上次探测到的已安装模型名（与健康状态同一次请求取得，故同一 TTL）
     ollama_models: list[str] = field(default_factory=list)
     #: 同一次探测的模型详情（含 capabilities）—— 判定「能不能对话 / 能不能嵌入」用
@@ -323,15 +325,15 @@ class Gateway:
         )
         if status != 200:
             detail = (
-                f"连接失败（HTTP {status}）" if status
-                else "连不上 Ollama，请确认它已启动（命令行执行 ollama serve）"
+                DeferredMsg("连接失败（HTTP {code}）", code=status) if status
+                else DeferredMsg("连不上 Ollama，请确认它已启动（命令行执行 ollama serve）")
             )
             available, models = False, []
         else:
             models, parsed = _parse_tags(body)
             available = bool(parsed)
-            detail = (f"在线，发现 {len(models)} 个模型" if parsed
-                      else "返回内容无法解析")
+            detail = (DeferredMsg("在线，发现 {n} 个模型", n=len(models)) if parsed
+                      else DeferredMsg("返回内容无法解析"))
         if update_cache:
             with self._lock:
                 self.state.ollama_healthy = available
@@ -415,13 +417,13 @@ class Gateway:
         else:
             state = STATE_READY
 
-        reason = _STATE_REASON[state]
+        reason = t(_STATE_REASON[state])
         if state in (STATE_MODEL_MISSING, STATE_MODEL_NOT_CHAT):
-            reason = f"{reason}：{selected}"
+            reason = t("{reason}：{model}", reason=reason, model=selected)
         elif state == STATE_SELECTION_REQUIRED:
-            reason = f"{reason}（本机发现 {len(names)} 个）"
+            reason = t("{reason}（本机发现 {n} 个）", reason=reason, n=len(names))
         elif state == STATE_NO_RUNTIME and not probed:
-            reason = "尚未探测到本地 Ollama（后台探测中）"
+            reason = t("尚未探测到本地 Ollama（后台探测中）")
 
         api_key = self.api_key
         api_base = self.api_base
@@ -431,7 +433,7 @@ class Gateway:
             "chat_ready": state == STATE_READY,
             "ollama_available": available,
             "ollama_probed": probed,
-            "ollama_detail": detail,
+            "ollama_detail": render(detail),
             "installed_models": names,
             "installed_model_count": len(names),
             "selected_model": selected or None,

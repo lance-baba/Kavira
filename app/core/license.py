@@ -35,6 +35,7 @@ from pathlib import Path
 
 from . import atomic_io
 from . import license_pubkey as pubkey_mod
+from .i18n import t
 
 # ---------------------------------------------------------------------------
 # 常量
@@ -287,7 +288,7 @@ def verify_code(code: str, *, public_key_b64: str | None = None,
     """
     def _res(status: str, payload: dict | None = None) -> dict:
         return {"ok": status == ST_OK, "status": status,
-                "message": MESSAGES.get(status, status), "payload": payload}
+                "message": t(MESSAGES.get(status, status)), "payload": payload}
 
     try:
         payload, signature = decode_code(code)
@@ -386,7 +387,7 @@ def status(public_key_b64: str | None = None, now: datetime | None = None) -> di
     out: dict = {
         "activated": False,
         "status": ST_NO_LICENSE,
-        "message": MESSAGES[ST_NO_LICENSE],
+        "message": t(MESSAGES[ST_NO_LICENSE]),
         "device_code": device_code(dh),
         "device_hash_id": dh[:16],          # 只露前 16 位，够核对不够反推
         "key_id": pubkey_mod.KEY_ID,
@@ -422,7 +423,7 @@ def activate(code: str, public_key_b64: str | None = None,
     cleaned = "".join((code or "").split())
     if not cleaned:
         return {"ok": False, "status": ST_MALFORMED,
-                "message": MESSAGES[ST_MALFORMED], "payload": None}
+                "message": t(MESSAGES[ST_MALFORMED]), "payload": None}
 
     result = verify_code(cleaned, public_key_b64=public_key_b64, now=now)
     if not result["ok"]:
@@ -444,7 +445,7 @@ def activate(code: str, public_key_b64: str | None = None,
         save_activation(record)
     except OSError as exc:  # noqa: BLE001 - 磁盘不可写不能假装成功
         return {"ok": False, "status": ST_MALFORMED,
-                "message": f"激活信息保存失败：{exc}", "payload": payload}
+                "message": t("激活信息保存失败：{exc}", exc=exc), "payload": payload}
     return result
 
 
@@ -453,7 +454,7 @@ def clear() -> dict:
     removed = clear_activation()
     return {"ok": True, "removed": removed,
             "status": ST_NO_LICENSE,
-            "message": "已清除本机激活。" if removed else "本机原本未激活。"}
+            "message": t("已清除本机激活。") if removed else t("本机原本未激活。")}
 
 
 #: 上下文/诊断用的便捷别名

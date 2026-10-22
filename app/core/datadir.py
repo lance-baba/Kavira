@@ -37,6 +37,7 @@ from pathlib import Path
 from typing import Callable
 
 from . import log_util, paths
+from .i18n import t
 from .log_util import get_logger
 
 log = get_logger()
@@ -272,24 +273,26 @@ def precheck(target_raw: str) -> dict:
     app = paths.BASE_DIR
 
     if dst == src:
-        errors.append("目标目录就是当前资料目录，无需迁移。")
+        errors.append(t("目标目录就是当前资料目录，无需迁移。"))
     if dst == app or app in dst.parents:
-        errors.append("资料目录不能放在程序安装目录里（程序重装/回滚会连带影响资料）。")
+        errors.append(t("资料目录不能放在程序安装目录里（程序重装/回滚会连带影响资料）。"))
     if dst in src.parents:
-        errors.append("目标目录是当前资料目录的上级 —— 会把整个资料目录套进更深的层级。")
+        errors.append(t("目标目录是当前资料目录的上级 —— 会把整个资料目录套进更深的层级。"))
     if src in dst.parents and dst != src:
-        errors.append("目标目录在当前资料目录内部，形成嵌套。")
+        errors.append(t("目标目录在当前资料目录内部，形成嵌套。"))
     try:
         if dst.drive.upper() != app.drive.upper():
-            warnings.append(f"目标在 {dst.drive} 盘、程序在 {app.drive} 盘 —— 程序与资料分离。"
-                            "拔掉该盘后程序仍能启动，但看不到资料。")
+            warnings.append(t(
+                "目标在 {dst} 盘、程序在 {app} 盘 —— 程序与资料分离。"
+                "拔掉该盘后程序仍能启动，但看不到资料。",
+                dst=dst.drive, app=app.drive))
     except AttributeError:      # POSIX 无 drive，跳过该提示
         pass
 
     # 目标已存在时的处理 —— 这是最容易丢东西的地方，一律拒绝而非清理
     if dst.exists():
         if not dst.is_dir():
-            errors.append("目标路径已存在且不是目录。")
+            errors.append(t("目标路径已存在且不是目录。"))
         else:
             try:
                 occupied = any(dst.iterdir())
@@ -297,11 +300,11 @@ def precheck(target_raw: str) -> dict:
                 occupied = True
             if occupied:
                 if _looks_like_library(dst):
-                    errors.append("目标目录里已经有一份资料库，为避免混淆已中止。"
-                                  "请换一个空目录，或先手动整理再迁移。")
+                    errors.append(t("目标目录里已经有一份资料库，为避免混淆已中止。"
+                                    "请换一个空目录，或先手动整理再迁移。"))
                 else:
-                    errors.append("目标目录已存在且不为空 —— 不会为了腾地方删除里面的文件。"
-                                  "请选择一个空目录。")
+                    errors.append(t("目标目录已存在且不为空 —— 不会为了腾地方删除里面的文件。"
+                                    "请选择一个空目录。"))
 
     # 目标位置的可达性与写权限 —— 不在这里查，就会变成「预检说可以、迁移却失败」。
     # 分两种情形：父目录已存在 → 真写一个小探针再删（拦 U 盘写保护 / 只读介质）；
@@ -313,11 +316,11 @@ def precheck(target_raw: str) -> dict:
             probe.write_text("probe", encoding="ascii")
             probe.unlink()
         except OSError:
-            errors.append(f"目标位置没有写入权限（可能是写保护的 U 盘或只读介质）：{probe_root}")
+            errors.append(t("目标位置没有写入权限（可能是写保护的 U 盘或只读介质）：{path}", path=probe_root))
     else:
         anchor = os.path.splitdrive(str(dst))[0]
         if anchor and not os.path.isdir(anchor + (os.sep or "/")):
-            errors.append(f"目标位置不可达：找不到驱动器 {anchor}（请确认磁盘/U 盘已接好）")
+            errors.append(t("目标位置不可达：找不到驱动器 {anchor}（请确认磁盘/U 盘已接好）", anchor=anchor))
 
     # 空间
     files, size = _dir_stats(src)
@@ -326,11 +329,12 @@ def precheck(target_raw: str) -> dict:
             usage = shutil.disk_usage(str(_deepest_existing(dst)))
             free = int(usage.free)
             if free < int(size * 1.05) + 1024 * 1024:
-                errors.append(
-                    f"目标位置剩余空间不足：需要约 {_human(size)}，"
-                    f"可用 {_human(free)}（额外预留了 5% 余量）。")
+                errors.append(t(
+                    "目标位置剩余空间不足：需要约 {need}，"
+                    "可用 {free}（额外预留了 5% 余量）。",
+                    need=_human(size), free=_human(free)))
         except OSError:
-            warnings.append("无法读取目标位置的剩余空间，请自行确认磁盘够用。")
+            warnings.append(t("无法读取目标位置的剩余空间，请自行确认磁盘够用。"))
 
     return {
         "ok": not errors,
@@ -419,7 +423,7 @@ def export_package(dest_dir: str | Path | None = None) -> dict:
 
     src = paths.DATA_DIR
     if not src.is_dir():
-        return {"ok": False, "message": "当前没有可用的资料目录"}
+        return {"ok": False, "message": t("当前没有可用的资料目录")}
 
     stamp = time.strftime("%Y%m%d-%H%M")
     name = f"{EXPORT_PREFIX}{stamp}.zip"
@@ -428,7 +432,7 @@ def export_package(dest_dir: str | Path | None = None) -> dict:
     try:
         out_dir.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
-        return {"ok": False, "message": f"无法创建临时目录（可能只读）：{exc}"}
+        return {"ok": False, "message": t("无法创建临时目录（可能只读）：{exc}", exc=exc)}
     _sweep_stale_exports(out_dir)
     target = out_dir / name
 
@@ -469,7 +473,7 @@ def export_package(dest_dir: str | Path | None = None) -> dict:
 
             zf.writestr(EXPORT_README_NAME, _readme_text(info))
     except OSError as exc:
-        return {"ok": False, "message": f"打包失败：{exc}"}
+        return {"ok": False, "message": t("打包失败：{exc}", exc=exc)}
 
     return {
         "ok": True,
@@ -574,7 +578,7 @@ def migrate(target_raw: str, progress: Callable[..., None] | None = None) -> dic
     """
     global _LAST_RESULT
     if not _BUSY.acquire(blocking=False):
-        _LAST_RESULT = {"ok": False, "message": "已有迁移任务在进行中"}
+        _LAST_RESULT = {"ok": False, "message": t("已有迁移任务在进行中")}
         return _LAST_RESULT
     try:
         _LAST_RESULT = _run(target_raw, progress)
@@ -589,7 +593,7 @@ def _run(target_raw: str, progress: Callable[..., None] | None) -> dict:
     # （异常可能发生在给它们赋值之前，回滚时会 NameError 二次崩塌）。
     src = paths.DATA_DIR
     tmp = None
-    _set("check", "正在校验目标目录…", 0, files=0, bytes=0, started_at=0.0)
+    _set("check", t("正在校验目标目录…"), 0, files=0, bytes=0, started_at=0.0)
     try:
         # 延迟导入：context 装配了整棵依赖树，模块级导入会与核心层形成环。
         from .context import get_ctx
@@ -610,7 +614,7 @@ def _run(target_raw: str, progress: Callable[..., None] | None) -> dict:
         old_marker = paths.read_library_marker()
 
         # ---- 1) 停写：此后源目录不再有任何写入 ----
-        _set("stop", "正在停止写入（做检查点、关闭索引）…", 2)
+        _set("stop", t("正在停止写入（做检查点、关闭索引）…"), 2)
         try:
             ctx.shutdown()
         except Exception as exc:  # noqa: BLE001
@@ -618,23 +622,26 @@ def _run(target_raw: str, progress: Callable[..., None] | None) -> dict:
 
         try:
             # ---- 2) 复制 ----
-            _set("copy", "正在复制资料…", 3)
+            _set("copy", t("正在复制资料…"), 3)
             dst.parent.mkdir(parents=True, exist_ok=True)
             if tmp.exists():
-                _set("failed", "临时目录已存在，请稍后重试", 100)
-                return _abort(src, old_marker, f"临时目录已存在：{tmp}")
+                _set("failed", t("临时目录已存在，请稍后重试"), 100)
+                return _abort(src, old_marker,
+                              t("临时目录已存在：{path}", path=tmp))
             copied_files, copied_bytes = _copy_tree(src, tmp)
 
             # ---- 3) 校验 ----
-            _set("verify", "正在逐文件校验副本…", 92)
+            _set("verify", t("正在逐文件校验副本…"), 92)
             problems = _verify(src, tmp)
             if problems:
-                _set("failed", "副本校验未通过，已保留原位置", 100)
-                return _abort(src, old_marker, "副本校验未通过：" + "；".join(problems[:3]),
+                _set("failed", t("副本校验未通过，已保留原位置"), 100)
+                return _abort(src, old_marker,
+                              t("副本校验未通过：{detail}",
+                                detail="；".join(problems[:3])),
                               tmp=tmp)
 
             # ---- 4) 切换（同盘 rename，原子）----
-            _set("switch", "正在切换到新目录…", 96)
+            _set("switch", t("正在切换到新目录…"), 96)
             if dst.exists():
                 os.rmdir(dst)                     # 预检已确认是空目录
             os.rename(str(tmp), str(dst))
@@ -650,25 +657,26 @@ def _run(target_raw: str, progress: Callable[..., None] | None) -> dict:
             paths.ensure_dirs()
 
             # ---- 6) 以新目录重新打开 ----
-            _set("reopen", "正在按新目录重新打开资料库…", 98)
+            _set("reopen", t("正在按新目录重新打开资料库…"), 98)
             ctx.boot()
 
             # ---- 7) 验证 ----
             prev_notes = _count_md(src)
             now_notes = _count_md(dst)
             if prev_notes and now_notes < prev_notes:
-                _set("failed", "重新打开后文档数不一致，已回退", 100)
+                _set("failed", t("重新打开后文档数不一致，已回退"), 100)
                 return _abort(src, old_marker,
-                              f"新目录打开异常：原 {prev_notes} 篇 / 新 {now_notes} 篇")
+                              t("新目录打开异常：原 {old} 篇 / 新 {new} 篇",
+                                old=prev_notes, new=now_notes))
 
-            _set("done", "迁移完成", 100, files=copied_files, bytes=copied_bytes)
+            _set("done", t("迁移完成"), 100, files=copied_files, bytes=copied_bytes)
             invalidate_stats_cache()      # 指向已变，下一次统计必须重算
             secs = round(time.time() - t0, 1)
             log.info("资料目录迁移完成：%s → %s（%d 文件 / %s / %.1fs）",
                      src, dst, copied_files, _human(copied_bytes), secs)
             return {
                 "ok": True,
-                "message": "资料已迁移到新目录，旧目录已原样保留。",
+                "message": t("资料已迁移到新目录，旧目录已原样保留。"),
                 "from": str(src),
                 "to": str(dst),
                 "files": copied_files,
@@ -676,15 +684,15 @@ def _run(target_raw: str, progress: Callable[..., None] | None) -> dict:
                 "seconds": secs,
                 "warnings": chk.get("warnings", []),
                 "kept_source": True,
-                "note": "确认新目录资料无误后，可自行删除旧目录释放空间。",
+                "note": t("确认新目录资料无误后，可自行删除旧目录释放空间。"),
             }
         except Exception as exc:  # noqa: BLE001 - 任何异常都必须回到可用状态
             log.error("资料目录迁移失败：%s", exc)
-            _set("failed", f"迁移失败：{exc}", 100)
+            _set("failed", t("迁移失败：{exc}", exc=exc), 100)
             return _abort(src, old_marker, str(exc), tmp=tmp)
     except Exception as exc:  # noqa: BLE001
-        _set("failed", f"迁移无法开始：{exc}", 100)
-        return {"ok": False, "message": f"迁移无法开始：{exc}"}
+        _set("failed", t("迁移无法开始：{exc}", exc=exc), 100)
+        return {"ok": False, "message": t("迁移无法开始：{exc}", exc=exc)}
 
 
 def _count_md(root: Path) -> int:
@@ -708,7 +716,8 @@ def _copy_tree(src: Path, dst: Path) -> tuple[int, int]:
         if total_bytes <= 0 or now - last_report >= 0.25 or done_files >= total_files:
             last_report = now
             pct = 3 + int(done_bytes * 89 / total_bytes) if total_bytes else 95
-            _set("copy", f"正在复制资料… {done_files}/{total_files} 个文件",
+            _set("copy", t("正在复制资料… {done}/{total} 个文件",
+                           done=done_files, total=total_files),
                  min(pct, 91), files=done_files, bytes=done_bytes)
 
     dst.mkdir(parents=True, exist_ok=True)
@@ -747,9 +756,11 @@ def _verify(src: Path, dst: Path, sample_limit: int | None = None) -> list[str]:
     s_files, s_bytes = _dir_stats(src)
     d_files, d_bytes = _dir_stats(dst)
     if d_files != s_files:
-        problems.append(f"文件数量不一致（源 {s_files} / 副本 {d_files}）")
+        problems.append(t("文件数量不一致（源 {s} / 副本 {d}）",
+                              s=s_files, d=d_files))
     if d_bytes != s_bytes:
-        problems.append(f"总字节不一致（源 {s_bytes} / 副本 {d_bytes}）")
+        problems.append(t("总字节不一致（源 {s} / 副本 {d}）",
+                              s=s_bytes, d=d_bytes))
     if problems:
         return problems
 
@@ -771,10 +782,10 @@ def _verify(src: Path, dst: Path, sample_limit: int | None = None) -> list[str]:
             try:
                 sb, db = s.read_bytes(), d.read_bytes()
             except OSError as exc:
-                problems.append(f"抽样读取失败：{name}（{exc}）")
+                problems.append(t("抽样读取失败：{name}（{exc}）", name=name, exc=exc))
                 break
             if len(sb) != len(db) or sb[:256] != db[:256] or sb[-256:] != db[-256:]:
-                problems.append(f"内容不一致：{name}")
+                problems.append(t("内容不一致：{name}", name=name))
                 break
         if problems:
             break
@@ -815,7 +826,8 @@ def _abort(src: Path, old_marker: Path | None, message: str,
 
     return {
         "ok": False,
-        "message": f"已中止，资料保持原样（仍在 {src}）。原因：{message}",
+        "message": t("已中止，资料保持原样（仍在 {src}）。原因：{reason}",
+                     src=src, reason=message),
         "rolled_back": True,
         "current": str(src),
     }

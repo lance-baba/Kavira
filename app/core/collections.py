@@ -30,6 +30,7 @@ from pathlib import Path
 
 from . import paths
 from .atomic_io import atomic_write_text
+from .i18n import t
 
 SCHEMA_VERSION = 1
 STORE_NAME = "collections.json"
@@ -167,7 +168,7 @@ def list_all() -> dict:
 def create_collection(name: str) -> dict:
     name = (name or "").strip()
     if not name:
-        raise ValueError("类目名不能为空")
+        raise ValueError(t("类目名不能为空"))
     data = load_store()
     item = {"id": uuid.uuid4().hex[:8], "name": name, "created_at": int(time.time())}
     data["collections"].append(item)
@@ -178,7 +179,7 @@ def create_collection(name: str) -> dict:
 def rename_collection(collection_id: str, name: str) -> dict:
     name = (name or "").strip()
     if not name:
-        raise ValueError("类目名不能为空")
+        raise ValueError(t("类目名不能为空"))
     data = load_store()
     for c in data["collections"]:
         if c["id"] == collection_id:
@@ -210,7 +211,7 @@ def delete_collection(collection_id: str) -> None:
 def assign(doc_id: str, collection_ids: list[str]) -> dict:
     """把文档的类目集合整体设为 ``collection_ids``（去重、过滤不存在的 id）。"""
     if not doc_id:
-        raise ValueError("缺少 doc_id")
+        raise ValueError(t("缺少 doc_id"))
     data = load_store()
     valid = {c["id"] for c in data["collections"]}
     cols = [x for x in dict.fromkeys(collection_ids or []) if x in valid]
@@ -236,7 +237,7 @@ def collections_of(doc_id: str) -> list[str]:
 # --------------------------------------------------------------------------- #
 def set_display_title(doc_id: str, title: str) -> str:
     if not doc_id:
-        raise ValueError("缺少 doc_id")
+        raise ValueError(t("缺少 doc_id"))
     title = (title or "").strip()
     data = load_store()
     if title:
@@ -252,7 +253,7 @@ def set_display_title(doc_id: str, title: str) -> str:
 # --------------------------------------------------------------------------- #
 def trash_doc(doc_id: str) -> None:
     if not doc_id:
-        raise ValueError("缺少 doc_id")
+        raise ValueError(t("缺少 doc_id"))
     data = load_store()
     if doc_id not in data["trash"]:
         data["trash"].append(doc_id)
@@ -273,7 +274,7 @@ def purge_doc(doc_id: str) -> None:
     导入，旧的类目归属与自定义标题会「诈尸」挂到新文档上 —— 必须一次性抹干净。
     """
     if not doc_id:
-        raise ValueError("缺少 doc_id")
+        raise ValueError(t("缺少 doc_id"))
     data = load_store()
     data["trash"] = [x for x in data["trash"] if x != doc_id]
     data["membership"].pop(doc_id, None)

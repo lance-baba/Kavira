@@ -8,6 +8,7 @@ from __future__ import annotations
 import threading
 from typing import TYPE_CHECKING
 
+from ..core.i18n import render, t
 from ..core.log_util import get_logger
 
 if TYPE_CHECKING:
@@ -30,7 +31,13 @@ def handle_get(h: "Handler", path: str) -> bool:
         # ?probe=1：绕过 60s 健康缓存现场重探（顶部「刷新」按钮专用）。
         # 不带 probe 时 ai_readiness 也会在缓存过期后自动重探（TTL 门控）。
         probe = h.query_flag("probe") == "1"
-        h._send_json({"code": 200, "data": h.ctx.status(probe=probe)})
+        data = h.ctx.status(probe=probe)
+        # 启动期产出的 warnings / notes 不在请求线程里生成（那时语言未定）：
+        # 固定串在这里过 t()，延后格式化对象（DeferredMsg）在这里才真正渲染成定稿。
+        for _key in ("warnings", "notes"):
+            if isinstance(data.get(_key), list):
+                data[_key] = [render(_v) for _v in data[_key]]
+        h._send_json({"code": 200, "data": data})
         return True
     return False
 
@@ -41,7 +48,7 @@ def handle_post(h: "Handler", path: str) -> bool:
         threading.Thread(
             target=_rebuild_worker, args=(h,), name="rebuild-index", daemon=True
         ).start()
-        h._send_json({"code": 202, "message": "索引全量重建任务已在后台启动"})
+        h._send_json({"code": 202, "message": t("索引全量重建任务已在后台启动")})
         return True
 
     if path == "/api/system/rebuild-vectors":
@@ -50,12 +57,12 @@ def handle_post(h: "Handler", path: str) -> bool:
             target=_rebuild_worker, args=(h,), kwargs={"recreate_vec": True},
             name="rebuild-vectors", daemon=True,
         ).start()
-        h._send_json({"code": 202, "message": "向量索引重建任务已在后台启动"})
+        h._send_json({"code": 202, "message": t("向量索引重建任务已在后台启动")})
         return True
 
     if path == "/api/system/shutdown":
         h._read_json()
-        h._send_json({"code": 200, "message": "正在安全退出，请稍候…"})
+        h._send_json({"code": 200, "message": t("正在安全退出，请稍候…")})
         threading.Timer(0.3, h.server.request_shutdown).start()  # type: ignore[attr-defined]
         return True
 

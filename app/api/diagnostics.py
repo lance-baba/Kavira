@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..core import diagnostics
+from ..core.i18n import t
 
 if TYPE_CHECKING:
     from ..server import Handler
@@ -33,7 +34,7 @@ def _runtime_ai(h: "Handler") -> dict:
     if not vec_ok:
         fallback = (getattr(db, "signature_mismatch", "") or ""
                     or next((w for w in ctx.warnings if "向量" in w or "嵌入" in w), "")
-                    or "向量嵌入源不可用，已退化为纯 FTS5 词法检索")
+                    or t("向量嵌入源不可用，已退化为纯 FTS5 词法检索"))
 
     # --- Level 3：对话就绪状态（缓存，不探测）---
     ready = ctx.ai_readiness()

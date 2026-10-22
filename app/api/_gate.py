@@ -18,6 +18,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ..core.i18n import t
+
 if TYPE_CHECKING:
     from ..server import Handler
 
@@ -35,5 +37,5 @@ def require_activation(h: "Handler") -> bool:
     """放行返回 True；未激活时写出 403 并返回 False（调用方直接 return）。"""
     if is_activated(h):
         return True
-    h._send_json({"code": 403, "message": UNAUTH_MESSAGE}, 403)
+    h._send_json({"code": 403, "message": t(UNAUTH_MESSAGE)}, 403)
     return False

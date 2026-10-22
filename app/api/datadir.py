@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ..core import datadir as dd_mod
+from ..core.i18n import get_lang, set_lang, t
 from ..core.log_util import get_logger
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ def handle_get(h: "Handler", path: str) -> bool:
         # 「U 盘会坏」的兜底：把用户资料打包成 zip 交给浏览器下载。
         res = dd_mod.export_package()
         if not res.get("ok"):
-            h._send_json({"code": 500, "message": res.get("message", "打包失败")}, 500)
+            h._send_json({"code": 500, "message": res.get("message", t("打包失败"))}, 500)
             return True
         try:
             h._send_file_stream(res["path"], "application/zip", res["name"])
@@ -56,7 +57,7 @@ def handle_post(h: "Handler", path: str) -> bool:
         body = h._read_json() or {}
         ck = dd_mod.precheck(str(body.get("target") or ""))
         if ck["ok"]:
-            h._send_json({"code": 200, "message": "预检通过", "data": ck})
+            h._send_json({"code": 200, "message": t("预检通过"), "data": ck})
         else:
             # 400 而非 500：这是**用户的输入不合规**，不是服务故障。
             h._send_json({"code": 400, "message": "；".join(ck["errors"]),
@@ -67,15 +68,23 @@ def handle_post(h: "Handler", path: str) -> bool:
         body = h._read_json() or {}
         target = str(body.get("target") or "").strip()
         if not target:
-            h._send_json({"code": 400, "message": "请填写目标目录"}, 400)
+            h._send_json({"code": 400, "message": t("请填写目标目录")}, 400)
             return True
         if dd_mod.is_busy():
-            h._send_json({"code": 409, "message": "已有迁移任务在进行中"}, 409)
+            h._send_json({"code": 409, "message": t("已有迁移任务在进行中")}, 409)
             return True
         # 迁移可能持续几分钟到几十分钟（几十 GB + 机械/U 盘），**必须异步**；
         # 期间服务会短暂不可用（context 关闭再重开），前端靠 progress 轮询跟进度。
-        threading.Thread(target=dd_mod.migrate, args=(target,),
+        # 迁移在后台线程跑：contextvar 不会自动继承 → 显式把语言带过去，
+        # 否则进度/结果文案会固定回退中文（英文界面里中英混排）。
+        lang = get_lang()
+
+        def _migrate_worker() -> None:
+            set_lang(lang)
+            dd_mod.migrate(target)
+
+        threading.Thread(target=_migrate_worker,
                          name="datadir-migrate", daemon=True).start()
-        h._send_json({"code": 202, "message": "资料迁移任务已启动，请留意进度提示"})
+        h._send_json({"code": 202, "message": t("资料迁移任务已启动，请留意进度提示")})
         return True
     return False

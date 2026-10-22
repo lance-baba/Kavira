@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
+from ..core.i18n import t
 from ..core.log_util import get_logger
 from . import _gate
 
@@ -43,14 +44,14 @@ def ai_test(h: "Handler") -> None:
     body = h._read_json()
     target = str(body.get("target") or "ollama").lower()
     if h.ctx.gateway is None:
-        h._send_json({"code": 503, "message": "服务尚未初始化完成"}, 503)
+        h._send_json({"code": 503, "message": t("服务尚未初始化完成")}, 503)
         return
     if target == "ollama":
         result = h.ctx.gateway.test_ollama(str(body.get("model") or "") or None)
     elif target == "api":
         result = h.ctx.gateway.test_api()
     else:
-        h._send_json({"code": 400, "message": "target 仅支持 ollama / api"}, 400)
+        h._send_json({"code": 400, "message": t("target 仅支持 ollama / api")}, 400)
         return
     h._send_json({"code": 200 if result.get("ok") else 200, "data": result})
 
@@ -59,7 +60,7 @@ def ollama_models(h: "Handler", q: dict) -> None:
     host = (q.get("host") or [""])[0] or None
     if h.ctx.gateway is None:
         h._send_json(
-            {"code": 503, "message": "服务尚未初始化完成", "data": {"available": False, "models": []}}
+            {"code": 503, "message": t("服务尚未初始化完成"), "data": {"available": False, "models": []}}
         )
         return
     info = h.ctx.gateway.list_ollama_models(host)

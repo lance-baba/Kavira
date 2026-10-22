@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..core import config, redact as redact_mod
+from ..core.i18n import t
 
 if TYPE_CHECKING:
     from ..server import Handler
@@ -36,5 +37,5 @@ def handle_post(h: "Handler", path: str) -> bool:
         return False
     body = h._read_json()
     updated = config.update(body.get("data") or body, persist=True)
-    h._send_json({"code": 200, "message": "配置已保存", "data": updated})
+    h._send_json({"code": 200, "message": t("配置已保存"), "data": updated})
     return True

@@ -39,6 +39,7 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
+from .i18n import DeferredMsg
 from .log_util import get_logger
 
 log = get_logger()
@@ -348,7 +349,7 @@ def migrate(db_path: str | Path) -> dict:
     }
 
     if action == OK:
-        info["message"] = f"索引结构一致（{CURRENT_SCHEMA_VERSION}）"
+        info["message"] = DeferredMsg("索引结构一致（{v}）", v=CURRENT_SCHEMA_VERSION)
         return info
 
     if action == DOWNGRADE:
@@ -356,7 +357,8 @@ def migrate(db_path: str | Path) -> dict:
 
     if action == FRESH:
         info["action"] = "create"
-        info["message"] = f"无索引，将按当前结构新建（{CURRENT_SCHEMA_VERSION}）"
+        info["message"] = DeferredMsg("无索引，将按当前结构新建（{v}）",
+                                     v=CURRENT_SCHEMA_VERSION)
         return info
 
     # UPGRADE / UNKNOWN → 备份 + 清缓存，随后由调用方全量重建
@@ -371,11 +373,14 @@ def migrate(db_path: str | Path) -> dict:
         # 有库却备份失败：中止升级，绝不冒删数据的风险
         raise RuntimeError("旧索引备份失败，已中止结构升级（未删除任何数据）")
     info["removed"] = remove_cache(db_path)
-    reason = "索引结构已更新" if action == UPGRADE else "索引结构无法识别"
+    reason = ("索引结构已更新" if action == UPGRADE
+              else "索引结构无法识别")
     info["action"] = "rebuild"
-    info["message"] = (
-        f"{reason}（{probe_res.version or '未知'} → {CURRENT_SCHEMA_VERSION}），"
-        f"已备份旧索引并清空，将从 data/notes 全量重建"
+    info["message"] = DeferredMsg(
+        "{reason}（{old} → {new}），已备份旧索引并清空，将从 data/notes 全量重建",
+        reason=reason,
+        old=probe_res.version or "未知",
+        new=CURRENT_SCHEMA_VERSION,
     )
     return info
 

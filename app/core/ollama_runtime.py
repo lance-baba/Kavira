@@ -26,6 +26,7 @@ from pathlib import Path
 
 from . import net_util
 from . import proc as proc_mod
+from .i18n import DeferredMsg, t
 
 #: 拉起后等待就绪的上限（秒）。冷启动含加载运行时，给足但不无限等。
 DEFAULT_WAIT_S = 25.0
@@ -102,11 +103,21 @@ def _spawn_serve(exe: Path) -> None:
     )
 
 
+def _set_reason(out: dict, zh: str, **fmt) -> None:
+    """同时给出两种形态的「没拉起的原因」。
+
+    * ``reason``     —— 纯字符串（日志 / 现有调用方与测试按子串断言，保持原样）；
+    * ``reason_msg`` —— 延后格式化对象，供响应边界按请求语言渲染。
+    """
+    out["reason"] = t(zh, **fmt)
+    out["reason_msg"] = DeferredMsg(zh, **fmt)
+
+
 def ensure_running(host: str, *, enabled: bool = True,
                    wait_s: float = DEFAULT_WAIT_S) -> dict:
     """确保 Ollama 在运行；返回结构化结果（**不抛异常**）。
 
-    ``{"enabled", "already", "started", "exe", "waited_s", "reason"}``
+    ``{"enabled", "already", "started", "exe", "waited_s", "reason", "reason_msg"}``
     * ``already=True``  → 本来就在跑，什么都没做；
     * ``started=True``  → 本次拉起成功了；
     * 两者皆 False     → 没拉起，``reason`` 说明为什么（调用方应据此提示/降级）。
@@ -116,27 +127,27 @@ def ensure_running(host: str, *, enabled: bool = True,
 
     if reachable(host):
         out["already"] = True
-        out["reason"] = "已在运行"
+        _set_reason(out, "已在运行")
         return out
 
     if not enabled:
-        out["reason"] = "未启用自动启动"
+        _set_reason(out, "未启用自动启动")
         return out
 
     if os.name != "nt":
-        out["reason"] = "非 Windows 平台，仅探测不自动拉起"
+        _set_reason(out, "非 Windows 平台，仅探测不自动拉起")
         return out
 
     exe = find_ollama_exe()
     if exe is None:
-        out["reason"] = "未找到 ollama 可执行文件（PATH 与官方安装目录均无）"
+        _set_reason(out, "未找到 ollama 可执行文件（PATH 与官方安装目录均无）")
         return out
     out["exe"] = str(exe)
 
     try:
         _spawn_serve(exe)
     except OSError as exc:
-        out["reason"] = f"拉起 ollama serve 失败：{exc}"
+        _set_reason(out, "拉起 ollama serve 失败：{exc}", exc=exc)
         return out
 
     t0 = time.time()
@@ -144,9 +155,9 @@ def ensure_running(host: str, *, enabled: bool = True,
         if reachable(host, timeout=1.5):
             out["started"] = True
             out["waited_s"] = round(time.time() - t0, 1)
-            out["reason"] = f"已自动启动（等待 {out['waited_s']}s）"
+            _set_reason(out, "已自动启动（等待 {s}s）", s=out["waited_s"])
             return out
         time.sleep(_POLL_S)
     out["waited_s"] = round(time.time() - t0, 1)
-    out["reason"] = f"拉起后等待 {out['waited_s']}s 仍不可达"
+    _set_reason(out, "拉起后等待 {s}s 仍不可达", s=out["waited_s"])
     return out

@@ -18,6 +18,7 @@ from urllib.parse import urlparse
 
 from . import (analyzer, archiver, atomic_io, config, file_guard,
                    net_guard as _net_guard, net_util, paths)
+from .i18n import t
 from .log_util import get_logger
 
 log = get_logger()
@@ -200,7 +201,7 @@ def fetch_html(url: str, timeout: float | None = None) -> tuple[str, str]:
     """
     timeout = timeout or config.get_float("CRAWLER", "request_timeout", 20.0)
     if not _net_guard_ready():
-        return "", "网络出口未就绪"
+        return "", t("网络出口未就绪")
 
     res = _net_guard.safe_fetch(
         url,
@@ -214,7 +215,7 @@ def fetch_html(url: str, timeout: float | None = None) -> tuple[str, str]:
     )
     if not res.ok:
         # 安全拒绝要与普通网络错误区分开，否则用户不知道是被策略挡住了
-        return "", res.message or "抓取失败"
+        return "", res.message or t("抓取失败")
     if res.status >= 400:
         return "", f"HTTP {res.status}"
 
@@ -319,7 +320,7 @@ def fetch_with_chrome(url: str, timeout: float = 30.0) -> str:
 
     exe = chrome_executable()
     if not exe:
-        raise RuntimeError("未找到本机 Chrome/Edge 可执行文件")
+        raise RuntimeError(t("未找到本机 Chrome/Edge 可执行文件"))
 
     profile = paths.CHROME_PROFILE_DIR
     shutil.rmtree(profile, ignore_errors=True)
@@ -471,7 +472,8 @@ def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -
     """
     url = (url or "").strip()
     if not re.match(r"^https?://", url, re.IGNORECASE):
-        return CaptureResult(False, "error", message="仅支持 http/https 开头的标准 URL")
+        return CaptureResult(False, "error",
+                             message=t("仅支持 http/https 开头的标准 URL"))
 
     # ---- 来源 URL 判重（归一化后比较：utm / fragment / 尾斜杠等差异不算新页面）----
     existing: dict | None = None
@@ -489,9 +491,10 @@ def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -
             False, "duplicate",
             title=existing.get("title", ""),
             file_path=existing.get("rel_path", ""),
-            message=(
-                f"该网页已经保存过：{existing.get('title', '')}"
-                "（可在弹窗里选择打开已有 / 更新已有 / 另存为新版本）"
+            message=t(
+                "该网页已经保存过：{title}"
+                "（可在弹窗里选择打开已有 / 更新已有 / 另存为新版本）",
+                title=existing.get("title", ""),
             ),
             duplicate={**existing, "action": "abort"},
         )
@@ -510,13 +513,15 @@ def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -
         except _net_guard.SSRFBlocked as exc:
             # 安全拒绝**不能**被 headless fallback 悄悄吞掉 —— 否则用户拿到的
             # 是含糊的「页面抓取失败」，却不知道其实是被安全策略挡住了。
-            err = f"安全策略已拒绝该地址：{exc}"
+            err = t("安全策略已拒绝该地址：{exc}", exc=exc)
             html_text = ""
         except Exception as exc:  # noqa: BLE001
             log.warning("Headless Chrome 抓取失败: %s", exc)
 
     if not html_text:
-        return CaptureResult(False, "error", message=f"页面抓取失败：{err or '空响应'}")
+        return CaptureResult(False, "error",
+                             message=t("页面抓取失败：{err}",
+                                      err=err or t("空响应")))
 
     body, meta, extractor = extract_body(html_text, url)
     used = f"{used}+{extractor}"
@@ -533,7 +538,7 @@ def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -
             used = f"{used}+assets{_loc.assets}"
     except Exception as exc:  # noqa: BLE001 - 本地化失败不应让抓取失败
         log.warning("资源本地化失败，本次按未本地化存档：%s", exc)
-        loc_notes.append("资源本地化失败，该页离线时样式与图片可能不完整")
+        loc_notes.append(t("资源本地化失败，该页离线时样式与图片可能不完整"))
 
     # 入库语义分析。确定性层（关键词/实体/语言）永远执行、零依赖；
     # AI 摘要属增强层，模型不可用时静默跳过，绝不影响入库。
@@ -571,7 +576,7 @@ def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -
         result = CaptureResult(
             True, "success", title=title or url,
             file_path=paths.rel_to_data(target), abs_path=str(target),
-            char_count=len(body), message="抓取成功", used=used,
+            char_count=len(body), message=t("抓取成功"), used=used,
             notes=loc_notes,
         )
     # ---- 降级分支 ----
@@ -588,7 +593,7 @@ def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -
             True, "partial_fallback", title=title or url,
             file_path=paths.rel_to_data(target), abs_path=str(target),
             char_count=len(body), snapshot_path=paths.rel_to_data(snap),
-            message="该页面为前端动态渲染，仅保留快照，建议通过复制粘贴方式记录重要内容",
+            message=t("该页面为前端动态渲染，仅保留快照，建议通过复制粘贴方式记录重要内容"),
             used=used,
             notes=loc_notes,
         )
@@ -605,10 +610,10 @@ def capture_url(url: str, db=None, embedder=None, on_duplicate: str = "abort") -
 
             r = indexer.index_file(db, Path(result.abs_path), embedder)
             if not r.get("ok"):
-                result.message += f"（索引写入失败：{r.get('error')}）"
+                result.message += t("（索引写入失败：{exc}）", exc=r.get("error"))
         except Exception as exc:  # noqa: BLE001
             log.error("抓取后索引失败: %s", exc)
-            result.message += f"（索引异常：{exc}）"
+            result.message += t("（索引异常：{exc}）", exc=exc)
 
     log.info("剪藏 [%s] %s -> %s (%d 字)", result.status, url, result.file_path, result.char_count)
     return result
@@ -619,7 +624,7 @@ def save_manual_note(title: str, body: str, db=None, embedder=None, source: str 
     title = (title or "").strip() or "未命名笔记"
     body = (body or "").strip()
     if not body:
-        return CaptureResult(False, "error", message="内容为空，未保存")
+        return CaptureResult(False, "error", message=t("内容为空，未保存"))
 
     when = datetime.now()
     paths.NOTES_DIR.mkdir(parents=True, exist_ok=True)
@@ -638,7 +643,7 @@ def save_manual_note(title: str, body: str, db=None, embedder=None, source: str 
 
     result = CaptureResult(
         True, "success", title=title, file_path=paths.rel_to_data(target),
-        abs_path=str(target), char_count=len(body), message="笔记已保存",
+        abs_path=str(target), char_count=len(body), message=t("笔记已保存"),
         used="manual",
     )
     if db is not None:
@@ -647,7 +652,7 @@ def save_manual_note(title: str, body: str, db=None, embedder=None, source: str 
 
             indexer.index_file(db, target, embedder)
         except Exception as exc:  # noqa: BLE001
-            result.message += f"（索引异常：{exc}）"
+            result.message += t("（索引异常：{exc}）", exc=exc)
     return result
 
 
@@ -802,9 +807,10 @@ def import_document(
     """
     raw_name = str(filename or "").strip().replace("\\", "/").split("/")[-1]
     if not raw_name:
-        return CaptureResult(False, "error", message="缺少文件名")
+        return CaptureResult(False, "error", message=t("缺少文件名"))
     if raw_name.startswith("."):
-        return CaptureResult(False, "error", message=f"{raw_name}：不支持隐藏文件")
+        return CaptureResult(False, "error",
+                             message=t("{name}：不支持隐藏文件", name=raw_name))
 
     from . import converters  # 惰性导入，避免循环依赖
 
@@ -839,9 +845,10 @@ def import_document(
     try:
         atomic_io.atomic_write_text(target, text)
     except OSError as exc:
-        return CaptureResult(False, "error", message=f"写入失败：{exc}")
+        return CaptureResult(False, "error",
+                             message=t("写入失败：{exc}", exc=exc))
 
-    note = f"（{conv.kind} → Markdown）" if conv.kind not in ("markdown",) else ""
+    note = t("（{kind} → Markdown）", kind=conv.kind) if conv.kind not in ("markdown",) else ""
     # 留存原件：界面「原版预览」用它还原原始观感（PDF 用浏览器原生查看器）
     original_rel = ""
     if conv.kind not in _SELF_STORED_KINDS:
@@ -851,7 +858,7 @@ def import_document(
         True, "success", title=conv.title or stem,
         file_path=paths.rel_to_data(target), abs_path=str(target),
         char_count=conv.char_count,
-        message=f"已导入 {raw_name}{note}",
+        message=t("已导入 {name}{note}", name=raw_name, note=note),
         used=f"import:{conv.kind}",
     )
     result.original_path = original_rel
@@ -864,9 +871,9 @@ def import_document(
 
             r = indexer.index_file(db, target, embedder)
             if not r.get("ok"):
-                result.message += f"（索引写入失败：{r.get('error')}）"
+                result.message += t("（索引写入失败：{exc}）", exc=r.get("error"))
         except Exception as exc:  # noqa: BLE001
-            result.message += f"（索引异常：{exc}）"
+            result.message += t("（索引异常：{exc}）", exc=exc)
     log.info("导入 [%s] %s (%d 字)", result.status, result.file_path, result.char_count)
     return result
 

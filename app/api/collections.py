@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING
 from ..core import chunker
 from ..core import collections as collections_mod
 from ..core import crawler, indexer, paths
+from ..core.i18n import t
 
 if TYPE_CHECKING:
     from ..server import Handler
@@ -42,9 +43,9 @@ def _doc_id(body: dict) -> str:
 def _fail(h: "Handler", exc: Exception) -> None:
     """把 core 层异常映射为 HTTP 语义（不暴露堆栈）。"""
     if isinstance(exc, collections_mod.StoreCorruptedError):
-        h._send_json({"code": 500, "message": f"类目数据损坏，未做任何修改（{exc}）"}, 500)
+        h._send_json({"code": 500, "message": t("类目数据损坏，未做任何修改（{exc}）", exc=exc)}, 500)
     elif isinstance(exc, (collections_mod.CollectionNotFound, KeyError)):
-        h._send_json({"code": 404, "message": "类目不存在"}, 404)
+        h._send_json({"code": 404, "message": t("类目不存在")}, 404)
     else:
         h._send_json({"code": 400, "message": str(exc)}, 400)
 
@@ -60,7 +61,7 @@ def create_collection(h: "Handler") -> None:
     body = h._read_json()
     try:
         item = collections_mod.create_collection(str(body.get("name") or ""))
-        h._send_json({"code": 200, "message": "已创建类目", "data": item})
+        h._send_json({"code": 200, "message": t("已创建类目"), "data": item})
     except Exception as exc:  # noqa: BLE001
         _fail(h, exc)
 
@@ -70,7 +71,7 @@ def rename_collection(h: "Handler") -> None:
     try:
         item = collections_mod.rename_collection(
             str(body.get("id") or ""), str(body.get("name") or ""))
-        h._send_json({"code": 200, "message": "已重命名", "data": item})
+        h._send_json({"code": 200, "message": t("已重命名"), "data": item})
     except Exception as exc:  # noqa: BLE001
         _fail(h, exc)
 
@@ -79,7 +80,7 @@ def delete_collection(h: "Handler") -> None:
     body = h._read_json()
     try:
         collections_mod.delete_collection(str(body.get("id") or ""))
-        h._send_json({"code": 200, "message": "已删除类目（文档不受影响）"})
+        h._send_json({"code": 200, "message": t("已删除类目（文档不受影响）")})
     except Exception as exc:  # noqa: BLE001
         _fail(h, exc)
 
@@ -89,12 +90,12 @@ def assign_collections(h: "Handler") -> None:
     try:
         did = _doc_id(body)
         if not did:
-            raise ValueError("缺少 doc_id 或 path")
+            raise ValueError(t("缺少 doc_id 或 path"))
         ids = body.get("collection_ids")
         if not isinstance(ids, list):
             ids = []
         result = collections_mod.assign(did, [str(x) for x in ids])
-        h._send_json({"code": 200, "message": "已更新分类", "data": result})
+        h._send_json({"code": 200, "message": t("已更新分类"), "data": result})
     except Exception as exc:  # noqa: BLE001
         _fail(h, exc)
 
@@ -104,9 +105,9 @@ def set_display_title(h: "Handler") -> None:
     try:
         did = _doc_id(body)
         if not did:
-            raise ValueError("缺少 doc_id 或 path")
+            raise ValueError(t("缺少 doc_id 或 path"))
         title = collections_mod.set_display_title(did, str(body.get("title") or ""))
-        h._send_json({"code": 200, "message": "已更新标题",
+        h._send_json({"code": 200, "message": t("已更新标题"),
                       "data": {"doc_id": did, "title": title}})
     except Exception as exc:  # noqa: BLE001
         _fail(h, exc)
@@ -117,9 +118,9 @@ def trash_note(h: "Handler") -> None:
     try:
         did = _doc_id(body)
         if not did:
-            raise ValueError("缺少 doc_id 或 path")
+            raise ValueError(t("缺少 doc_id 或 path"))
         collections_mod.trash_doc(did)
-        h._send_json({"code": 200, "message": "已移入回收站"})
+        h._send_json({"code": 200, "message": t("已移入回收站")})
     except Exception as exc:  # noqa: BLE001
         _fail(h, exc)
 
@@ -139,7 +140,7 @@ def purge_note(h: "Handler") -> None:
     try:
         did = _doc_id(body)
         if not did:
-            raise ValueError("缺少 doc_id 或 path")
+            raise ValueError(t("缺少 doc_id 或 path"))
         also_originals = bool(body.get("delete_originals"))
 
         # rel_path 优先用请求里给的；没有再回查索引（前端往往只带 doc_id）
@@ -149,7 +150,7 @@ def purge_note(h: "Handler") -> None:
                 "SELECT rel_path FROM documents WHERE doc_id = ?", (did,))
             rel = str(row["rel_path"]) if row else ""
         if not rel:
-            raise ValueError("找不到该文档的笔记路径（可能已被清理）")
+            raise ValueError(t("找不到该文档的笔记路径（可能已被清理）"))
 
         # ⚠ rel 是**相对 DATA_DIR** 的路径（形如 notes/xxx.md，见 paths.rel_to_data），
         #   回绝对路径必须用 DATA_DIR 拼 —— 拿 NOTES_DIR 拼会变成 notes/notes/xxx.md，
@@ -159,7 +160,7 @@ def purge_note(h: "Handler") -> None:
         try:
             note.relative_to(paths.NOTES_DIR.resolve())
         except ValueError:
-            raise ValueError("越权访问被拒绝")
+            raise ValueError(t("越权访问被拒绝"))
 
         note_bytes = 0
         if note.is_file():
@@ -176,13 +177,13 @@ def purge_note(h: "Handler") -> None:
                 try:
                     orig.resolve().relative_to(paths.ORIGINALS_DIR.resolve())
                 except ValueError:
-                    raise ValueError("原件路径越权访问被拒绝")
+                    raise ValueError(t("原件路径越权访问被拒绝"))
                 orig_bytes = orig.stat().st_size
                 orig.unlink()
                 orig_removed = 1
 
         collections_mod.purge_doc(did)      # membership / display_titles / trash 一次抹净
-        h._send_json({"code": 200, "message": "已永久删除",
+        h._send_json({"code": 200, "message": t("已永久删除"),
                       "data": {"doc_id": did, "rel_path": rel,
                                "note_bytes": note_bytes,
                                "purged_chunks": purged_chunks,
@@ -197,9 +198,9 @@ def restore_note(h: "Handler") -> None:
     try:
         did = _doc_id(body)
         if not did:
-            raise ValueError("缺少 doc_id 或 path")
+            raise ValueError(t("缺少 doc_id 或 path"))
         collections_mod.restore_doc(did)
-        h._send_json({"code": 200, "message": "已恢复"})
+        h._send_json({"code": 200, "message": t("已恢复")})
     except Exception as exc:  # noqa: BLE001
         _fail(h, exc)
 

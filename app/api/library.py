@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 
 from ..core import (archiver, converters, crawler, office_preview, paths,
                     search as search_mod)
+from ..core.i18n import t
 
 if TYPE_CHECKING:
     from ..server import Handler
@@ -29,26 +30,26 @@ def list_notes(h: "Handler", q: dict) -> None:
 
 def note_content(h: "Handler", rel: str) -> None:
     if not rel:
-        h._send_json({"code": 400, "message": "缺少 path 参数"}, 400)
+        h._send_json({"code": 400, "message": t("缺少 path 参数")}, 400)
         return
     try:
         target = paths.abs_from_data(rel)
     except Exception:  # noqa: BLE001
-        h._send_json({"code": 400, "message": "非法路径"}, 400)
+        h._send_json({"code": 400, "message": t("非法路径")}, 400)
         return
     # 防路径穿越：必须落在 data/ 之下
     try:
         target.resolve().relative_to(paths.DATA_DIR.resolve())
     except ValueError:
-        h._send_json({"code": 403, "message": "越权访问被拒绝"}, 403)
+        h._send_json({"code": 403, "message": t("越权访问被拒绝")}, 403)
         return
     if not target.is_file():
-        h._send_json({"code": 404, "message": "文件不存在"}, 404)
+        h._send_json({"code": 404, "message": t("文件不存在")}, 404)
         return
     try:
         text = target.read_text(encoding="utf-8", errors="replace")
     except OSError as exc:
-        h._send_json({"code": 500, "message": f"读取失败：{exc}"}, 500)
+        h._send_json({"code": 500, "message": t("读取失败：{exc}", exc=exc)}, 500)
         return
 
     # 附带原件信息，供前端「原版预览」决定用原生查看器还是沙箱 iframe
@@ -84,20 +85,20 @@ def note_content(h: "Handler", rel: str) -> None:
 def note_original(h: "Handler", rel: str) -> None:
     """返回笔记对应的**原件**（导入的 PDF/Office、剪藏的原始 HTML）。"""
     if not rel:
-        h._send_json({"code": 400, "message": "缺少 path 参数"}, 400)
+        h._send_json({"code": 400, "message": t("缺少 path 参数")}, 400)
         return
     try:
         orig = crawler.find_original(rel)
     except Exception:  # noqa: BLE001
         orig = None
     if orig is None:
-        h._send_json({"code": 404, "message": "该笔记没有留存原件"}, 404)
+        h._send_json({"code": 404, "message": t("该笔记没有留存原件")}, 404)
         return
     # 二次防线：解析后必须仍在 data/originals 之下
     try:
         orig.resolve().relative_to(paths.ORIGINALS_DIR.resolve())
     except (ValueError, OSError):
-        h._send_json({"code": 403, "message": "越权访问被拒绝"}, 403)
+        h._send_json({"code": 403, "message": t("越权访问被拒绝")}, 403)
         return
 
     ext = orig.suffix.lower()
@@ -110,7 +111,7 @@ def note_original(h: "Handler", rel: str) -> None:
             payload = office_preview.to_html(orig.read_bytes(), orig.name)
         except (OSError, ValueError) as exc:
             # 降级：预览生成不了就如实说，绝不留白屏给猜
-            h._send_json({"code": 400, "message": f"无法生成预览：{exc}"}, 400)
+            h._send_json({"code": 400, "message": t("无法生成预览：{exc}", exc=exc)}, 400)
             return
         h._send_bytes(payload.encode("utf-8"), "text/html; charset=utf-8")
         return
@@ -150,7 +151,7 @@ def note_evidence(h: "Handler", rel: str, parent_id: str) -> None:
     它的数据源；snippet 只作为兜底，不做「全文搜第一个相同句子」式的脆弱定位。
     """
     if not rel or not parent_id:
-        h._send_json({"code": 400, "message": "缺少 path 或 parent_id 参数"}, 400)
+        h._send_json({"code": 400, "message": t("缺少 path 或 parent_id 参数")}, 400)
         return
     db = h.ctx.db
     from ..core import search as _search  # noqa: PLC0415 - 复用列存在性探测
@@ -165,11 +166,11 @@ def note_evidence(h: "Handler", rel: str, parent_id: str) -> None:
         (parent_id,),
     )
     if row is None:
-        h._send_json({"code": 404, "message": "证据块不存在（索引可能已重建）"}, 404)
+        h._send_json({"code": 404, "message": t("证据块不存在（索引可能已重建）")}, 404)
         return
     if row["rel_path"] != rel:
         # 证据块不属于该笔记 —— 防止跨文档错位引用
-        h._send_json({"code": 404, "message": "证据块与该笔记不匹配"}, 404)
+        h._send_json({"code": 404, "message": t("证据块与该笔记不匹配")}, 404)
         return
     h._send_json(
         {
@@ -214,7 +215,7 @@ def import_notes(h: "Handler") -> None:
         }]
 
     if len(items) > 200:
-        h._send_json({"code": 400, "message": "单次最多导入 200 个文件"}, 400)
+        h._send_json({"code": 400, "message": t("单次最多导入 200 个文件")}, 400)
         return
 
     results = []
@@ -228,7 +229,7 @@ def import_notes(h: "Handler") -> None:
                 data = base64.b64decode(b64, validate=False)
             except Exception as exc:  # noqa: BLE001
                 results.append({"ok": False, "filename": fname,
-                                "message": f"base64 解码失败：{exc}", "file_path": "",
+                                "message": t("base64 解码失败：{exc}", exc=exc), "file_path": "",
                                 "title": "", "char_count": 0})
                 continue
         else:
@@ -246,7 +247,7 @@ def import_notes(h: "Handler") -> None:
     ok_n = sum(1 for r in results if r["ok"])
     h._send_json({
         "code": 200,
-        "message": f"导入完成：成功 {ok_n} / {len(results)}",
+        "message": t("导入完成：成功 {ok} / {total}", ok=ok_n, total=len(results)),
         "data": {"results": results, "ok": ok_n, "total": len(results)},
     })
 

@@ -26,6 +26,7 @@ from .api import (ask as api_ask, capture as api_capture, config as api_config,
                   license as api_license,
                   search as api_search, system as api_system)
 from .core.context import AppContext, get_ctx
+from .core.i18n import set_lang, t
 from .core.log_util import get_logger
 
 log = get_logger()
@@ -120,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             total = file.stat().st_size
         except OSError as exc:
-            return self._send_json({"code": 500, "message": f"读取失败：{exc}"}, 500)
+            return self._send_json({"code": 500, "message": t("读取失败：{exc}", exc=exc)}, 500)
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(total))
@@ -147,7 +148,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             total = file.stat().st_size
         except OSError as exc:
-            return self._send_json({"code": 500, "message": f"读取失败：{exc}"}, 500)
+            return self._send_json({"code": 500, "message": t("读取失败：{exc}", exc=exc)}, 500)
 
         rng = self.headers.get("Range") or ""
         m = re.match(r"bytes=(\d*)-(\d*)", rng.strip())
@@ -173,7 +174,7 @@ class Handler(BaseHTTPRequestHandler):
                 fh.seek(start)
                 chunk = fh.read(end - start + 1)
         except OSError as exc:
-            return self._send_json({"code": 500, "message": f"读取失败：{exc}"}, 500)
+            return self._send_json({"code": 500, "message": t("读取失败：{exc}", exc=exc)}, 500)
 
         self.send_response(206 if partial else 200)
         self.send_header("Content-Type", ctype)
@@ -197,14 +198,14 @@ class Handler(BaseHTTPRequestHandler):
         浏览过程不会向任何外部站点发请求。
         """
         if not archiver.ASSET_NAME_RE.match(name or ""):
-            return self._send_json({"code": 404, "message": "资源不存在"}, 404)
+            return self._send_json({"code": 404, "message": t("资源不存在")}, 404)
         target = paths.ASSETS_DIR / name
         try:
             target.resolve().relative_to(paths.ASSETS_DIR.resolve())
         except (ValueError, OSError):
-            return self._send_json({"code": 403, "message": "越权访问被拒绝"}, 403)
+            return self._send_json({"code": 403, "message": t("越权访问被拒绝")}, 403)
         if not target.is_file():
-            return self._send_json({"code": 404, "message": "资源不存在"}, 404)
+            return self._send_json({"code": 404, "message": t("资源不存在")}, 404)
         ctype = mimetypes.guess_type(str(target))[0] or "application/octet-stream"
         # 文件名按 URL 哈希寻址，同一 URL 重新抓取会覆盖内容 → 不做长缓存
         self.send_response(200)
@@ -239,7 +240,7 @@ class Handler(BaseHTTPRequestHandler):
         if length <= 0:
             return {}
         if length > MAX_BODY:
-            raise ValueError("请求体过大")
+            raise ValueError(t("请求体过大"))
         raw = self.rfile.read(length)
         try:
             data = json.loads(raw.decode("utf-8"))
@@ -317,13 +318,16 @@ class Handler(BaseHTTPRequestHandler):
         )
         self._send_json(
             {"ok": False, "error": {"code": reason,
-                                    "message": security_mod.REASON_TEXT.get(reason, "已拒绝"),
+                                    "message": t(security_mod.REASON_TEXT.get(reason, "已拒绝")),
                                     "details": {}}},
             403,
         )
         return False
 
     def do_GET(self):  # noqa: N802
+        # 语言是**请求级**状态：必须在请求线程内、任何响应之前设定
+        # （ThreadingHTTPServer 每请求一线程，contextvar 互不干扰）。
+        set_lang(self.headers.get("X-Kavira-Lang"))
         if not self._guard():
             return
         try:
@@ -332,6 +336,7 @@ class Handler(BaseHTTPRequestHandler):
             self._fail(exc, "GET")
 
     def do_POST(self):  # noqa: N802
+        set_lang(self.headers.get("X-Kavira-Lang"))
         if not self._guard():
             return
         try:
@@ -364,7 +369,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             self._send_json(
                 {"code": status,
-                 "message": redact_mod.sanitize_text(f"服务内部错误：{exc}")},
+                 "message": redact_mod.sanitize_text(t("服务内部错误：{exc}", exc=exc))},
                 status,
             )
         except Exception:  # noqa: BLE001 - 兜底失败只能静默断开
@@ -415,7 +420,7 @@ class Handler(BaseHTTPRequestHandler):
         if api_datadir.handle_get(self, path):
             return
 
-        return self._send_json({"code": 404, "message": "接口不存在"}, 404)
+        return self._send_json({"code": 404, "message": t("接口不存在")}, 404)
 
     # ------------------------------------------------------------------
     def _route_post(self) -> None:
@@ -439,16 +444,16 @@ class Handler(BaseHTTPRequestHandler):
         if api_datadir.handle_post(self, path):
             return
 
-        return self._send_json({"code": 404, "message": "接口不存在"}, 404)
+        return self._send_json({"code": 404, "message": t("接口不存在")}, 404)
 
     def _serve_static(self, file: Path) -> None:
         try:
             file = file.resolve()
             file.relative_to(paths.APP_DIR.resolve())
         except ValueError:
-            return self._send_json({"code": 403, "message": "越权访问被拒绝"}, 403)
+            return self._send_json({"code": 403, "message": t("越权访问被拒绝")}, 403)
         if not file.is_file():
-            return self._send_json({"code": 404, "message": "资源不存在"}, 404)
+            return self._send_json({"code": 404, "message": t("资源不存在")}, 404)
         ctype = mimetypes.guess_type(str(file))[0] or "application/octet-stream"
         if ctype.startswith("text/") or ctype in ("application/javascript", "application/json"):
             ctype += "; charset=utf-8"
@@ -456,7 +461,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             return self._send_bytes(file.read_bytes(), ctype, cache=cache)
         except OSError as exc:
-            return self._send_json({"code": 500, "message": f"读取失败：{exc}"}, 500)
+            return self._send_json({"code": 500, "message": t("读取失败：{exc}", exc=exc)}, 500)
 
 
 # --------------------------------------------------------------------------
