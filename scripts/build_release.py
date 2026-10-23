@@ -564,6 +564,37 @@ def _strict_gate(dist_root: Path, rt_ok: bool, info: dict, licenses: dict,
                     + " | ".join(f"{c}: {d}" for c, d in problems))
 
 
+def _zip_packages(output: Path) -> list[Path]:
+    """把 output 下每个发布根压成同名 ``.zip``（zip 内保留顶层目录名，解压即用）。
+
+    此前 zip 是手工压的：既容易漏压，也容易把目录名压错一层。并进构建后
+    ``--zip`` 一条命令即可出齐。只压**含 BUILD_INFO.json** 的目录，避免误压临时目录。
+    """
+    import os
+    import time
+    import zipfile
+
+    made: list[Path] = []
+    for d in sorted(p for p in output.iterdir() if p.is_dir()):
+        if not (d / "BUILD_INFO.json").is_file():
+            continue
+        # 不能用 with_suffix：目录名里含版本号的点（如 Kavira-v1.4.0-win-x64-zh
+        # 的 suffix 会被认成 ".0-win-x64-zh"），会把包名截成 Kavira-v1.4.zip
+        out = d.parent / (d.name + ".zip")
+        t0 = time.time()
+        n = 0
+        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+            for base, _dirs, files in os.walk(d):
+                for f in files:
+                    p = os.path.join(base, f)
+                    z.write(p, os.path.relpath(p, output))
+                    n += 1
+        print(f"ZIP OK -> {out}  {n} files  {out.stat().st_size / 1048576:.1f} MB"
+              f"  ({time.time() - t0:.1f}s)")
+        made.append(out)
+    return made
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Kavira Release Builder")
     ap.add_argument("--platform", default="win-x64")
@@ -574,9 +605,13 @@ def main() -> int:
                          "开发模式缺 runtime 仍可构建")
     ap.add_argument("--lang", choices=["zh", "en", "both"], default="both",
                     help="发布包语言：zh / en 各出一个发布根，both（默认）两个都出")
+    ap.add_argument("--zip", action="store_true", dest="do_zip",
+                    help="构建完成后把每个发布根压成同名 .zip（放在输出目录同级）")
     args = ap.parse_args()
     build(args.platform, Path(args.output).resolve(),
           strict=args.strict, lang=args.lang)
+    if args.do_zip:
+        _zip_packages(Path(args.output).resolve())
     return 0
 
 
