@@ -29,7 +29,7 @@ README 与 CHANGELOG 是**文档**，不是运行时版本源，也不允许被�
 
 from __future__ import annotations
 
-APP_VERSION = "1.3.0"
+APP_VERSION = "1.4.0"
 
 # 便于构建脚本与 User-Agent 复用，避免各处自己拼
 APP_NAME = "Kavira"
