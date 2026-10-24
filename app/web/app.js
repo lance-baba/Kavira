@@ -2678,6 +2678,13 @@ async function refreshOllamaModels() {
     // 也不能让用户以为「本机一个模型都没有」。后端状态判定同样对此保持向后兼容。
     const hasCaps = all.some(m => capsOf(m).length);
     const models = hasCaps ? all.filter(m => capsOf(m).indexOf(needCap) >= 0) : all;
+    // 不适用的模型**置灰列出**而不是直接隐藏（2026-10-24）：
+    // 隐藏会让用户以为「我明明装了两个，列表里怎么只有一个 / 我的模型是不是丢了」。
+    // 置灰既能解释清楚，也仍然选不了（disabled），不会出现「选成对话模型后
+    // 一提问就 HTTP 400 does not support chat」。已在 current 分支里单列的不重复列。
+    const unusable = hasCaps
+      ? all.filter(m => capsOf(m).indexOf(needCap) < 0 && m.name !== current)
+      : [];
     const bits = m => [m.params, m.size_text].filter(Boolean).join(" · ");
     const installed = all.some(m => m.name === current);
     const usableNow = models.some(m => m.name === current);
@@ -2688,7 +2695,12 @@ async function refreshOllamaModels() {
         : "") +
       models.map(m =>
         '<option value="' + esc(m.name) + '">' + esc(m.name) +
-        (bits(m) ? "　" + esc(bits(m)) : "") + "</option>").join("");
+        (bits(m) ? "　" + esc(bits(m)) : "") + "</option>").join("") +
+      unusable.map(m =>
+        '<option value="" disabled>' + esc(m.name) +
+        (bits(m) ? "　" + esc(bits(m)) : "") + "　" +
+        esc(t("（不支持此用途，请另选）")) + " [" + esc(capsOf(m).join("/")) + "]" +
+        "</option>").join("");
     // ⚠ **绝不自动选中 models[0]**：用户没选就保持「未选择」——
     //   替用户挑一个模型等于偷偷替他拍板。选了就在保存时显式持久化。
     sel.value = current;
