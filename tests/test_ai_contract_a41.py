@@ -397,9 +397,16 @@ def _t_g_retrieval_unaffected() -> None:
 #: 那种「测试把自己当违规」的假红会逼着后来人放宽断言。
 _FORBIDDEN = "qwen" + "2.5:3b"
 
-_SKIP_DIRS = ("runtime/", "data/", ".git/", ".workbuddy/")
+# 只扫「源码/文档」：构建产物（dist）、临时目录（temp）、模型二进制与备份全部跳过 ——
+# 这是**限定扫描范围**，不是放宽断言。此前按文本读全仓 21,271 文件 / 2.3 GB
+# （570MB onnx、168MB 备份、dist 里 118MB×3 onnx），内存紧张时直接 MemoryError，
+# 把整条用例变成「偶发 FAIL」（2026-10-24 实测：同一份代码三次跑出 FAIL=0/1/0）。
+_SKIP_DIRS = ("runtime/", "data/", "dist/", "temp/", ".git/", ".workbuddy/",
+              "eval/models/", "vendor/cache/")
 _SKIP_SUFFIX = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".woff", ".woff2",
-                ".db", ".pyc", ".zip", ".whl", ".pdf")
+                ".db", ".pyc", ".zip", ".whl", ".pdf",
+                ".onnx", ".bin", ".gguf", ".safetensors", ".bak", ".log",
+                ".pyd", ".dll", ".exe")
 
 
 def _repo_text_files():

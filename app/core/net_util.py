@@ -121,6 +121,48 @@ def http_post_json(
         return 0, f"{type(exc).__name__}: {exc}"
 
 
+def http_delete_json(
+    url: str,
+    payload: dict | None = None,
+    headers: dict[str, str] | None = None,
+    timeout: float = 20.0,
+    with_proxy: bool = False,
+) -> tuple[int, dict | str]:
+    """DELETE（可带 JSON body）；语义与 :func:`http_post_json` 一致，不抛异常。
+
+    为什么需要独立的原语：Ollama 0.4+ 的 ``/api/delete`` 只接受 **DELETE**
+    （用 POST 会得到 405 method not allowed），而更早的版本用 POST ——
+    调用方需要能按需切换方法。
+    """
+    hdrs = {"User-Agent": DEFAULT_UA, "Accept": "application/json"}
+    data = None
+    if payload is not None:
+        hdrs["Content-Type"] = "application/json"
+        data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    hdrs.update(headers or {})
+    req = urllib.request.Request(url, data=data, headers=hdrs, method="DELETE")
+    opener = _build_opener(with_proxy)
+    try:
+        with opener.open(req, timeout=timeout) as resp:
+            raw = resp.read().decode("utf-8", "replace")
+            try:
+                return resp.status, json.loads(raw)
+            except ValueError:
+                return resp.status, raw
+    except urllib.error.HTTPError as exc:
+        raw = ""
+        try:
+            raw = exc.read().decode("utf-8", "replace")
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            return exc.code, json.loads(raw)
+        except ValueError:
+            return exc.code, raw
+    except (urllib.error.URLError, OSError, TimeoutError) as exc:
+        return 0, f"{type(exc).__name__}: {exc}"
+
+
 class StreamError(Exception):
     """流式中止的明确原因（P0-B：禁止静默吞掉真实网络错误）。
 

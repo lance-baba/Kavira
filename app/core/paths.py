@@ -125,7 +125,21 @@ def _detect_embedding_dir(base: Path) -> Path:
 EMBEDDING_DIR: Path = _detect_embedding_dir(BASE_DIR)
 EMBEDDING_ARTIFACT_JSON: Path = EMBEDDING_DIR / EMBEDDING_ARTIFACT_NAME
 
-CONFIG_FILE: Path = BASE_DIR / "config.ini"
+def _detect_config_file(base: Path) -> Path:
+    """配置文件路径；``KAVIRA_CONFIG`` 可覆盖（测试必须指向临时文件）。
+
+    此前写死 ``BASE_DIR / "config.ini"`` 且**无任何覆盖手段**，导致
+    ``tests/test_suite.py::test_no_absolute_paths``（注释声称"路径已隔离到临时目录"）
+    实际 ``unlink`` 并重新生成的是**用户真实配置**（2026-10-24 踩到：974 字节的
+    精简配置被 7KB 完整模板顶掉）。测试隔离必须能覆盖到这个路径。
+    """
+    env = (os.environ.get("KAVIRA_CONFIG") or "").strip()
+    if env:
+        return Path(env).expanduser().resolve()
+    return base / "config.ini"
+
+
+CONFIG_FILE: Path = _detect_config_file(BASE_DIR)
 LOG_FILE: Path = DATA_DIR / "kavira.log"
 
 # 相对 data/ 的展示前缀（写入 Markdown frontmatter / API 返回值时统一使用）

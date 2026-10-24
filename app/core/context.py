@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 
 from .db import SCHEMA_VERSION  # noqa: E402
 from . import migrations as migrations_mod  # noqa: E402
-from . import config, db as db_mod, embedder as embedder_mod, index_bg, indexer, llm, net_util, ollama_runtime, paths, proc as proc_mod, sync
+from . import config, db as db_mod, embedder as embedder_mod, index_bg, indexer, llm, model_import, net_util, ollama_runtime, paths, proc as proc_mod, sync
 from .i18n import DeferredMsg, render, t
 from .log_util import get_logger
 
@@ -263,8 +263,12 @@ class AppContext:
                 "embedding_fallback_reason": resolved.fallback_reason,
                 "vec_ready": bool(self.db.vec_table_ready and not self.db.signature_mismatch),
                 "boot_ms": int((time.time() - t0) * 1000),
-                "warnings": list(self.warnings),
-                "notes": list(self.notes),
+                # boot_report 必须是**纯数据**：它会进日志 / 诊断，并被 json.dumps 快照。
+                # 混入 DeferredMsg 会直接 TypeError: Object of type DeferredMsg is not
+                # JSON serializable（2026-10-24 由套件抓到）。这里按启动时语言定稿；
+                # 给前端的 warnings/notes 是另一份按请求语言渲染的副本（见 api/system.py）。
+                "warnings": [render(w) for w in self.warnings],
+                "notes": [render(n) for n in self.notes],
             }
             for w in self.warnings:
                 log.warning("启动告警: %s", w)
@@ -288,6 +292,12 @@ class AppContext:
             index_bg.stop()
         except Exception as exc:  # noqa: BLE001
             log.debug("后台索引停止异常（可忽略）: %s", exc)
+        # GGUF 导入同理：退出中不再接新任务（已在跑的 create / 试聊交给 Ollama 自己收尾，
+        # 半成品不会被写进用户的下拉列表 —— 试聊没过的会被删掉）。
+        try:
+            model_import.stop()
+        except Exception as exc:  # noqa: BLE001
+            log.debug("GGUF 导入停止异常（可忽略）: %s", exc)
         if self.syncer is not None:
             try:
                 self.syncer.stop()

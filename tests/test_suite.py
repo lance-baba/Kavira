@@ -634,16 +634,87 @@ def test_ollama_autostart() -> None:
         R._spawn_serve = real_spawn         # type: ignore[assignment]
 
 
+#: 降级分支的**本地确定性夹具**：短正文（< min_body_chars=150）、无模板噪声。
+#:
+#: 为什么不再用 example.com：它的静态正文在 2026-09-01 之后从 113 字涨到 156 字，
+#: 越过既定的 150 字门槛，于是**正确地**走了 success 分支 —— 测试变红不是产品回归，
+#: 而是「拿活的外部页当短正文夹具」这个做法本身的缺陷：夹具会漂移，还依赖外网。
+#: 这里把输入固定成本地文件：同一份 HTML、随机端口、本进程内起停，结果只取决于被测代码。
+FALLBACK_FIXTURE_HTML = """<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>短正文降级夹具（本地）</title>
+</head>
+<body>
+  <div id="app">
+    <p>该页面由前端脚本渲染，静态 HTML 里只有这段占位正文。它刻意短于一百五十字，用于确定性地触发快照降级。</p>
+  </div>
+</body>
+</html>
+"""
+
+
+def _capture_short_page_local(ctx):
+    """用**本机** HTTP 服务提供固定短正文页面，跑一次 ``capture_url``。
+
+    返回 ``(降级这一次的结果, 默认策略这一次的结果)``。
+
+    ⚠ net_guard 默认拒绝 127.0.0.1（白名单是公网），**不放宽它** ——
+    走产品自己提供的 ``CRAWLER.allow_private_network`` 开关（测试环境既有的
+    显式放行方式，见 test_archiver 同一套用法），仅在本次调用期间置 1，
+    ``finally`` 里恢复原值且 ``persist=False``（绝不写回配置文件）。
+    默认策略是否仍然拒绝，由调用方单独断言，防止这条通道被悄悄改成默认放行。
+    """
+    import http.server
+    import threading
+
+    payload = FALLBACK_FIXTURE_HTML.encode("utf-8")
+
+    class _Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802 - 标准库命名
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def log_message(self, *a):  # 不往测试输出里刷访问日志
+            return
+
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Handler)   # 0 = 随机端口
+    port = srv.server_address[1]
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+
+    orig = config.get_str("CRAWLER", "allow_private_network", "0")
+    try:
+        url = f"http://127.0.0.1:{port}/short.html"
+        denied = crawler.capture_url(url)          # 默认策略：必须被安全策略拒绝
+        config.update({"CRAWLER": {"allow_private_network": "1"}}, persist=False)
+        got = crawler.capture_url(url, db=ctx.db, embedder=ctx.embedder)
+        return got, denied
+    finally:
+        config.update({"CRAWLER": {"allow_private_network": orig}}, persist=False)
+        srv.shutdown()
+        srv.server_close()
+
+
 def test_crawler(ctx) -> None:
     section("摄入管道 / 降级判定")
     offline = os.environ.get("KAVIRA_SKIP_NET") == "1"
 
-    # 依赖外网的用例先**登记**好，离线时逐条记为 SKIP。
-    # 「跳过」与「不存在」是两回事：直接 return 会让 TOTAL 随环境变化。
+    # ---- 降级分支：本地夹具，**永远跑**（离线模式也跑，不再依赖外网）----
+    r1, denied = _capture_short_page_local(ctx)
+    check("默认策略仍拒绝 127.0.0.1（未放宽 SSRF 默认）",
+          (not denied.ok) and "已拒绝" in denied.message, denied.message[:120])
+    check("短正文触发 partial_fallback 降级", r1.status == "partial_fallback",
+          str(r1.to_dict())[:200])
+    check("降级时保留原始快照",
+          bool(r1.snapshot_path) and paths.abs_from_data(r1.snapshot_path).exists())
+    check("降级文案符合 PRD 提示语", "前端动态渲染" in r1.message)
+
+    # ---- 成功分支：仍依赖外网（维基长文），离线/网络抖动时逐条记 SKIP ----
     NET_CASES = [
-        "短正文触发 partial_fallback 降级",
-        "降级时保留原始快照",
-        "降级文案符合 PRD 提示语",
         "长正文走 success 分支",
         "success 正文 ≥ 150 字",
         "YAML 头部标记 status: success",
@@ -653,26 +724,6 @@ def test_crawler(ctx) -> None:
         for _n in NET_CASES:
             skip(_n, "离线模式（KAVIRA_SKIP_NET=1）")
     else:
-        r1 = crawler.capture_url("https://example.com/", db=ctx.db, embedder=ctx.embedder)
-
-        # SSRF 策略拒绝属**环境问题**：某些网络/代理会把公网域名解析成非公网地址
-        # （本机实测 example.com → 198.18.0.120），此时拒绝是**正确行为**，
-        # 不该算被测对象失败 → 六条一起记 SKIP。判断必须放在第一条 check 之前。
-        if "出于安全考虑已拒绝" in r1.message:   # 覆盖 NOT_PUBLIC 与 MIXED 两种文案
-            for _n in NET_CASES:
-                skip(_n, "目标被 SSRF 策略拒绝（当前网络解析到非公网地址）")
-            bad = crawler.capture_url("ftp://x", db=None)
-            check("非法协议被拒绝", not bad.ok and "http" in bad.message)
-            note = crawler.save_manual_note(
-                "手工测试笔记", "手工录入的注意力机制要点。", db=ctx.db, embedder=ctx.embedder
-            )
-            check("剪贴板录入通道可用", note.ok and paths.abs_from_data(note.file_path).exists())
-            return
-
-        check(NET_CASES[0], r1.status == "partial_fallback", str(r1.to_dict())[:200])
-        check(NET_CASES[1], bool(r1.snapshot_path) and paths.abs_from_data(r1.snapshot_path).exists())
-        check(NET_CASES[2], "前端动态渲染" in r1.message)
-
         r2 = crawler.capture_url(
             "https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)",
             db=ctx.db, embedder=ctx.embedder,
@@ -680,23 +731,22 @@ def test_crawler(ctx) -> None:
         # 外网/代理不可达属**环境问题**，不是被测对象失败 —— 记 SKIP 而非 FAIL，
         # 但三条仍然登记，保证总数不变。
         # SSRF 策略拒绝也算**环境问题**：某些网络/代理会把公网域名解析成
-        # 非公网地址（本机实测 example.com → 198.18.0.120），此时拒绝是正确行为，
+        # 非公网地址（本机实测 → 198.18.0.120），此时拒绝是正确行为，
         # 不该算被测对象失败 → 记 SKIP。
         net_err = (not r2.ok) and any(
             k in r2.message for k in ("urlopen error", "ProxyError", "Tunnel connection",
                                       "HTTP 0", "出于安全考虑已拒绝")
         )
         if net_err:
-            for _n in NET_CASES[3:]:
+            for _n in NET_CASES:
                 skip(_n, "外网/代理不可达")
         else:
-            check(NET_CASES[3], r2.status == "success", str(r2.to_dict())[:200])
-            check(NET_CASES[4], r2.char_count >= 150, str(r2.char_count))
+            check(NET_CASES[0], r2.status == "success", str(r2.to_dict())[:200])
+            check(NET_CASES[1], r2.char_count >= 150, str(r2.char_count))
             md = paths.abs_from_data(r2.file_path).read_text(encoding="utf-8")
-            check(NET_CASES[5], "status: \"success\"" in md or "status: success" in md)
+            check(NET_CASES[2], "status: \"success\"" in md or "status: success" in md)
 
-    # 以下两条**不需要外网**，离线时也必须跑 —— 此前它们跟着一起 return 掉了，
-    # 白丢两条覆盖。
+    # 以下两条**不需要外网**，离线时也必须跑。
     bad = crawler.capture_url("ftp://x", db=None)
     check("非法协议被拒绝", not bad.ok and "http" in bad.message)
 
@@ -4077,6 +4127,10 @@ def test_portable_containment() -> None:
         # 静默自启；这里只是「去哪个已装程序的位置找 exe」，绝不把任何数据写到
         # AppData。真正的落盘红线由下面的动态写入探针把关（写标记再全盘找）。
         "ollama_runtime.py": "查找宿主已安装的 Ollama 可执行文件（只读，非落盘）",
+        # 授权状态（license.json）**刻意**落在 %LOCALAPPDATA%：它属于「这台机器的
+        # 激活凭据」，不是用户资料；用户资料仍只落 Library（由下面的动态写入探针把关）。
+        # 这条豁免是对齐既定设计，不是为了让测试变绿而放宽 —— 见 license.py 模块注释。
+        "license.py": "授权状态落 LOCALAPPDATA（既定设计，非用户资料）",
     }
 
     # 必须「取完整调用参数」再判断：atomic_io.mkstemp(..., dir=target.parent)

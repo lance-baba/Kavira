@@ -473,6 +473,76 @@ EN: dict[str, str] = {
     "{name}：暂不支持 {ext} 格式": "{name}: {ext} format is not supported yet",
     "无扩展名": "no extension",
     "{name} 转换异常：{exc}": "Failed to convert {name}: {exc}",
+
+    # ---- 本地 GGUF 导入（model_import.py）----
+    "请填写 .gguf 文件的完整路径": "Enter the full path of the .gguf file",
+    "请填写完整路径（从盘符开始），不要只填文件名：{path}":
+        "Enter the full path (starting with the drive letter), not just a file name: {path}",
+    "文件不存在：{path}": "File not found: {path}",
+    "无法读取该路径（权限不足或路径过长）：{path}（{exc}）":
+        "Cannot read this path (insufficient permissions or path too long): {path} ({exc})",
+    "这不是一个文件：{path}": "This is not a file: {path}",
+    "只支持 .gguf 文件（当前扩展名：{ext}）": "Only .gguf files are supported (current extension: {ext})",
+    "文件只有 {size}，小到不可能是完整模型（至少 {min_size}）：{path}":
+        "The file is only {size}, too small to be a complete model (at least {min_size}): {path}",
+    "文件不可读（权限不足或被其它程序独占）：{path}（{exc}）":
+        "The file is not readable (permission denied or held open by another program): {path} ({exc})",
+    "文件头不是 GGUF 魔数，可能不是有效的 GGUF 模型：{path}":
+        "The file header is not a GGUF magic number; it may not be a valid GGUF model: {path}",
+    "找不到 Ollama 模型目录（{dir}），无法确认磁盘空间":
+        "Cannot locate the Ollama model directory ({dir}) to check free disk space",
+    "无法检查磁盘剩余空间（{exc}）；为避免写满磁盘，已取消导入":
+        "Cannot check free disk space ({exc}); the import was cancelled to avoid filling the disk",
+    "Ollama 模型目录所在磁盘空间不足：导入约需 {need}，当前可用 {free}（{dir}）。请清理磁盘或改小模型后重试":
+        "Not enough space on the disk holding the Ollama model directory: about {need} is "
+        "needed, {free} available ({dir}). Free some space or use a smaller model and retry",
+    "该文件正在导入中，请等待它完成（重复触发不会加速）":
+        "This file is already being imported; wait for it to finish (retrying does not speed it up)",
+    "已有导入任务正在进行，请等它结束后再试":
+        "Another import is already running; wait for it to finish and try again",
+    "程序正在退出，未开始导入": "The app is shutting down, so the import was not started",
+    "已开始导入：{name}": "Import started: {name}",
+    "连不上 Ollama（{why}）—— 请先启动 Ollama 再导入":
+        "Cannot reach Ollama ({why}) — start Ollama first, then import",
+    "ollama create 失败：{detail}": "ollama create failed: {detail}",
+    "导入过程异常：{exc}": "Unexpected error during import: {exc}",
+    "试聊超时或连不上 Ollama（等了 {s} 秒）：{err}":
+        "The trial chat timed out or Ollama was unreachable (waited {s}s): {err}",
+    "试聊调用失败（HTTP {code}）：{msg}": "The trial chat call failed (HTTP {code}): {msg}",
+    "试聊返回空内容": "the trial chat returned nothing",
+    "试聊返回乱码（{reply}）": "the trial chat returned garbled text ({reply})",
+    "模型在复述提示词、不像正常对话（{reply}）":
+        "the model echoed the prompt instead of answering ({reply})",
+    "回复异常冗长、不像正常对话（前 60 字：{reply}）":
+        "the reply was abnormally long and did not look like a normal answer (first 60 chars: {reply})",
+    "该 GGUF 可能缺少 chat template，建议换 instruct / chat 版本再试":
+        "this GGUF may lack a chat template; try an instruct/chat build instead",
+    "导入的模型未通过验证：{detail} —— {hint}（已从 Ollama 删除，避免它在模型列表里冒充可用）":
+        "The imported model failed verification: {detail} — {hint} (it has been removed from "
+        "Ollama so it does not masquerade as usable in the model list)",
+    "导入的模型未通过验证：{why} —— {hint}（已从 Ollama 删除，避免它在模型列表里冒充可用）":
+        "The imported model failed verification: {why} — {hint} (it has been removed from "
+        "Ollama so it does not masquerade as usable in the model list)",
+    "检查文件与磁盘空间…": "Checking the file and free disk space…",
+    "试聊验证中…": "Running the trial chat…",
+    "正在导入（拷贝模型文件）…": "Importing (copying the model file)…",
+    "同名模型已存在，跳过拷贝，直接试聊验证…":
+        "A model with the same name already exists; skipping the copy and running the trial chat…",
+    "导入完成：{name}": "Import complete: {name}",
+    "文件校验失败": "File validation failed",
+    "磁盘空间不足": "Not enough disk space",
+    "Ollama 不可达": "Ollama is unreachable",
+    "create 失败": "create failed",
+    "（无）": "(none)",
+    "（空）": "(empty)",
+    "连不上 Ollama": "Cannot reach Ollama",
+    "返回内容无法解析：{exc}": "The response could not be parsed: {exc}",
+    "ollama create 失败（HTTP {code}）：{msg}": "ollama create failed (HTTP {code}): {msg}",
+    "ollama create 超时（>{s} 秒）被终止":
+        "ollama create timed out (> {s}s) and was terminated",
+    "ollama create 异常退出（退出码 {rc}）":
+        "ollama create exited abnormally (exit code {rc})",
+    "试聊未通过：{why}": "Trial chat failed: {why}",
 }
 
 

@@ -108,6 +108,17 @@ def activate_test_library(prefix: str = "kavira-test-") -> Path:
 
     os.environ["KAVIRA_LIBRARY"] = str(lib)
     os.environ["KAVIRA_TEST_MODE"] = "1"
+    # 配置也要隔离：`test_suite.py::test_no_absolute_paths` 会 unlink + 重新生成
+    # config.ini。此前 paths.CONFIG_FILE 写死在 BASE_DIR 且无覆盖手段，被删/被重写的
+    # 是**仓库根的真实配置**（2026-10-24 事故）。这里把配置指到临时 Library 里，
+    # 并把现有配置**复制**过去 —— 值与原行为一致，但测试再也碰不到真实文件。
+    cfg = lib / "config.ini"
+    if not cfg.exists() and (ROOT / "config.ini").is_file():
+        try:
+            shutil.copy2(ROOT / "config.ini", cfg)
+        except OSError:
+            pass
+    os.environ["KAVIRA_CONFIG"] = str(cfg)
     assert_test_library_safe(lib)          # 自检：保险丝必须真的生效
     return lib
 
