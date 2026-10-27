@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 
 from .db import SCHEMA_VERSION  # noqa: E402
 from . import migrations as migrations_mod  # noqa: E402
-from . import config, db as db_mod, embedder as embedder_mod, index_bg, indexer, llm, model_import, net_util, ollama_runtime, paths, proc as proc_mod, sync
+from . import config, db as db_mod, embedder as embedder_mod, index_bg, indexer, llm, net_util, ollama_runtime, paths, proc as proc_mod, sync
 from .i18n import DeferredMsg, render, t
 from .log_util import get_logger
 
@@ -292,12 +292,6 @@ class AppContext:
             index_bg.stop()
         except Exception as exc:  # noqa: BLE001
             log.debug("后台索引停止异常（可忽略）: %s", exc)
-        # GGUF 导入同理：退出中不再接新任务（已在跑的 create / 试聊交给 Ollama 自己收尾，
-        # 半成品不会被写进用户的下拉列表 —— 试聊没过的会被删掉）。
-        try:
-            model_import.stop()
-        except Exception as exc:  # noqa: BLE001
-            log.debug("GGUF 导入停止异常（可忽略）: %s", exc)
         if self.syncer is not None:
             try:
                 self.syncer.stop()

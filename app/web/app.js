@@ -344,6 +344,12 @@ const I18N_EN = {
   "✅ 已选择本地模型：{0}（已保存，可直接提问）": "✅ Local model selected: {0} (saved; ready to ask)",
   "已清空本地模型选择": "Local model selection cleared",
   "已选择并保存本地模型：{0}": "Local model selected and saved: {0}",
+  "—— 手动填写模型名 ——": "—— Enter a model name manually ——",
+  "填写本机已安装/已注册的模型名": "Enter a model name installed/registered on this machine",
+  "已切换为手动填写 —— 填好后按回车或点别处即保存；点「刷新模型列表」可回到下拉。":
+    "Switched to manual entry — press Enter or click elsewhere to save; click \"Refresh model list\" to return to the dropdown.",
+  "已保存：{0} —— 若本机没有这个模型，状态栏会提示模型缺失；点「刷新模型列表」可回去核对。":
+    "Saved: {0} — if this model does not exist locally, the status bar reports it as missing; click \"Refresh model list\" to verify.",
   "正在调用本地 Ollama（首次要加载模型，可能等几秒）…":
     "Calling local Ollama (the first call loads the model and may take a few seconds)…",
   "正在调用云端 API…": "Calling the cloud API…",
@@ -565,39 +571,6 @@ const I18N_EN = {
   "测试本地 Ollama": "Test local Ollama",
   "测试云端 API": "Test cloud API",
   "会先自动保存当前表单，再真实跑一次调用": "Saves the current form first, then makes a real call",
-
-  /* ---- 本地 GGUF 导入 ---- */
-  "导入 GGUF…": "Import GGUF…",
-  "从一个本机 .gguf 文件导入模型（走 Ollama create，不下载、不量化）":
-    "Import a model from a local .gguf file (via Ollama create; no download, no quantization)",
-  "模型会被复制到 Ollama 的全局模型目录（不是 U 盘、不随 U 盘迁移）。7B q4 约占 4.4 GB，请确认目标盘空间充足。":
-    "The model is copied into Ollama's global model directory (not the USB drive, and it will not move with it). A 7B q4 model takes about 4.4 GB, so make sure that drive has room.",
-  "粘贴 .gguf 文件的完整路径，例如 D:\\models\\qwen2.5-7b-instruct-q4_k_m.gguf":
-    "Paste the full path of a .gguf file, e.g. D:\\models\\qwen2.5-7b-instruct-q4_k_m.gguf",
-  "粘贴剪贴板里的路径": "Paste the path from the clipboard",
-  "粘贴": "Paste",
-  "开始导入": "Start import",
-  "只接受 .gguf；导入成功后会自动试聊验证，验证不通过会删除该模型并报错，不会留在下拉里冒充可用。":
-    "Only .gguf is accepted. After import a trial chat verifies the model; if it fails, the model is removed and an error is shown — it never stays in the dropdown pretending to work.",
-  "剪贴板是空的": "The clipboard is empty",
-  "浏览器不允许读取剪贴板，请手动粘贴（Ctrl+V）":
-    "The browser does not allow clipboard access; paste manually (Ctrl+V)",
-  "请先填写 .gguf 文件的完整路径": "Enter the full path of the .gguf file first",
-  "正在导入…（GB 级拷贝，可能要几分钟；可以离开设置页，进度不会丢）":
-    "Importing… (a multi-GB copy that can take minutes; you may leave this page, progress is kept)",
-  "导入失败": "Import failed",
-  "正在导入：{0}%（{1}，已用 {2}s）": "Importing: {0}% ({1}, {2}s elapsed)",
-  "检查文件与磁盘空间": "checking the file and disk space",
-  "写入 Ollama（拷贝模型文件）": "writing into Ollama (copying the model file)",
-  "试聊验证": "trial chat",
-  "已完成": "done",
-  "失败": "failed",
-  "处理中": "working",
-  "✅ 已导入并通过试聊验证：{0}　请在上方「本地对话模型」下拉里选择它。":
-    "✅ Imported and verified by a trial chat: {0} — now pick it in the “Local chat model” dropdown above.",
-  "GGUF 导入失败": "GGUF import failed",
-  "已导入本地模型：{0}": "Imported local model: {0}",
-  "上次导入没有产生可用模型": "The last import did not produce a usable model",
 };
 
 /* 语言优先级：localStorage → navigator.language（zh* → zh，其它 → en） */
@@ -2581,17 +2554,10 @@ function cfgControl(sec, f, val) {
       // 对话模型：选中即持久化（P0-A），不要求再点「测试」/重启/刷新浏览器。
       // 嵌入模型复用同一控件，但不需要即时落盘，故只对 ollama_chat_model 挂 onchange。
       const selOnChange = f.key === "ollama_chat_model" ? ' onchange="onSelectChatModel(this)"' : "";
-      const importBtn = f.key === "ollama_chat_model"
-        ? '<button class="btn" type="button" title="' +
-          attrEsc(t("从一个本机 .gguf 文件导入模型（走 Ollama create，不下载、不量化）")) +
-          '" onclick="toggleGgufPanel()">' + esc(t("导入 GGUF…")) + "</button>"
-        : "";
       return '<div class="ctl-inline ollama-ctl"><select ' + a + ' class="ollama-sel"' + selOnChange + '>' +
         '<option value="' + esc(val) + '">' + esc(val || t("加载中…")) + "</option></select>" +
-        '<button class="btn" type="button" title="' + attrEsc(t("重新读取本机已安装的 Ollama 模型")) + '" onclick="refreshOllamaModels()">' + esc(t("刷新模型列表")) + '</button>' +
-        importBtn + '</div>' +
-        '<div class="tip ollama-hint">' + esc(t("正在读取本地 Ollama 模型…")) + '</div>' +
-        (f.key === "ollama_chat_model" ? ggufPanelHtml() : "");
+        '<button class="btn" type="button" title="' + attrEsc(t("重新读取本机已安装的 Ollama 模型")) + '" onclick="refreshOllamaModels()">' + esc(t("刷新模型列表")) + '</button></div>' +
+        '<div class="tip ollama-hint">' + esc(t("正在读取本地 Ollama 模型…")) + '</div>';
     default:
       return '<input type="text" ' + a + ' value="' + esc(val) + '" placeholder="' + esc(t(f.placeholder || "")) + '">';
   }
@@ -2642,7 +2608,6 @@ async function loadConfig() {
   $("#cfgForm").innerHTML = common.join("");
   $("#cfgAdvanced").innerHTML = advanced.join("") + extra.join("");
   refreshOllamaModels();
-  ggufResume();          // 导入是后台任务：刷新页面后把进度接回来
 }
 
 /* 「恢复默认设置」：把表单填回出厂默认值（**不落盘**，用户再点「保存配置」才生效）。
@@ -2669,10 +2634,30 @@ function applyConfigDefaults() {
   toast(t("已填回默认值，确认后点「保存配置」生效"));
 }
 
+/* 「手动填写模型名」哨兵值：只出现在对话模型下拉末尾，选中即换成文本框。
+   它不是真实模型名，**永远不会被持久化**到 AI.ollama_chat_model。 */
+const MANUAL_MODEL_SENTINEL = "__manual__";
+
+/* 下拉 → 文本框：把「手动填写」中的输入框还原成下拉，再交给 refreshOllamaModels 重绘。
+   点「刷新模型列表」时自动调用 —— 否则进了手填就再也回不到列表。 */
+function restoreOllamaSelects() {
+  $$("input.ollama-manual").forEach(inp => {
+    const sel = document.createElement("select");
+    sel.className = "ollama-sel";
+    sel.dataset.sec = inp.dataset.sec || "";
+    sel.dataset.key = inp.dataset.key || "";
+    if (sel.dataset.key === "ollama_chat_model") sel.onchange = function () { onSelectChatModel(this); };
+    sel.innerHTML = '<option value="' + esc(inp.value || "") + '">' +
+      esc(inp.value || t("加载中…")) + "</option>";
+    inp.replaceWith(sel);
+  });
+}
+
 /* Ollama 模型下拉（对话模型 + 嵌入模型通用）：在线就列出本机已装模型，
    **并按用途做能力过滤**（对话只列 completion、嵌入只列 embedding）；
    不在线退化成手填，绝不丢用户已填的值。 */
 async function refreshOllamaModels() {
+  restoreOllamaSelects();
   const sels = $$(".ollama-sel");
   if (!sels.length) return;
   sels.forEach(s => { const h = s.closest(".ollama-ctl").parentElement.querySelector(".ollama-hint");
@@ -2741,7 +2726,14 @@ async function refreshOllamaModels() {
         '<option value="" disabled>' + esc(m.name) +
         (bits(m) ? "　" + esc(bits(m)) : "") + "　" +
         esc(t("（不支持此用途，请另选）")) + " [" + esc(capsOf(m).join("/")) + "]" +
-        "</option>").join("");
+        "</option>").join("") +
+      // 列表里没有的模型名 → 末尾哨兵项，选中即切成手填（只在对话模型上提供）。
+      (sel.dataset.key === "ollama_chat_model"
+        ? '<option value="' + MANUAL_MODEL_SENTINEL + '">' +
+          esc(t("—— 手动填写模型名 ——")) + "</option>"
+        : "");
+    // 下拉自身记住「此刻真正生效的值」，切到手填时用它预填，避免把哨兵值当模型名。
+    sel.dataset.prev = current;
     // ⚠ **绝不自动选中 models[0]**：用户没选就保持「未选择」——
     //   替用户挑一个模型等于偷偷替他拍板。选了就在保存时显式持久化。
     sel.value = current;
@@ -2768,7 +2760,54 @@ async function refreshOllamaModels() {
 // 刷新 AI readiness，状态立即变 ready，下一次问答直接用 —— 无需点「测试」/重启/刷新页面。
 // 「测试本地 Ollama」仅保留为诊断按钮，不再承担「保存选择」的职责。
 async function onSelectChatModel(sel) {
-  const val = sel ? sel.value : "";
+  // 哨兵项：切到手填，**不落盘**（否则会把 "__manual__" 当成模型名存进配置）
+  if (sel && sel.value === MANUAL_MODEL_SENTINEL) {
+    switchChatModelToManual(sel);
+    return;
+  }
+  await persistChatModel(sel ? sel.value : "", sel);
+}
+
+/* 选中「手动填写模型名」→ 下拉换成文本框。
+   结构与离线分支保持一致（data-sec / data-key），这样 saveConfig 照旧能读到它。 */
+function switchChatModelToManual(sel) {
+  const prev = String(sel.dataset.prev || "").trim();   // 当前真正生效的值，预填进来供修改
+  const field = sel.closest(".ollama-ctl") ? sel.closest(".ollama-ctl").parentElement : null;
+  const inp = document.createElement("input");
+  inp.type = "text";
+  inp.className = "ollama-manual";
+  inp.dataset.sec = sel.dataset.sec || "";
+  inp.dataset.key = sel.dataset.key || "";
+  inp.dataset.prev = prev;
+  inp.value = prev;
+  inp.placeholder = t("填写本机已安装/已注册的模型名");
+  inp.autocomplete = "off";
+  inp.spellcheck = false;
+  inp.onblur = () => { commitManualChatModel(inp); };
+  inp.onkeydown = e => {
+    if (e.key === "Enter") { e.preventDefault(); inp.blur(); }   // 回车 = 失焦 = 保存
+  };
+  sel.replaceWith(inp);
+  const hint = field ? field.querySelector(".ollama-hint") : null;
+  if (hint) {
+    hint.innerHTML = esc(t("已切换为手动填写 —— 填好后按回车或点别处即保存；点「刷新模型列表」可回到下拉。"));
+  }
+  inp.focus();
+  inp.select();
+}
+
+/* 手填提交：走与下拉完全相同的保存路径（persistChatModel），不另造一套。 */
+async function commitManualChatModel(inp) {
+  if (!inp || !inp.isConnected) return;
+  const val = String(inp.value || "").trim();
+  inp.value = val;
+  if (val === String(inp.dataset.prev || "").trim()) return;   // 没改动就不重复落盘
+  await persistChatModel(val, inp, true);
+  inp.dataset.prev = val;
+}
+
+/* 保存本地对话模型（下拉 / 手填共用）：落 AI.ollama_chat_model → 同步 CFG_ORIGINAL → 刷新状态。 */
+async function persistChatModel(val, el, manual) {
   try {
     const r = await api("/api/config", {
       method: "POST",
@@ -2780,147 +2819,20 @@ async function onSelectChatModel(sel) {
     CFG_ORIGINAL.AI.ollama_chat_model = val;
     // 立即刷新后端就绪状态（只读缓存、不发网络请求），UI 状态马上更新
     await pollStatus(false);
-    const hint = sel && sel.closest(".ollama-ctl") && sel.closest(".ollama-ctl").parentElement
-      ? sel.closest(".ollama-ctl").parentElement.querySelector(".ollama-hint") : null;
+    const hint = el && el.closest(".ollama-ctl") && el.closest(".ollama-ctl").parentElement
+      ? el.closest(".ollama-ctl").parentElement.querySelector(".ollama-hint") : null;
     if (hint) {
+      // 手填的名字本机不一定有 —— 别学下拉那样打包票「可直接提问」，以状态栏为准。
       hint.innerHTML = val
-        ? esc(t("✅ 已选择本地模型：{0}（已保存，可直接提问）", val))
+        ? (manual
+            ? esc(t("已保存：{0} —— 若本机没有这个模型，状态栏会提示模型缺失；点「刷新模型列表」可回去核对。", val))
+            : esc(t("✅ 已选择本地模型：{0}（已保存，可直接提问）", val)))
         : esc(t("已清空本地模型选择"));
     }
     toast(val ? t("已选择并保存本地模型：{0}", val) : t("已清空本地模型选择"));
   } catch (e) {
     toast(t("⚠ 模型选择保存失败：{0}", e.message));
   }
-}
-
-/* ---------------------- 本地 GGUF 导入（MVP） ----------------------
-   为什么是「填路径」而不是文件选择框：本应用是「系统浏览器 + 本地 server」形态，
-   没有 pywebview/WebView2 的 JS-原生桥（launcher.py 直接 webbrowser.open），
-   浏览器出于安全也**不会**把本机真实路径交给页面（<input type=file> 只能拿到
-   C:\\fakepath\\xxx）。若走上传，4.4GB 会先经 HTTP 落到临时目录、再被 Ollama
-   拷进 blobs —— 双份拷贝，慢盘上不可接受。故这里让用户贴真实路径
-   （资源管理器 Shift+右键 →「复制文件地址」）＋一键粘贴。
-   导入全程在后台单 worker 跑，页面只轮询 /api/ollama/import/status。 */
-let GGUF_TIMER = null;
-
-function ggufPanelHtml() {
-  return '<div class="gguf-import" id="ggufImport" hidden>' +
-    '<div class="tip">' + esc(t("模型会被复制到 Ollama 的全局模型目录（不是 U 盘、不随 U 盘迁移）。7B q4 约占 4.4 GB，请确认目标盘空间充足。")) + '</div>' +
-    '<div class="ctl-inline">' +
-      '<input type="text" id="ggufPath" placeholder="' + attrEsc(t("粘贴 .gguf 文件的完整路径，例如 D:\\models\\qwen2.5-7b-instruct-q4_k_m.gguf")) + '">' +
-      '<button class="btn" type="button" title="' + attrEsc(t("粘贴剪贴板里的路径")) + '" onclick="pasteGgufPath()">' + esc(t("粘贴")) + '</button>' +
-      '<button class="btn" type="button" id="ggufGo" onclick="startGgufImport()">' + esc(t("开始导入")) + '</button>' +
-    '</div>' +
-    '<div class="test-out" id="ggufOut"></div>' +
-    '<div class="tip">' + esc(t("只接受 .gguf；导入成功后会自动试聊验证，验证不通过会删除该模型并报错，不会留在下拉里冒充可用。")) + '</div>' +
-  '</div>';
-}
-
-function toggleGgufPanel() {
-  const p = $("#ggufImport");
-  if (!p) return;
-  p.hidden = !p.hidden;
-  if (!p.hidden) { const i = $("#ggufPath"); if (i) i.focus(); }
-}
-
-async function pasteGgufPath() {
-  const inp = $("#ggufPath");
-  if (!inp) return;
-  try {
-    const txt = await navigator.clipboard.readText();
-    if (txt) { inp.value = txt.trim(); inp.focus(); }
-    else toast(t("剪贴板是空的"));
-  } catch (e) {
-    inp.focus();
-    toast(t("浏览器不允许读取剪贴板，请手动粘贴（Ctrl+V）"));
-  }
-}
-
-function ggufPhaseText(phase) {
-  const m = {
-    checking: t("检查文件与磁盘空间"),
-    creating: t("写入 Ollama（拷贝模型文件）"),
-    verifying: t("试聊验证"),
-    done: t("已完成"),
-    failed: t("失败"),
-  };
-  return m[phase] || t("处理中");
-}
-
-function ggufSetOut(cls, text) {
-  const out = $("#ggufOut");
-  if (!out) return;
-  out.className = "test-out " + cls;
-  out.textContent = text;
-}
-
-async function startGgufImport() {
-  const inp = $("#ggufPath");
-  if (!inp) return;
-  const p = String(inp.value || "").trim();
-  if (!p) { toast(t("请先填写 .gguf 文件的完整路径")); inp.focus(); return; }
-  const go = $("#ggufGo");
-  if (go) go.disabled = true;
-  ggufSetOut("loading", t("正在导入…（GB 级拷贝，可能要几分钟；可以离开设置页，进度不会丢）"));
-  let r;
-  try {
-    r = await api("/api/ollama/import", { method: "POST", body: JSON.stringify({ path: p }) });
-  } catch (e) {
-    if (go) go.disabled = false;
-    ggufSetOut("bad", "❌ " + e.message);
-    return;
-  }
-  if (r.code !== 200) {
-    if (go) go.disabled = false;
-    ggufSetOut("bad", "❌ " + (r.message || t("导入失败")));
-    return;
-  }
-  ggufPoll();
-}
-
-async function ggufPoll() {
-  clearTimeout(GGUF_TIMER);
-  let d = null;
-  try { d = (await api("/api/ollama/import/status")).data || {}; }
-  catch (e) { GGUF_TIMER = setTimeout(ggufPoll, 2000); return; }
-  const out = $("#ggufOut");
-  if (!out) return;                                  // 用户切走了设置页 → 停止轮询
-  if (d.active) {
-    ggufSetOut("loading", t("正在导入：{0}%（{1}，已用 {2}s）", d.percent || 0,
-      ggufPhaseText(d.phase), d.elapsed || 0) + (d.detail ? "　" + d.detail : ""));
-    const go = $("#ggufGo");
-    if (go) go.disabled = true;
-    GGUF_TIMER = setTimeout(ggufPoll, 1000);
-    return;
-  }
-  const go = $("#ggufGo");
-  if (go) go.disabled = false;
-  const errs = d.errors || [];
-  if (errs.length) {
-    ggufSetOut("bad", "❌ " + errs[errs.length - 1]);
-    toast(t("GGUF 导入失败"));
-    return;
-  }
-  if (d.last_ok) {
-    ggufSetOut("ok", t("✅ 已导入并通过试聊验证：{0}　请在上方「本地对话模型」下拉里选择它。", d.last_ok));
-    toast(t("已导入本地模型：{0}", d.last_ok));
-  } else {
-    ggufSetOut("", t("上次导入没有产生可用模型"));
-  }
-  await refreshOllamaModels();
-}
-
-/* 打开设置页时若已有导入在跑（用户刷新过页面），自动展开面板并续上轮询。 */
-async function ggufResume() {
-  let d = null;
-  try { d = (await api("/api/ollama/import/status")).data || {}; } catch (e) { return; }
-  if (!d.active) return;
-  const p = $("#ggufImport");
-  if (!p) return;
-  p.hidden = false;
-  const inp = $("#ggufPath");
-  if (inp && d.path) inp.value = d.path;
-  ggufPoll();
 }
 
 async function testAI(target) {

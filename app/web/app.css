@@ -271,10 +271,6 @@
   .test-out.ok{color:var(--ok)}
   .test-out.bad{color:var(--danger)}
   .test-out.loading{color:var(--muted)}
-  /* 本地 GGUF 导入面板：默认收起，点「导入 GGUF…」展开 */
-  .gguf-import{margin-top:9px;display:flex;flex-direction:column;gap:7px;padding:10px 11px;
-    border:1px dashed var(--line-strong);border-radius:9px;background:rgba(255,255,255,.6)}
-  .gguf-import[hidden]{display:none}
   .adv-wrap{margin:2px 0 0}
   .adv-wrap>summary{
     cursor:pointer;list-style:none;user-select:none;font-size:12.5px;font-weight:700;

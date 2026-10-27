@@ -1,4 +1,4 @@
-"""问答 / AI 类 API（SSE 对话、模型自测、Ollama 模型列表、本地 GGUF 导入）。
+"""问答 / AI 类 API（SSE 对话、模型自测、Ollama 模型列表）。
 
 只处理业务，响应统一走 Handler 的 ``_send_json`` / SSE framing 原语；不直接碰底层
 HTTP 写入，也不做安全校验 / 密钥脱敏。``chat/completions`` 的 SSE 推流从
@@ -9,8 +9,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
-from ..core import model_import
-from ..core.i18n import render, t
+from ..core.i18n import t
 from ..core.log_util import get_logger
 from . import _gate
 
@@ -68,40 +67,10 @@ def ollama_models(h: "Handler", q: dict) -> None:
     h._send_json({"code": 200, "data": info})
 
 
-# --------------------------------------------------------------- GGUF 本地导入
-def _import_snapshot() -> dict:
-    """把快照里的 DeferredMsg 按**本次请求语言**渲染成字符串（JSON 化）。"""
-    snap = model_import.snapshot()
-    snap["errors"] = [render(e) for e in snap.get("errors") or []]
-    snap["detail"] = render(snap.get("detail") or "")
-    return snap
-
-
-def ollama_import(h: "Handler") -> None:
-    """POST /api/ollama/import —— 校验 + 入队，立即返回（GB 级拷贝在后台跑）。"""
-    body = h._read_json()
-    result = model_import.submit(body.get("path"))
-    code = 200 if result.get("ok") else (
-        409 if result.get("code") in ("duplicate", "busy", "stopping") else 400
-    )
-    h._send_json(
-        {"code": code, "message": render(result.get("message") or ""), "data": _import_snapshot()},
-        code,
-    )
-
-
-def ollama_import_status(h: "Handler") -> None:
-    """GET /api/ollama/import/status —— 前端轮询进度。"""
-    h._send_json({"code": 200, "data": _import_snapshot()})
-
-
 def handle_get(h: "Handler", path: str) -> bool:
     q = h._query()
     if path == "/api/ollama/models":
         ollama_models(h, q)
-        return True
-    if path == "/api/ollama/import/status":
-        ollama_import_status(h)
         return True
     return False
 
@@ -114,8 +83,5 @@ def handle_post(h: "Handler", path: str) -> bool:
         return True
     if path == "/api/ai/test":
         ai_test(h)
-        return True
-    if path == "/api/ollama/import":
-        ollama_import(h)
         return True
     return False
